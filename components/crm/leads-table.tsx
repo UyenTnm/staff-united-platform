@@ -19,36 +19,51 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getLeads } from "@/lib/leads";
+interface Lead {
+  id: string;
+  lead_number: string;
+  company_name: string;
+  contact_name: string;
+  email: string;
+  phone: string;
+  department: string;
+  source: string;
+  status: string;
+  priority: string;
+  created_at: string;
+}
 
-const leads = [
-  {
-    id: "L-001",
-    company: "ABC Construction",
-    contact: "John Smith",
-    department: "Strategic Operations",
-    status: "New",
-    priority: "High",
-    created: "17 Jun 2026",
-  },
-  {
-    id: "L-002",
-    company: "XYZ Logistics",
-    contact: "Sarah Lee",
-    department: "Focused Marketing",
-    status: "Contacted",
-    priority: "Medium",
-    created: "16 Jun 2026",
-  },
-  {
-    id: "L003",
-    company: "Global Transport",
-    contact: "David Brown",
-    department: "Focused Marketing",
-    status: "Quoted",
-    priority: "Low",
-    created: "16 August 2026",
-  },
-];
+// const leads = [
+//   {
+//     id: "L-001",
+//     company: "ABC Construction",
+//     contact: "John Smith",
+//     department: "Strategic Operations",
+//     status: "New",
+//     priority: "High",
+//     created: "17 Jun 2026",
+//   },
+//   {
+//     id: "L-002",
+//     company: "XYZ Logistics",
+//     contact: "Sarah Lee",
+//     department: "Focused Marketing",
+//     status: "Contacted",
+//     priority: "Medium",
+//     created: "16 Jun 2026",
+//   },
+//   {
+//     id: "L003",
+//     company: "Global Transport",
+//     contact: "David Brown",
+//     department: "Focused Marketing",
+//     status: "Quoted",
+//     priority: "Low",
+//     created: "16 August 2026",
+//   },
+// ];
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -64,6 +79,22 @@ function getStatusColor(status: string) {
 }
 
 export function LeadsTable() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadLeads() {
+      const data = await getLeads();
+      setLeads(data);
+      setLoading(false);
+    }
+
+    loadLeads();
+  }, []);
+
+  if (loading) {
+    return <Card className="p-6">Loading leads...</Card>;
+  }
   return (
     <Card>
       <div className="p-6 border-b">
@@ -80,9 +111,10 @@ export function LeadsTable() {
             <TableHead>Lead ID</TableHead>
             <TableHead>Company</TableHead>
             <TableHead>Contact</TableHead>
+            <TableHead>Email</TableHead>
             <TableHead>Department</TableHead>
+            <TableHead>Source</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Priority</TableHead>
             <TableHead>Created</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -91,35 +123,50 @@ export function LeadsTable() {
         <TableBody>
           {leads.map((lead) => (
             <TableRow key={lead.id}>
-              <TableCell>{lead.id}</TableCell>
-              <TableCell>{lead.company}</TableCell>
-              <TableCell>{lead.contact}</TableCell>
+              <TableCell>{lead.lead_number}</TableCell>
+
+              <TableCell>{lead.company_name}</TableCell>
+
+              <TableCell>{lead.contact_name}</TableCell>
+
+              <TableCell>{lead.email}</TableCell>
+
               <TableCell>{lead.department}</TableCell>
+
+              <TableCell>{lead.source}</TableCell>
+
               <TableCell>
                 <Badge className={getStatusColor(lead.status)}>
                   {lead.status}
                 </Badge>
               </TableCell>
-              <TableCell>{lead.priority}</TableCell>
-              <TableCell>{lead.created}</TableCell>
-              <TableCell className="text-center">
+
+              <TableCell>
+                {new Date(lead.created_at).toLocaleDateString()}
+              </TableCell>
+
+              <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="w-4 h-4" />
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href={`/crm/leads/${lead.id}`}>View Details</Link>
                     </DropdownMenuItem>
-
-                    <DropdownMenuItem>Assign Lead</DropdownMenuItem>
-
-                    <DropdownMenuItem>Create Quote</DropdownMenuItem>
-
-                    <DropdownMenuItem>Convert To Client</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/crm/quotes/new?leadId=${lead.id}`}>
+                        Create Quote
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/crm/clients/new?leadId=${lead.id}`}>
+                        Convert To Client
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

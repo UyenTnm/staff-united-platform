@@ -40,10 +40,18 @@ export function Sidebar() {
       label: "CRM",
       href: "/crm",
     },
-
+    {
+      label: "Quotes",
+      href: "/crm/quotes",
+    },
     {
       label: "Clients",
       href: "/clients",
+    },
+
+    {
+      label: "Assignments",
+      href: "/assignments",
     },
 
     {
@@ -96,8 +104,10 @@ export function Sidebar() {
         {menuItems.map((item) => {
           // const Icon = item.icon;
           // const isActive = pathname === item.href;
-          const isActive = pathname.startsWith(item.href);
-
+          const isActive =
+            item.href === "/crm"
+              ? pathname === "/crm"
+              : pathname.startsWith(item.href);
           return (
             <Link key={item.href} href={item.href}>
               <button

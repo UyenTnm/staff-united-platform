@@ -1,19 +1,19 @@
 import { AppLayout } from "@/components/app-layout";
-import { LeadsTable } from "@/components/crm/leads-table";
+import { ReportsOverview } from "@/components/reports/reports-overview";
 
-export default function CRMPage() {
+export default function ReportsPage() {
   return (
     <AppLayout>
       <div className="w-full">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">CRM</h1>
+          <h1 className="text-3xl font-bold">Reports</h1>
 
           <p className="text-muted-foreground">
-            Manage leads, quotes, and sales opportunities.
+            Business performance and operational insights.
           </p>
         </div>
 
-        <LeadsTable />
+        <ReportsOverview />
       </div>
     </AppLayout>
   );

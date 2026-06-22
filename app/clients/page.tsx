@@ -1,19 +1,19 @@
 import { AppLayout } from "@/components/app-layout";
-import { LeadsTable } from "@/components/crm/leads-table";
+import { ClientsTable } from "@/components/clients/clients-table";
 
-export default function CRMPage() {
+export default function ClientsPage() {
   return (
     <AppLayout>
       <div className="w-full">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">CRM</h1>
+          <h1 className="text-3xl font-bold">Clients</h1>
 
           <p className="text-muted-foreground">
-            Manage leads, quotes, and sales opportunities.
+            Manage active clients and service relationships.
           </p>
         </div>
 
-        <LeadsTable />
+        <ClientsTable />
       </div>
     </AppLayout>
   );
