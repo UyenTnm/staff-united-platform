@@ -8,6 +8,7 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
 import { getLead } from "@/lib/lead";
+import { getQuoteByLeadId } from "@/lib/quotes";
 
 interface Lead {
   id: string;
@@ -27,13 +28,20 @@ export default function LeadDetailPage() {
   const params = useParams();
 
   const [lead, setLead] = useState<Lead | null>(null);
+  const [quoteId, setQuoteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadLead() {
       const data = await getLead(params.id as string);
-
       setLead(data);
+
+      const quote = await getQuoteByLeadId(params.id as string);
+
+      if (quote) {
+        setQuoteId(quote.id);
+      }
+
       setLoading(false);
     }
 
@@ -124,9 +132,17 @@ export default function LeadDetailPage() {
 
         {/* Actions */}
         <div className="flex gap-3">
-          <Button asChild>
-            <Link href={`/crm/quotes/new?leadId=${lead.id}`}>Create Quote</Link>
-          </Button>
+          {quoteId ? (
+            <Button asChild>
+              <Link href={`/crm/quotes/${quoteId}`}>View Quote</Link>
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link href={`/crm/quotes/new?leadId=${lead.id}`}>
+                Create Quote
+              </Link>
+            </Button>
+          )}
 
           <Button variant="secondary">Convert To Client</Button>
         </div>

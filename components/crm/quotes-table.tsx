@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
 import {
   Table,
@@ -18,33 +18,8 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
-
-const quotes = [
-  {
-    id: "Q-0001",
-    company: "ABC Construction",
-    department: "Strategic Operations",
-    amount: "$2,500 AUD",
-    status: "Draft",
-    created: "17 Jun 2026",
-  },
-  {
-    id: "Q-0002",
-    company: "XYZ Logistics",
-    department: "Focused Marketing",
-    amount: "$1,800 AUD",
-    status: "Sent",
-    created: "16 Jun 2026",
-  },
-  {
-    id: "Q-0003",
-    company: "Global Transport",
-    department: "Targeted Sales",
-    amount: "$3,200 AUD",
-    status: "Accepted",
-    created: "15 Jun 2026",
-  },
-];
+import { getQuotes, Quote } from "@/lib/quotes";
+import Link from "next/link";
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -66,6 +41,25 @@ function getStatusColor(status: string) {
 }
 
 export function QuotesTable() {
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadQuotes() {
+      const data = await getQuotes();
+
+      setQuotes(data);
+
+      setLoading(false);
+    }
+
+    loadQuotes();
+  }, []);
+
+  if (loading) {
+    return <Card className="p-6">Loading Quotes...</Card>;
+  }
+
   return (
     <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/5">
       <div className="p-6 border-b border-slate-200 dark:border-slate-800">
@@ -92,17 +86,22 @@ export function QuotesTable() {
           <TableBody>
             {quotes.map((quote) => (
               <TableRow key={quote.id}>
-                <TableCell>{quote.id}</TableCell>
-                <TableCell>{quote.company}</TableCell>
+                {/* <TableCell>{quote.id}</TableCell> */}
+                <TableCell>{quote.quote_number}</TableCell>
+
+                <TableCell>{quote.company_name}</TableCell>
                 <TableCell>{quote.department}</TableCell>
-                <TableCell>{quote.amount}</TableCell>
+
+                <TableCell>${quote.amount.toLocaleString()} AUD</TableCell>
+
                 <TableCell>
                   <Badge className={getStatusColor(quote.status)}>
                     {quote.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{quote.created}</TableCell>
-
+                <TableCell>
+                  {new Date(quote.created_at).toLocaleDateString()}
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -112,9 +111,15 @@ export function QuotesTable() {
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View Quote</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href={`/crm/quotes/${quote.id}`}>View Quote</Link>
+                      </DropdownMenuItem>
 
-                      <DropdownMenuItem>Edit Quote</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/crm/quotes/${quote.id}/edit`}>
+                          Edit Quote
+                        </Link>
+                      </DropdownMenuItem>
 
                       <DropdownMenuItem>Send Quote</DropdownMenuItem>
 

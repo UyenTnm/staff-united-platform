@@ -21,6 +21,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getLeads } from "@/lib/leads";
+
 interface Lead {
   id: string;
   lead_number: string;
@@ -33,37 +34,10 @@ interface Lead {
   status: string;
   priority: string;
   created_at: string;
-}
 
-// const leads = [
-//   {
-//     id: "L-001",
-//     company: "ABC Construction",
-//     contact: "John Smith",
-//     department: "Strategic Operations",
-//     status: "New",
-//     priority: "High",
-//     created: "17 Jun 2026",
-//   },
-//   {
-//     id: "L-002",
-//     company: "XYZ Logistics",
-//     contact: "Sarah Lee",
-//     department: "Focused Marketing",
-//     status: "Contacted",
-//     priority: "Medium",
-//     created: "16 Jun 2026",
-//   },
-//   {
-//     id: "L003",
-//     company: "Global Transport",
-//     contact: "David Brown",
-//     department: "Focused Marketing",
-//     status: "Quoted",
-//     priority: "Low",
-//     created: "16 August 2026",
-//   },
-// ];
+  hasQuote: boolean;
+  quoteId: string | null;
+}
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -79,12 +53,33 @@ function getStatusColor(status: string) {
 }
 
 export function LeadsTable() {
+  function formatReceivedTime(date: string) {
+    const now = new Date();
+
+    const created = new Date(date);
+
+    const diff = Math.floor((now.getTime() - created.getTime()) / 1000);
+
+    if (diff < 60) return "Just now";
+
+    if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
+
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+
+    if (diff < 172800) return "Yesterday";
+
+    return `${Math.floor(diff / 86400)} days ago`;
+  }
+
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadLeads() {
       const data = await getLeads();
+      console.log("Leads:", data);
       setLeads(data);
       setLoading(false);
     }
@@ -95,6 +90,21 @@ export function LeadsTable() {
   if (loading) {
     return <Card className="p-6">Loading leads...</Card>;
   }
+  const filteredLeads = leads.filter((lead) => {
+    const keyword = search.toLowerCase();
+
+    const matchesSearch =
+      lead.company_name.toLowerCase().includes(keyword) ||
+      lead.contact_name.toLowerCase().includes(keyword) ||
+      lead.email.toLowerCase().includes(keyword) ||
+      lead.department.toLowerCase().includes(keyword);
+
+    const matchesStatus =
+      statusFilter === "All" || lead.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <Card>
       <div className="p-6 border-b">
@@ -103,6 +113,30 @@ export function LeadsTable() {
         <p className="text-sm text-muted-foreground mt-1">
           Manage incoming sales opportunities.
         </p>
+
+        <div className="mt-4">
+          <input
+            type="text"
+            placeholder="Search company, contact, email..."
+            className="w-full rounded-lg border px-3 py-2 text-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <div className="mt-3">
+            <select
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option>All</option>
+              <option>New</option>
+              <option>Contacted</option>
+              <option>Proposal Sent</option>
+              <option>Won</option>
+              <option>Lost</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <Table>
@@ -116,12 +150,13 @@ export function LeadsTable() {
             <TableHead>Source</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead>Received</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {leads.map((lead) => (
+          {filteredLeads.map((lead) => (
             <TableRow key={lead.id}>
               <TableCell>{lead.lead_number}</TableCell>
 
@@ -144,6 +179,7 @@ export function LeadsTable() {
               <TableCell>
                 {new Date(lead.created_at).toLocaleDateString()}
               </TableCell>
+              <TableCell>{formatReceivedTime(lead.created_at)}</TableCell>
 
               <TableCell>
                 <DropdownMenu>
@@ -157,11 +193,19 @@ export function LeadsTable() {
                     <DropdownMenuItem asChild>
                       <Link href={`/crm/leads/${lead.id}`}>View Details</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/crm/quotes/new?leadId=${lead.id}`}>
-                        Create Quote
-                      </Link>
-                    </DropdownMenuItem>
+                    {lead.hasQuote ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/crm/quotes/${lead.quoteId}`}>
+                          View Quote
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/crm/quotes/new?leadId=${lead.id}`}>
+                          Create Quote
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href={`/crm/clients/new?leadId=${lead.id}`}>
                         Convert To Client
