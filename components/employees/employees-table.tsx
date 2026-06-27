@@ -18,79 +18,48 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface Employees {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  department: string;
-  status: "active" | "inactive" | "suspended";
-  lastLogin: string;
-}
-
-const mockEmployees: Employees[] = [
-  {
-    id: "1",
-    name: "Sarah Anderson",
-    email: "sarah.anderson@company.com",
-    role: "Admin",
-    department: "IT Security",
-    status: "active",
-    lastLogin: "2 hours ago",
-  },
-  {
-    id: "2",
-    name: "Marcus Chen",
-    email: "marcus.chen@company.com",
-    role: "Security Officer",
-    department: "IT Security",
-    status: "active",
-    lastLogin: "15 minutes ago",
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    email: "emily.rodriguez@company.com",
-    role: "Manager",
-    department: "Operations",
-    status: "active",
-    lastLogin: "1 day ago",
-  },
-  {
-    id: "4",
-    name: "James Wilson",
-    email: "james.wilson@company.com",
-    role: "Developer",
-    department: "Engineering",
-    status: "active",
-    lastLogin: "3 hours ago",
-  },
-  {
-    id: "5",
-    name: "Lisa Park",
-    email: "lisa.park@company.com",
-    role: "Analyst",
-    department: "Finance",
-    status: "inactive",
-    lastLogin: "30 days ago",
-  },
-];
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Employee, getEmployees } from "@/lib/employees/employees";
 
 function getStatusColor(status: string) {
-  switch (status) {
+  switch (status.toLowerCase()) {
     case "active":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      return "bg-emerald-100 text-emerald-700";
+
     case "inactive":
-      return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400";
+      return "bg-slate-100 text-slate-700";
+
     case "suspended":
-      return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      return "bg-red-100 text-red-700";
+
     default:
       return "";
   }
 }
 
 export function EmployeesTable() {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadEmployees() {
+      const data = await getEmployees();
+
+      console.log("Loaded Employees:", data);
+
+      setEmployees(data);
+
+      setLoading(false);
+    }
+
+    loadEmployees();
+  }, []);
+
+  if (loading) {
+    return <Card className="p-6">Loading employees...</Card>;
+  }
+  console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
   return (
     <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 col-span-1 md:col-span-2">
       <div className="p-6 border-b border-slate-200 dark:border-slate-800">
@@ -130,13 +99,13 @@ export function EmployeesTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockEmployees.map((employee) => (
+            {employees.map((employee) => (
               <TableRow
                 key={employee.id}
                 className="border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               >
                 <TableCell className="font-medium text-slate-900 dark:text-white">
-                  {employee.name}
+                  {employee.full_name}
                 </TableCell>
                 <TableCell className="text-slate-600 dark:text-slate-400">
                   <div className="flex items-center gap-2">
@@ -159,7 +128,7 @@ export function EmployeesTable() {
                 <TableCell className="text-slate-600 dark:text-slate-400">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    {employee.lastLogin}
+                    {new Date(employee.created_at).toLocaleDateString()}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
@@ -170,7 +139,11 @@ export function EmployeesTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/employees/${employee.id}`}>
+                          View Details
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem>Edit Permissions</DropdownMenuItem>
                       <DropdownMenuItem>Reset Password</DropdownMenuItem>
                       <DropdownMenuItem className="text-red-600 dark:text-red-400">
