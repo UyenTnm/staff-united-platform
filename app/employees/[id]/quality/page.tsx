@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
@@ -23,6 +23,9 @@ export default function QualityPage() {
   const summary = calculateQualityScore(issues);
 
   const params = useParams();
+  const searchParams = useSearchParams();
+
+  const reviewId = searchParams.get("reviewId");
 
   useEffect(() => {
     async function loadData() {
@@ -45,7 +48,11 @@ export default function QualityPage() {
           <EmployeeHeader
             employee={employee}
             title="Quality Review"
-            backHref={`/employees/${employee.id}`}
+            backHref={
+              reviewId
+                ? `/employees/${employee.id}/reviews/${reviewId}`
+                : `/employees/${employee.id}`
+            }
           />
         )}
 
@@ -107,14 +114,22 @@ export default function QualityPage() {
                       <p className="text-sm mt-3">{issue.description}</p>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-right space-y-2">
                       <p className="text-red-600 font-bold">
-                        -{issue.deduction}%
+                        -{issue.deduction} pts
                       </p>
 
-                      <p className="text-xs text-slate-500 mt-2">
+                      <p className="text-xs text-slate-500">
                         {issue.evaluator_id ?? "-"}
                       </p>
+
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={`/employees/${params.id}/quality/edit/${issue.id}`}
+                        >
+                          Edit
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 </div>

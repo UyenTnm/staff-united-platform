@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
@@ -23,6 +23,9 @@ export default function BehaviorPage() {
   const summary = calculateBehaviorScore(issues);
 
   const params = useParams();
+  const searchParams = useSearchParams();
+
+  const reviewId = searchParams.get("reviewId");
 
   useEffect(() => {
     async function loadData() {
@@ -45,7 +48,11 @@ export default function BehaviorPage() {
           <EmployeeHeader
             employee={employee}
             title="Behavior Review"
-            backHref={`/employees/${employee.id}`}
+            backHref={
+              reviewId
+                ? `/employees/${employee.id}/reviews/${reviewId}`
+                : `/employees/${employee.id}`
+            }
           />
         )}
 

@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 import { IssueTypeSelect } from "@/components/employees/issue-type-select";
-import { BEHAVIOR_ISSUES } from "@/lib/employees/issue-types";
-import { useState } from "react";
-import { createBehaviorIssue } from "@/lib/employees/behavior";
+import { QUALITY_ISSUES } from "@/lib/employees/issue-types";
+import { useEffect, useState } from "react";
+import { getQualityIssue, updateQualityIssue } from "@/lib/employees/quality";
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 
-export default function NewBehaviorIssuePage() {
+export default function EditQualityIssuePage() {
   const params = useParams();
 
   const router = useRouter();
@@ -27,6 +27,24 @@ export default function NewBehaviorIssuePage() {
 
   const [saving, setSaving] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadIssue() {
+      try {
+        const issue = await getQualityIssue(params.issueId as string);
+
+        setIssueType(issue.issue_type);
+        setDescription(issue.description);
+        setDeduction(issue.deduction.toString());
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadIssue();
+  }, [params.issueId]);
+
   async function handleSave() {
     if (!issueType) {
       alert("Please select an issue type.");
@@ -37,6 +55,7 @@ export default function NewBehaviorIssuePage() {
       alert("Please enter a description.");
       return;
     }
+    setSaving(true);
 
     try {
       console.log({
@@ -45,21 +64,27 @@ export default function NewBehaviorIssuePage() {
         description,
         deduction,
       });
-      await createBehaviorIssue({
-        employee_id: params.id as string,
+      await updateQualityIssue(params.issueId as string, {
         issue_type: issueType,
         description,
         deduction: parseInt(deduction, 10),
-        evaluator_id: null,
-        issue_date: new Date().toISOString(),
-        review_month: getReviewMonth(new Date()),
       });
 
-      router.push(`/employees/${params.id}/behavior`);
+      router.push(`/employees/${params.id}/quality`);
     } catch (err) {
       console.error(err);
       alert("Unable to save issue.");
+    } finally {
+      setSaving(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div>Loading issue...</div>
+      </AppLayout>
+    );
   }
 
   return (
@@ -67,15 +92,13 @@ export default function NewBehaviorIssuePage() {
       <div className="space-y-6 max-w-3xl">
         <div className="flex justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Add Behavior Issue</h1>
+            <h1 className="text-3xl font-bold">Edit Quality Issue</h1>
 
-            <p className="text-slate-500 mt-2">
-              Record a behavior issue for this employee.
-            </p>
+            <p className="text-slate-500 mt-2">Update this quality issue.</p>
           </div>
 
           <Button asChild variant="outline">
-            <Link href={`/employees/${params.id}/behavior`}>Cancel</Link>
+            <Link href={`/employees/${params.id}/quality`}>Cancel</Link>
           </Button>
         </div>
 
@@ -85,7 +108,7 @@ export default function NewBehaviorIssuePage() {
 
             <div className="mt-2">
               <IssueTypeSelect
-                items={BEHAVIOR_ISSUES}
+                items={QUALITY_ISSUES}
                 value={issueType}
                 onChange={setIssueType}
               />
@@ -106,7 +129,7 @@ export default function NewBehaviorIssuePage() {
 
           <div>
             <div>
-              <label className="text-sm font-medium">Score Deduction</label>
+              <label className="text-sm font-medium">Deduction</label>
 
               <div className="mt-2">
                 <IssueTypeSelect
@@ -120,7 +143,7 @@ export default function NewBehaviorIssuePage() {
           </div>
 
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Issue"}
+            {saving ? "Saving..." : "Update Issue"}
           </Button>
         </Card>
       </div>

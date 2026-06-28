@@ -8,8 +8,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
 interface Props {
-  items: string[];
+  items: SelectOption[];
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -29,8 +34,8 @@ export function IssueTypeSelect({
 
       <SelectContent>
         {items.map((item) => (
-          <SelectItem key={item} value={item}>
-            {item}
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>

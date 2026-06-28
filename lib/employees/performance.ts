@@ -1,4 +1,5 @@
 import { getBehaviorIssues } from "./behavior";
+import { getEmployeeKaizens } from "./kaizen";
 import { getQualityIssues } from "./quality";
 
 export interface PerformanceSummary {
@@ -6,6 +7,9 @@ export interface PerformanceSummary {
   behavior: number;
   kaizen: number;
   total: number;
+  qualityIssues: number;
+  behaviorIssues: number;
+  kaizenRecords: number;
 }
 
 export async function calculateEmployeePerformance(
@@ -31,19 +35,26 @@ export async function calculateEmployeePerformance(
 
   const behavior = Math.max(5 - behaviorDeduction, 0);
 
-  // Chưa làm Kaizen
-  const kaizen = 0;
+  // Kaizen
+  // Kaizen
+  const kaizens = await getEmployeeKaizens(employeeId);
 
-  console.log("Quality Issues:", qualityIssues);
-  console.log("Quality Deduction:", qualityDeduction);
+  const kaizenPoints = kaizens.reduce(
+    (sum, item) => sum + (item.performance_points ?? 0),
+    0,
+  );
 
-  console.log("Behavior Issues:", behaviorIssues);
-  console.log("Behavior Deduction:", behaviorDeduction);
+  // Giới hạn tối đa 5 điểm
+  const kaizen = Math.min(kaizenPoints, 5);
 
   return {
     quality,
     behavior,
     kaizen,
     total: quality + behavior + kaizen,
+
+    qualityIssues: qualityIssues.length,
+    behaviorIssues: behaviorIssues.length,
+    kaizenRecords: kaizens.length,
   };
 }

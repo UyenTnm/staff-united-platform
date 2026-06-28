@@ -65,9 +65,33 @@ export async function createQualityIssue(issue: {
     .from("employee_quality_issues")
     .insert(issue);
 
-  if (error) {
-    console.log("Supabase Error:", JSON.stringify(error, null, 2));
-    console.error(error);
-    throw error;
-  }
+  if (error) throw error;
+}
+
+export async function getQualityIssue(id: string) {
+  const { data, error } = await supabase
+    .from("employee_quality_issues")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function updateQualityIssue(
+  id: string,
+  issue: {
+    issue_type: string;
+    description: string;
+    deduction: number;
+  },
+) {
+  const { error } = await supabase
+    .from("employee_quality_issues")
+    .update(issue)
+    .eq("id", id);
+
+  if (error) throw error;
 }

@@ -12,8 +12,7 @@ import {
   calculateEmployeePerformance,
   PerformanceSummary,
 } from "@/lib/employees/performance";
-import { PerformanceStatus } from "@/components/employees/performance-status";
-import { QuickActions } from "@/components/employees/quick-actions";
+import { getCurrentReview, PerformanceReview } from "@/lib/perfomance/review";
 
 export default function EmployeeDetailPage() {
   const params = useParams();
@@ -22,15 +21,22 @@ export default function EmployeeDetailPage() {
   const [performance, setPerformance] = useState<PerformanceSummary | null>(
     null,
   );
+  const [currentReview, setCurrentReview] = useState<PerformanceReview | null>(
+    null,
+  );
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadEmployee() {
       const data = await getEmployee(params.id as string);
+
       const perf = await calculateEmployeePerformance(params.id as string);
 
+      const review = await getCurrentReview(params.id as string);
+
       setPerformance(perf);
+      setCurrentReview(review);
 
       setEmployee(data);
 
@@ -75,12 +81,12 @@ export default function EmployeeDetailPage() {
           <Badge>{employee.status}</Badge>
         </div>
 
-        <PerformanceStatus
+        {/* <PerformanceStatus
           reviewMonth="July 2026"
           status="Draft"
           updatedAt={new Date(employee.created_at).toLocaleDateString()}
           reviewedBy="Martha"
-        />
+        /> */}
 
         {/* Overview */}
 
@@ -128,7 +134,7 @@ export default function EmployeeDetailPage() {
 
         {/* Performance */}
 
-        <Card className="p-6">
+        {/* <Card className="p-6">
           <h2 className="text-xl font-semibold mb-5">Current Performance</h2>
 
           <Card className="p-6">
@@ -164,9 +170,80 @@ export default function EmployeeDetailPage() {
               </div>
             )}
           </Card>
+        </Card> */}
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500">Current Review</p>
+
+              <h2 className="text-3xl font-bold mt-2">
+                {currentReview
+                  ? new Date(currentReview.review_month).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        year: "numeric",
+                      },
+                    )
+                  : "No Review"}
+              </h2>
+
+              <p className="text-slate-500 mt-2">
+                {currentReview
+                  ? currentReview.status
+                  : "No review has been created for this month."}
+              </p>
+
+              {currentReview && performance && (
+                <h3 className="text-2xl font-bold mt-4">
+                  {performance.total} / 15
+                </h3>
+              )}
+            </div>
+
+            <Button asChild>
+              <Link
+                href={
+                  currentReview
+                    ? `/employees/${employee.id}/reviews/${currentReview.id}`
+                    : `/employees/${employee.id}/reviews/new`
+                }
+              >
+                {currentReview
+                  ? `Open ${new Date(
+                      currentReview.review_month,
+                    ).toLocaleDateString("en-US", {
+                      month: "long",
+                    })} Review`
+                  : `Start ${new Date().toLocaleDateString("en-US", {
+                      month: "long",
+                    })} Review`}
+              </Link>
+            </Button>
+          </div>
         </Card>
 
-        <QuickActions employeeId={employee.id} />
+        {/* Performance Reviews */}
+        {/* <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Performance Reviews</h2>
+
+              <p className="text-slate-500 mt-2">
+                Manage monthly performance reviews and approvals.
+              </p>
+            </div>
+
+            <Button asChild>
+              <Link href={`/employees/${employee.id}/reviews`}>
+                Open Reviews
+              </Link>
+            </Button>
+          </div>
+        </Card> */}
+
+        {/* <QuickActions employeeId={employee.id} /> */}
       </div>
     </AppLayout>
   );

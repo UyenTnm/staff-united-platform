@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 
 import { IssueTypeSelect } from "@/components/employees/issue-type-select";
 import { QUALITY_ISSUES } from "@/lib/employees/issue-types";
-// import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
+// import { SCORE_SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 import { useState } from "react";
 import { createQualityIssue } from "@/lib/employees/quality";
 import { getReviewMonth } from "@/lib/employees/bonus";
