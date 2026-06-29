@@ -1,6 +1,6 @@
 // lib/quotes.ts
 
-import { supabase } from "./supabase";
+import { supabase } from "../supabase";
 
 export interface Quote {
   id: string;

@@ -7,8 +7,8 @@ import { useParams } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
-import { getLead } from "@/lib/lead";
-import { getQuoteByLeadId } from "@/lib/quotes";
+import { getLead } from "@/lib/crm/lead";
+import { getQuoteByLeadId } from "@/lib/crm/quotes";
 
 interface Lead {
   id: string;

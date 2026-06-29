@@ -9,6 +9,7 @@ interface Props {
   employee: Employee;
   title: string;
   backHref: string;
+  showEditButton?: boolean;
 }
 
 export function EmployeeHeader({ employee, title, backHref }: Props) {

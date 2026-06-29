@@ -8,6 +8,16 @@ export type ReviewStatus =
   | "Approved"
   | "Locked";
 
+function getCurrentReviewMonth() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}-01`;
+}
+
 export interface PerformanceReview {
   id: string;
 
@@ -55,32 +65,19 @@ export async function getEmployeeReviews(employeeId: string) {
 }
 
 export async function getCurrentReview(employeeId: string) {
-  const now = new Date();
-
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const reviewMonth = getCurrentReviewMonth();
 
   const { data, error } = await supabase
     .from("performance_reviews")
     .select("*")
     .eq("employee_id", employeeId)
-    .eq("review_month", firstDay.toISOString().split("T")[0])
+    .eq("review_month", reviewMonth)
     .maybeSingle();
 
   if (error) throw error;
 
   return data;
 }
-
-// export async function createCurrentReview(employeeId: string) {
-//   const now = new Date();
-
-//   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-
-//   return createPerformanceReview(
-//     employeeId,
-//     firstDay.toISOString().split("T")[0],
-//   );
-// }
 
 export async function createPerformanceReview(
   employeeId: string,
@@ -123,11 +120,19 @@ export async function getOrCreateCurrentReview(
     return current;
   }
 
-  const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
+  const reviewMonth = getCurrentReviewMonth();
 
-  return await createPerformanceReview(employeeId, firstDay);
+  try {
+    return await createPerformanceReview(employeeId, reviewMonth);
+  } catch {
+    const existing = await getReviewByMonth(employeeId, reviewMonth);
+
+    if (existing) {
+      return existing as PerformanceReview;
+    }
+
+    throw new Error("Unable to create review.");
+  }
 }
 
 export async function getReviewSummary(reviewId: string) {

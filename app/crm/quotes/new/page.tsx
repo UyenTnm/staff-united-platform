@@ -6,9 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
-import { createQuote } from "@/lib/quotes";
+import { createQuote } from "@/lib/crm/quotes";
 // import { getLead } from "@/lib/lead";
-import { getLead, updateLeadStatus, type Lead } from "@/lib/lead";
+import { getLead, updateLeadStatus, type Lead } from "@/lib/crm/lead";
 
 export default function CreateQuotePage() {
   const router = useRouter();

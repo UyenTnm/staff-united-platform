@@ -20,7 +20,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Employee, getEmployees } from "@/lib/employees/employees";
+import {
+  Employee,
+  getEmployees,
+  updateEmployeeStatus,
+} from "@/lib/employees/employees";
 
 function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
@@ -56,10 +60,34 @@ export function EmployeesTable() {
     loadEmployees();
   }, []);
 
+  async function handleToggleStatus(employee: Employee) {
+    const newStatus = employee.status === "Active" ? "Inactive" : "Active";
+
+    try {
+      await updateEmployeeStatus(employee.id, newStatus);
+
+      setEmployees((prev) =>
+        prev.map((emp) =>
+          emp.id === employee.id
+            ? {
+                ...emp,
+                status: newStatus,
+              }
+            : emp,
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Unable to update employee status.");
+    }
+  }
+
   if (loading) {
     return <Card className="p-6">Loading employees...</Card>;
   }
+
   console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+
   return (
     <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 col-span-1 md:col-span-2">
       <div className="p-6 border-b border-slate-200 dark:border-slate-800">
@@ -82,7 +110,7 @@ export function EmployeesTable() {
                 Email
               </TableHead>
               <TableHead className="text-slate-600 dark:text-slate-400">
-                Role
+                Position
               </TableHead>
               <TableHead className="text-slate-600 dark:text-slate-400">
                 Department
@@ -91,7 +119,7 @@ export function EmployeesTable() {
                 Status
               </TableHead>
               <TableHead className="text-slate-600 dark:text-slate-400">
-                Last Login
+                Joined Date
               </TableHead>
               <TableHead className="text-right text-slate-600 dark:text-slate-400">
                 Actions
@@ -144,10 +172,28 @@ export function EmployeesTable() {
                           View Details
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Edit Permissions</DropdownMenuItem>
-                      <DropdownMenuItem>Reset Password</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600 dark:text-red-400">
-                        Suspend User
+                      <DropdownMenuItem asChild>
+                        <Link href={`/employees/${employee.id}/edit`}>
+                          Edit Employee
+                        </Link>
+                      </DropdownMenuItem>
+                      {/* <DropdownMenuItem>Edit Permissions</DropdownMenuItem> */}
+                      {/* <DropdownMenuItem>Reset Password</DropdownMenuItem> */}
+                      <DropdownMenuItem
+                        onClick={async () => {
+                          await updateEmployeeStatus(
+                            employee.id,
+                            employee.status === "Active"
+                              ? "Inactive"
+                              : "Active",
+                          );
+
+                          window.location.reload();
+                        }}
+                      >
+                        {employee.status === "Active"
+                          ? "Deactivate Employee"
+                          : "Activate Employee"}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

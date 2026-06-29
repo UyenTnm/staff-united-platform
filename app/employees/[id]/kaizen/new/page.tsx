@@ -44,6 +44,16 @@ export default function NewKaizenPage() {
 
   const [status, setStatus] = useState<KaizenStatus>("Submitted");
 
+  // const session = {
+  //   role: "hr",
+  // };
+
+  const session = {
+    role: "employee",
+  };
+
+  const isManager = ["manager", "hr"].includes(session.role);
+
   async function handleSave() {
     if (!title.trim()) {
       alert("Please enter a title.");
@@ -55,10 +65,13 @@ export default function NewKaizenPage() {
       return;
     }
 
-    if (!impact) {
+    if (isManager && !impact) {
       alert("Please select an impact level.");
       return;
     }
+    const finalImpact: KaizenImpact = isManager
+      ? (impact as KaizenImpact)
+      : "Small";
 
     try {
       setSaving(true);
@@ -69,9 +82,11 @@ export default function NewKaizenPage() {
         description,
         category,
         business_benefit: businessBenefit,
-        impact,
-        performance_points: parseInt(points, 10),
-        status,
+        impact: isManager ? impact : "Small",
+
+        performance_points: isManager ? parseInt(points, 10) : 0,
+
+        status: isManager ? status : "Submitted",
         approved_by: null,
         implemented_date: null,
         review_note: null,
@@ -85,9 +100,13 @@ export default function NewKaizenPage() {
         description,
         category,
         business_benefit: businessBenefit,
-        impact,
-        performance_points: parseInt(points, 10),
-        status,
+
+        impact: finalImpact,
+
+        performance_points: isManager ? parseInt(points, 10) : 0,
+
+        status: isManager ? status : "Submitted",
+
         approved_by: null,
         implemented_date: null,
         review_note: null,
@@ -171,43 +190,52 @@ export default function NewKaizenPage() {
             />
           </div>
 
-          <div>
-            <label className="text-sm font-medium">Impact Level</label>
+          {isManager && (
+            <>
+              {/* Impact Level */}
+              <div>
+                <label className="text-sm font-medium">Impact Level</label>
 
-            <div className="mt-2">
-              <IssueTypeSelect
-                items={KAIZEN_IMPACTS}
-                value={impact}
-                onChange={setImpact}
-                placeholder="Select Impact"
-              />
-            </div>
-          </div>
+                <div className="mt-2">
+                  <IssueTypeSelect
+                    items={KAIZEN_IMPACTS}
+                    value={impact}
+                    onChange={(value) => setImpact(value as KaizenImpact)}
+                    placeholder="Select Impact"
+                  />
+                </div>
+              </div>
 
-          <div>
-            <label className="text-sm font-medium">Performance Points</label>
+              {/* Performance Point */}
+              <div>
+                <label className="text-sm font-medium">
+                  Performance Points
+                </label>
 
-            <div className="mt-2">
-              <IssueTypeSelect
-                items={KAIZEN_POINTS}
-                value={points}
-                onChange={setPoints}
-                placeholder="Select Points"
-              />
-            </div>
-          </div>
+                <div className="mt-2">
+                  <IssueTypeSelect
+                    items={KAIZEN_POINTS}
+                    value={points}
+                    onChange={setPoints}
+                    placeholder="Select Points"
+                  />
+                </div>
+              </div>
 
-          <div>
-            <label className="text-sm font-medium">Status</label>
+              {/* Status */}
+              <div>
+                <label className="text-sm font-medium">Status</label>
 
-            <div className="mt-2">
-              <IssueTypeSelect
-                items={KAIZEN_STATUSES}
-                value={status}
-                onChange={setStatus}
-              />
-            </div>
-          </div>
+                <div className="mt-2">
+                  <IssueTypeSelect
+                    items={KAIZEN_STATUSES}
+                    value={status}
+                    onChange={(value) => setStatus(value as KaizenStatus)}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <Button onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Submit Improvement"}

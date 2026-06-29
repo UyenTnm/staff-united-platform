@@ -11,7 +11,7 @@ import {
   getEmployeeReviews,
   getOrCreateCurrentReview,
   PerformanceReview,
-} from "@/lib/perfomance/review";
+} from "@/lib/performance/review";
 
 export default function PerformanceReviewsPage() {
   const router = useRouter();

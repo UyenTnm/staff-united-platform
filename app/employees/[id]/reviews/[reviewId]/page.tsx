@@ -8,7 +8,7 @@ import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getReview, PerformanceReview } from "@/lib/perfomance/review";
+import { getReview, PerformanceReview } from "@/lib/performance/review";
 import { ReviewCard } from "@/components/employees/performance/review-card";
 import {
   calculateEmployeePerformance,

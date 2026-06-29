@@ -12,7 +12,11 @@ import {
   calculateEmployeePerformance,
   PerformanceSummary,
 } from "@/lib/employees/performance";
-import { getCurrentReview, PerformanceReview } from "@/lib/perfomance/review";
+import {
+  getCurrentReview,
+  getEmployeeReviews,
+  PerformanceReview,
+} from "@/lib/performance/review";
 
 export default function EmployeeDetailPage() {
   const params = useParams();
@@ -24,21 +28,30 @@ export default function EmployeeDetailPage() {
   const [currentReview, setCurrentReview] = useState<PerformanceReview | null>(
     null,
   );
+  const [reviews, setReviews] = useState<PerformanceReview[]>([]);
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadEmployee() {
-      const data = await getEmployee(params.id as string);
+      // const data = await getEmployee(params.id as string);
 
-      const perf = await calculateEmployeePerformance(params.id as string);
+      // const perf = await calculateEmployeePerformance(params.id as string);
 
-      const review = await getCurrentReview(params.id as string);
+      // const review = await getCurrentReview(params.id as string);
+
+      const [data, perf, review, history] = await Promise.all([
+        getEmployee(params.id as string),
+        calculateEmployeePerformance(params.id as string),
+        getCurrentReview(params.id as string),
+        getEmployeeReviews(params.id as string),
+      ]);
 
       setPerformance(perf);
       setCurrentReview(review);
 
       setEmployee(data);
+      setReviews(history);
 
       setLoading(false);
     }
@@ -69,6 +82,7 @@ export default function EmployeeDetailPage() {
           <Link href="/employees">← Back to Employees</Link>
         </Button>
       </div>
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
@@ -78,15 +92,21 @@ export default function EmployeeDetailPage() {
             <p className="text-slate-500 mt-2">{employee.role}</p>
           </div>
 
-          <Badge>{employee.status}</Badge>
+          <div className="flex items-center gap-3">
+            <Button asChild variant="outline">
+              <Link href={`/employees/${employee.id}/edit`}>Edit Employee</Link>
+            </Button>
+            <Badge
+              className={
+                employee.status === "Active"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-slate-200"
+              }
+            >
+              {employee.status}
+            </Badge>
+          </div>
         </div>
-
-        {/* <PerformanceStatus
-          reviewMonth="July 2026"
-          status="Draft"
-          updatedAt={new Date(employee.created_at).toLocaleDateString()}
-          reviewedBy="Martha"
-        /> */}
 
         {/* Overview */}
 
@@ -131,46 +151,6 @@ export default function EmployeeDetailPage() {
             </div>
           </div>
         </Card>
-
-        {/* Performance */}
-
-        {/* <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-5">Current Performance</h2>
-
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-5">Performance Summary</h2>
-
-            {performance && (
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Quality</span>
-
-                  <strong>{performance.quality} / 5</strong>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Behavior</span>
-
-                  <strong>{performance.behavior} / 5</strong>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Kaizen</span>
-
-                  <strong>{performance.kaizen} / 5</strong>
-                </div>
-
-                <hr />
-
-                <div className="flex justify-between text-xl font-bold">
-                  <span>Total Performance</span>
-
-                  <span>{performance.total} / 15</span>
-                </div>
-              </div>
-            )}
-          </Card>
-        </Card> */}
 
         <Card className="p-6">
           <div className="flex items-center justify-between">
@@ -224,26 +204,35 @@ export default function EmployeeDetailPage() {
           </div>
         </Card>
 
-        {/* Performance Reviews */}
-        {/* <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold">Performance Reviews</h2>
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold">Review History</h2>
 
-              <p className="text-slate-500 mt-2">
-                Manage monthly performance reviews and approvals.
-              </p>
-            </div>
+          <div className="mt-5 space-y-3">
+            {reviews.map((review) => (
+              <div
+                key={review.id}
+                className="flex items-center justify-between border rounded-lg p-4"
+              >
+                <div>
+                  <p className="font-medium">
+                    {new Date(review.review_month).toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
 
-            <Button asChild>
-              <Link href={`/employees/${employee.id}/reviews`}>
-                Open Reviews
-              </Link>
-            </Button>
+                  <p className="text-sm text-slate-500">{review.status}</p>
+                </div>
+
+                <Button asChild variant="outline">
+                  <Link href={`/employees/${employee.id}/reviews/${review.id}`}>
+                    Open
+                  </Link>
+                </Button>
+              </div>
+            ))}
           </div>
-        </Card> */}
-
-        {/* <QuickActions employeeId={employee.id} /> */}
+        </Card>
       </div>
     </AppLayout>
   );

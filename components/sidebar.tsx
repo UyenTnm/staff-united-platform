@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -15,9 +15,13 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "./auth/auth-provider";
+import { signOut } from "@/lib/auth";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { employee } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
@@ -64,6 +68,18 @@ export function Sidebar() {
       href: "/settings",
     },
   ];
+
+  async function handleLogout() {
+    try {
+      await signOut();
+
+      router.replace("/login");
+    } catch (error) {
+      console.error(error);
+
+      alert("Logout failed.");
+    }
+  }
 
   return (
     <aside
@@ -138,6 +154,7 @@ export function Sidebar() {
           {!collapsed && <span>Settings</span>}
         </button>
         <button
+          onClick={handleLogout}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium mt-2",
             "text-slate-400 hover:bg-slate-900 hover:text-red-400",

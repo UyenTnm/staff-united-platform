@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import { getOrCreateCurrentReview } from "@/lib/perfomance/review";
+import { getOrCreateCurrentReview } from "@/lib/performance/review";
 
 export default function NewReviewPage() {
   const params = useParams();
@@ -16,8 +16,9 @@ export default function NewReviewPage() {
 
         router.replace(`/employees/${params.id}/reviews/${review.id}`);
       } catch (err) {
-        console.error(err);
-        alert("Unable to create review.");
+        console.error("Create Review Error:", err);
+
+        alert(JSON.stringify(err, null, 2));
       }
     }
 

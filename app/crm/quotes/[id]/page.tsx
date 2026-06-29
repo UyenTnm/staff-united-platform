@@ -7,7 +7,7 @@ import Link from "next/link";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
-import { Quote, getQuote } from "@/lib/quotes";
+import { Quote, getQuote } from "@/lib/crm/quotes";
 
 export default function QuoteDetailPage() {
   const params = useParams();

@@ -1,0 +1,152 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { AppLayout } from "@/components/app-layout";
+import { Button } from "@/components/ui/button";
+
+import {
+  createEmployee,
+  generateEmployeeNumber,
+  getManagers,
+} from "@/lib/employees/employees";
+import { EmployeeForm } from "@/components/employees/employee-form";
+
+export default function NewEmployeePage() {
+  const router = useRouter();
+
+  const [saving, setSaving] = useState(false);
+
+  const [employeeNumber, setEmployeeNumber] = useState("");
+
+  const [fullName, setFullName] = useState("");
+
+  const [email, setEmail] = useState("");
+
+  const [department, setDepartment] = useState("");
+
+  const [role, setRole] = useState("");
+
+  const [managerId, setManagerId] = useState("");
+
+  const [status, setStatus] = useState("Active");
+
+  const [userRole, setUserRole] = useState("Employee");
+
+  const [managers, setManagers] = useState<{ id: string; full_name: string }[]>(
+    [],
+  );
+
+  useEffect(() => {
+    async function load() {
+      const [number, managerList] = await Promise.all([
+        generateEmployeeNumber(),
+        getManagers(),
+      ]);
+
+      setEmployeeNumber(number);
+      setManagers(managerList);
+    }
+
+    load();
+  }, []);
+
+  async function handleCreate() {
+    if (!fullName.trim()) {
+      alert("Please enter employee name.");
+      return;
+    }
+
+    if (!email.trim()) {
+      alert("Please enter email.");
+      return;
+    }
+
+    if (!department) {
+      alert("Please select department.");
+      return;
+    }
+
+    if (!role.trim()) {
+      alert("Please enter position.");
+      return;
+    }
+
+    if (!employeeNumber) {
+      alert("Unable to generate employee number.");
+      return;
+    }
+
+    if (!status) {
+      alert("Please select a status.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      await createEmployee({
+        employee_number: employeeNumber,
+        full_name: fullName,
+        email,
+        department,
+        role,
+        user_role: userRole,
+        manager_id: managerId || null,
+        status,
+      });
+
+      router.replace("/employees");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Unable to create employee.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <AppLayout>
+      <div className="space-y-6 max-w-3xl">
+        <div className="flex justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Add New Employee</h1>
+
+            <p className="text-slate-500 mt-2">
+              Create a new employee account.
+            </p>
+          </div>
+
+          <Button asChild variant="outline">
+            <Link href="/employees">Cancel</Link>
+          </Button>
+        </div>
+
+        <EmployeeForm
+          employeeNumber={employeeNumber}
+          fullName={fullName}
+          setFullName={setFullName}
+          email={email}
+          setEmail={setEmail}
+          department={department}
+          setDepartment={setDepartment}
+          role={role}
+          setRole={setRole}
+          userRole={userRole}
+          setUserRole={setUserRole}
+          managerId={managerId}
+          setManagerId={setManagerId}
+          status={status}
+          setStatus={setStatus}
+          managers={managers}
+          saving={saving}
+          onSubmit={handleCreate}
+          submitLabel="Create Employee"
+        />
+      </div>
+    </AppLayout>
+  );
+}

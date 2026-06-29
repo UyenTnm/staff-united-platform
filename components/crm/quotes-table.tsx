@@ -18,7 +18,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
-import { getQuotes, Quote } from "@/lib/quotes";
+import { getQuotes, Quote } from "@/lib/crm/quotes";
 import Link from "next/link";
 
 function getStatusColor(status: string) {

@@ -6,8 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
-import { Quote, getQuote, updateQuote } from "@/lib/quotes";
-import { syncLeadStatusFromQuote, updateLeadStatus } from "@/lib/lead";
+import { Quote, getQuote, updateQuote } from "@/lib/crm/quotes";
+import { syncLeadStatusFromQuote, updateLeadStatus } from "@/lib/crm/lead";
 
 export default function EditQuotePage() {
   const params = useParams();

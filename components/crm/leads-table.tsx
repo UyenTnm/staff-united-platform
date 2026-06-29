@@ -20,7 +20,7 @@ import {
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getLeads } from "@/lib/leads";
+import { getLeads } from "@/lib/crm/leads";
 
 interface Lead {
   id: string;
