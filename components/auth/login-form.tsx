@@ -5,6 +5,7 @@ import { loadCurrentEmployee } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
 // import { supabase } from "@/lib/supabase";
 import { useState } from "react";
+import { useAuth } from "./auth-provider";
 
 export function LoginForm() {
   const router = useRouter();
@@ -14,12 +15,14 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const { refreshEmployee } = useAuth();
 
   async function handleLogin() {
     try {
       setLoading(true);
 
       await signIn(email, password);
+      await refreshEmployee();
 
       const current = await loadCurrentEmployee();
 
@@ -33,6 +36,10 @@ export function LoginForm() {
       }
 
       switch (current.user_role) {
+        case "Admin":
+          router.replace("/dashboard");
+          break;
+          
         case "Employee":
           router.replace("/performance");
           break;
