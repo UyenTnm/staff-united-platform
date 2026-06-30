@@ -8,15 +8,21 @@ import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getReview, PerformanceReview } from "@/lib/performance/review";
+import {
+  getReview,
+  PerformanceReview,
+  updateReviewStatus,
+} from "@/lib/performance/review";
 import { ReviewCard } from "@/components/employees/performance/review-card";
 import {
   calculateEmployeePerformance,
   type PerformanceSummary,
 } from "@/lib/employees/performance";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export default function ReviewDetailPage() {
   const params = useParams();
+  const { employee } = useAuth();
 
   const [review, setReview] = useState<PerformanceReview | null>(null);
 
@@ -47,6 +53,60 @@ export default function ReviewDetailPage() {
     loadReview();
   }, [params.reviewId]);
 
+  async function handleSendToEmployee() {
+    if (!review) return;
+
+    try {
+      await updateReviewStatus(review.id, "WaitingEmployee");
+
+      setReview({
+        ...review,
+        status: "WaitingEmployee",
+      });
+
+      alert("Review sent to employee successfully.");
+    } catch (err) {
+      console.error(err);
+
+      alert("Unable to send review.");
+    }
+  }
+
+  async function handleApproveReview() {
+    if (!review) return;
+
+    try {
+      await updateReviewStatus(review.id, "Approved");
+
+      setReview({
+        ...review,
+        status: "Approved",
+      });
+
+      alert("Review approved successfully.");
+    } catch (err) {
+      console.error(err);
+
+      alert("Unable to approve review.");
+    }
+  }
+
+  function formatReviewStatus(status: string) {
+    switch (status) {
+      case "WaitingEmployee":
+        return "Waiting Employee";
+
+      case "EmployeeAppealed":
+        return "Employee Appealed";
+
+      case "WaitingManager":
+        return "Waiting Manager";
+
+      default:
+        return status;
+    }
+  }
+
   if (loading) {
     return (
       <AppLayout>
@@ -62,6 +122,10 @@ export default function ReviewDetailPage() {
       </AppLayout>
     );
   }
+  const isAdmin = employee?.user_role === "Admin";
+  const isHR = employee?.user_role === "HR";
+  const isManager = employee?.user_role === "Manager";
+  const isEmployee = employee?.user_role === "Employee";
 
   return (
     <AppLayout>
@@ -94,7 +158,7 @@ export default function ReviewDetailPage() {
             </div>
 
             <div className="text-right">
-              <Badge>{review.status}</Badge>
+              <Badge>{formatReviewStatus(review.status)}</Badge>
 
               {performance && (
                 <p className="text-sm text-slate-500 mt-3">
@@ -127,7 +191,7 @@ export default function ReviewDetailPage() {
             <div>
               <p className="text-sm text-slate-500">Status</p>
 
-              <p className="font-medium">{review.status}</p>
+              <p className="font-medium">{formatReviewStatus(review.status)}</p>
             </div>
 
             <div>
@@ -175,70 +239,65 @@ export default function ReviewDetailPage() {
             href={`/employees/${params.id}/kaizen?reviewId=${review.id}`}
             color="text-emerald-600"
           />
+
+          <Card className="p-6 md:col-span-3">
+            <h2 className="text-xl font-semibold mb-6">Review Actions</h2>
+
+            <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
+                {/* HR */}
+                {(isAdmin || isHR) && review.status === "Draft" && (
+                  <Button onClick={handleSendToEmployee}>
+                    Send to Employee
+                  </Button>
+                )}
+
+                {/* Manager */}
+                {isManager && review.status === "WaitingManager" && (
+                  <>
+                    <Button onClick={handleApproveReview}>
+                      Approve Review
+                    </Button>
+
+                    <Button variant="outline">Return to HR</Button>
+                  </>
+                )}
+
+                {/* Employee */}
+                {isEmployee && review.status === "WaitingEmployee" && (
+                  <>
+                    <Button>Accept Review</Button>
+
+                    <Button variant="outline">Appeal</Button>
+                  </>
+                )}
+
+                {/* Back */}
+                <Button asChild variant="outline">
+                  <Link href={`/employees/${params.id}`}>Back</Link>
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-500 mt-4">
+              {review.status === "Draft" &&
+                "This review is still being prepared."}
+
+              {review.status === "WaitingEmployee" &&
+                "Review has been sent to the employee."}
+
+              {review.status === "EmployeeAppealed" &&
+                "Employee has submitted an appeal."}
+
+              {review.status === "WaitingManager" &&
+                "Waiting for manager approval."}
+
+              {review.status === "Approved" && "Review has been approved."}
+
+              {review.status === "Locked" && "This review has been locked."}
+            </p>
+          </Card>
         </div>
-
-        {/* <Card className="p-6">
-          <h2 className="text-xl font-semibold">Review Actions</h2>
-
-          <div className="flex gap-3 mt-6">
-            <Button>Quality</Button>
-
-            <Button variant="outline">Behavior</Button>
-
-            <Button variant="outline">Kaizen</Button>
-          </div>
-        </Card> */}
-
-        {/* <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-6">Review Management</h2>
-
-          <div className="space-y-4">
-
-            <div className="flex items-center justify-between border rounded-lg p-4">
-              <div>
-                <h3 className="font-semibold">Quality</h3>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Manage quality issues and deductions.
-                </p>
-              </div>
-
-              <Button asChild>
-                <Link href={`/employees/${params.id}/quality`}>Open</Link>
-              </Button>
-            </div>
-
-
-            <div className="flex items-center justify-between border rounded-lg p-4">
-              <div>
-                <h3 className="font-semibold">Behavior</h3>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Manage behavior issues and deductions.
-                </p>
-              </div>
-
-              <Button asChild variant="outline">
-                <Link href={`/employees/${params.id}/behavior`}>Open</Link>
-              </Button>
-            </div>
-
-
-            <div className="flex items-center justify-between border rounded-lg p-4">
-              <div>
-                <h3 className="font-semibold">Kaizen</h3>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Manage improvement records.
-                </p>
-              </div>
-
-              <Button asChild variant="outline">
-                <Link href={`/employees/${params.id}/kaizen`}>Open</Link>
-              </Button>
-            </div>
-          </div>
-        </Card> */}
       </div>
     </AppLayout>
   );

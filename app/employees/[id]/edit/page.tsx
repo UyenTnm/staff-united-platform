@@ -13,6 +13,7 @@ import {
   getManagers,
   updateEmployee,
 } from "@/lib/employees/employees";
+import type { UserRole } from "@/lib/auth";
 
 export default function EditEmployeePage() {
   const params = useParams();
@@ -27,7 +28,8 @@ export default function EditEmployeePage() {
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
   const [role, setRole] = useState("");
-  const [userRole, setUserRole] = useState("Employee");
+  // const [userRole, setUserRole] = useState("Employee");
+  const [userRole, setUserRole] = useState<UserRole>("Employee");
   const [managerId, setManagerId] = useState("");
   const [status, setStatus] = useState("Active");
 

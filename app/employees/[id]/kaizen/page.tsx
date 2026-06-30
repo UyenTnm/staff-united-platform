@@ -64,7 +64,7 @@ export default function QualityPage() {
           <div className="space-y-4">
             {kaizens.length === 0 ? (
               <div className="border rounded-lg p-8 text-center text-slate-500">
-                No quality issues recorded.
+                No Kaizen submissions yet.
               </div>
             ) : (
               kaizens.map((kaizen) => (
@@ -72,6 +72,10 @@ export default function QualityPage() {
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
                       <h3 className="font-semibold text-lg">{kaizen.title}</h3>
+
+                      <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium">
+                        {kaizen.status}
+                      </div>
 
                       <p className="text-sm text-slate-500">
                         {kaizen.category} • {kaizen.impact}
@@ -85,15 +89,20 @@ export default function QualityPage() {
                     </div>
 
                     <div className="text-right space-y-3">
-                      <p className="font-bold text-emerald-600 text-lg">
+                      {/* <p className="font-bold text-emerald-600 text-lg">
                         +{kaizen.performance_points}
+                      </p> */}
+                      <p className="font-bold text-emerald-600 text-lg">
+                        {kaizen.performance_points > 0
+                          ? `+${kaizen.performance_points}`
+                          : "--"}
                       </p>
 
                       <Button asChild size="sm" variant="outline">
                         <Link
                           href={`/employees/${params.id}/kaizen/${kaizen.id}/edit`}
                         >
-                          Manage
+                          View
                         </Link>
                       </Button>
                     </div>

@@ -128,17 +128,31 @@ export async function generateEmployeeNumber() {
   return `EMP-${String(next).padStart(3, "0")}`;
 }
 
+// export async function getEmployeeByAuthUserId(authUserId: string) {
+//   const { data, error } = await supabase
+//     .from("employees")
+//     .select("*")
+//     .eq("auth_user_id", authUserId)
+//     .single();
+
+//   if (error) {
+//     console.error(error);
+//     return null;
+//   }
+
+//   return data as Employee;
+// }
+
 export async function getEmployeeByAuthUserId(authUserId: string) {
   const { data, error } = await supabase
     .from("employees")
     .select("*")
-    .eq("auth_user_id", authUserId)
-    .single();
+    .eq("auth_user_id", authUserId);
 
   if (error) {
     console.error(error);
     return null;
   }
 
-  return data as Employee;
+  return data?.[0] ?? null;
 }

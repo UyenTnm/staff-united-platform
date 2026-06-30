@@ -127,3 +127,89 @@ export async function getKaizensByReview(reviewId: string) {
 
   return data as KaizenRecord[];
 }
+
+export async function getPendingKaizens() {
+  const { data, error } = await supabase
+    .from("employee_kaizens")
+    .select(
+      `
+      *,
+      employees(
+        id,
+        full_name,
+        department
+      )
+    `,
+    )
+    .eq("status", "Submitted")
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function approveKaizen(
+  id: string,
+  managerId: string,
+  impact: KaizenImpact,
+  points: number,
+) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Approved",
+      approved_by: managerId,
+      impact,
+      performance_points: points,
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function getKaizensByStatus(status: KaizenStatus) {
+  const { data, error } = await supabase
+    .from("employee_kaizens")
+    .select(
+      `
+      *,
+      employees(
+        id,
+        full_name,
+        department
+      )
+    `,
+    )
+    .eq("status", status)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function markKaizenImplemented(id: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Implemented",
+      implemented_date: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function markKaizenRewarded(id: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Rewarded",
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}

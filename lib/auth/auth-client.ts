@@ -1,4 +1,4 @@
-import { getCurrentEmployee } from "./auth-service";
+import { getCurrentEmployee, updatePassword } from "./auth-service";
 
 export async function loadCurrentEmployee() {
   try {
@@ -7,3 +7,5 @@ export async function loadCurrentEmployee() {
     return null;
   }
 }
+
+export { updatePassword };

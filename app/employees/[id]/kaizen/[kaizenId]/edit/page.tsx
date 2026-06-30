@@ -14,9 +14,13 @@ import { getReviewMonth } from "@/lib/employees/bonus";
 import {
   getKaizen,
   updateKaizen,
+  approveKaizen,
+  markKaizenImplemented,
+  markKaizenRewarded,
   KaizenImpact,
   KaizenStatus,
 } from "@/lib/employees/kaizen";
+
 import {
   KAIZEN_CATEGORIES,
   KAIZEN_IMPACTS,
@@ -74,6 +78,50 @@ export default function EditKaizenPage() {
 
     loadKaizen();
   }, [params.kaizenId]);
+
+  async function handleApprove() {
+    try {
+      await approveKaizen(
+        params.kaizenId as string,
+        "SYSTEM",
+        impact as KaizenImpact,
+        parseInt(points, 10),
+      );
+
+      alert("Kaizen approved.");
+
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleImplemented() {
+    try {
+      await markKaizenImplemented(params.kaizenId as string);
+
+      alert("Marked as Implemented.");
+
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleRewarded() {
+    try {
+      await markKaizenRewarded(params.kaizenId as string);
+
+      alert("Marked as Rewarded.");
+
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   async function handleSave() {
     if (!title.trim()) {
@@ -284,9 +332,23 @@ export default function EditKaizenPage() {
             </div>
           )}
 
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
+          <div className="flex gap-3 flex-wrap">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+
+            {status === "Submitted" && (
+              <Button onClick={handleApprove}>Approve Kaizen</Button>
+            )}
+
+            {status === "Approved" && (
+              <Button onClick={handleImplemented}>Mark Implemented</Button>
+            )}
+
+            {status === "Implemented" && (
+              <Button onClick={handleRewarded}>Reward Employee</Button>
+            )}
+          </div>
         </Card>
       </div>
     </AppLayout>

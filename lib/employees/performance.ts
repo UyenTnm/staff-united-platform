@@ -36,10 +36,12 @@ export async function calculateEmployeePerformance(
   const behavior = Math.max(5 - behaviorDeduction, 0);
 
   // Kaizen
-  // Kaizen
   const kaizens = await getEmployeeKaizens(employeeId);
 
-  const kaizenPoints = kaizens.reduce(
+  // chỉ tính kaizen khi được reward
+  const rewardedKaizens = kaizens.filter((item) => item.status === "Rewarded");
+
+  const kaizenPoints = rewardedKaizens.reduce(
     (sum, item) => sum + (item.performance_points ?? 0),
     0,
   );
@@ -55,6 +57,6 @@ export async function calculateEmployeePerformance(
 
     qualityIssues: qualityIssues.length,
     behaviorIssues: behaviorIssues.length,
-    kaizenRecords: kaizens.length,
+    kaizenRecords: rewardedKaizens.length,
   };
 }

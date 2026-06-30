@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function refreshEmployee() {
     const current = await loadCurrentEmployee();
-
+    // console.log("Current Employee:", current);
     setEmployee(current);
 
     setLoading(false);

@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { generateTemporaryPassword } from "@/lib/auth/password";
-import { sendWelcomeEmail } from "@/lib/email/email-service";
 
 export async function POST(
   request: NextRequest,
@@ -12,7 +11,7 @@ export async function POST(
   try {
     const { id } = await params;
 
-    // 1. Load employee
+    // Load employee
     const { data: employee, error } = await supabase
       .from("employees")
       .select("*")
@@ -25,48 +24,38 @@ export async function POST(
           success: false,
           message: "Employee not found.",
         },
+        { status: 404 },
+      );
+    }
+
+    if (!employee.auth_user_id) {
+      return NextResponse.json(
         {
-          status: 404,
+          success: false,
+          message: "Employee does not have an account.",
         },
+        { status: 400 },
       );
     }
 
     const temporaryPassword = generateTemporaryPassword();
 
-    console.log("Temporary Password:", temporaryPassword);
-
-    const { data: authUser, error: authError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email: employee.email,
+    const { error: resetError } = await supabaseAdmin.auth.admin.updateUserById(
+      employee.auth_user_id,
+      {
         password: temporaryPassword,
-        email_confirm: true,
-      });
+      },
+    );
 
-    if (authError) {
+    if (resetError) {
       return NextResponse.json(
         {
           success: false,
-          message: authError.message,
+          message: resetError.message,
         },
-        {
-          status: 400,
-        },
+        { status: 400 },
       );
     }
-
-    await supabase
-      .from("employees")
-      .update({
-        auth_user_id: authUser.user.id,
-        account_status: "Password Change Required",
-      })
-      .eq("id", employee.id);
-
-    await sendWelcomeEmail({
-      fullName: employee.full_name,
-      email: employee.email,
-      temporaryPassword,
-    });
 
     return NextResponse.json({
       success: true,
@@ -79,6 +68,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
+        message: "Internal Server Error",
       },
       {
         status: 500,

@@ -13,6 +13,7 @@ import {
   getManagers,
 } from "@/lib/employees/employees";
 import { EmployeeForm } from "@/components/employees/employee-form";
+import type { UserRole } from "@/lib/auth";
 
 export default function NewEmployeePage() {
   const router = useRouter();
@@ -33,8 +34,7 @@ export default function NewEmployeePage() {
 
   const [status, setStatus] = useState("Active");
 
-  const [userRole, setUserRole] = useState("Employee");
-
+  const [userRole, setUserRole] = useState<UserRole>("Employee");
   const [managers, setManagers] = useState<{ id: string; full_name: string }[]>(
     [],
   );
@@ -87,7 +87,20 @@ export default function NewEmployeePage() {
     try {
       setSaving(true);
 
-      await createEmployee({
+      // await createEmployee({
+      //   employee_number: employeeNumber,
+      //   full_name: fullName,
+      //   email,
+      //   department,
+      //   role,
+      //   user_role: userRole,
+      //   manager_id: managerId || null,
+      //   status,
+      // });
+
+      // router.replace("/employees");
+
+      const employee = await createEmployee({
         employee_number: employeeNumber,
         full_name: fullName,
         email,
@@ -96,7 +109,30 @@ export default function NewEmployeePage() {
         user_role: userRole,
         manager_id: managerId || null,
         status,
+
+        account_status: "Pending",
       });
+
+      const response = await fetch(
+        `/api/employees/${employee.id}/create-account`,
+        {
+          method: "POST",
+        },
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      //       alert(
+      //         `Employee account created successfully!
+
+      // Email: ${result.email}
+
+      // Temporary Password: ${result.temporaryPassword}`,
+      //       );
 
       router.replace("/employees");
       router.refresh();

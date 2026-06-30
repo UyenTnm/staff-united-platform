@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn } from "@/lib/auth";
+import { loadCurrentEmployee } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
 // import { supabase } from "@/lib/supabase";
 import { useState } from "react";
@@ -20,8 +21,33 @@ export function LoginForm() {
 
       await signIn(email, password);
 
-      // alert("Login Success!");
-      router.replace("/employees");
+      const current = await loadCurrentEmployee();
+
+      if (!current) {
+        alert("Unable to load employee.");
+        return;
+      }
+      if (current.account_status === "Password Change Required") {
+        router.replace("/change-password");
+        return;
+      }
+
+      switch (current.user_role) {
+        case "Employee":
+          router.replace("/performance");
+          break;
+
+        case "HR":
+          router.replace("/employees");
+          break;
+
+        case "Manager":
+          router.replace("/reviews/pending");
+          break;
+
+        default:
+          router.replace("/403");
+      }
     } catch (error) {
       console.error(error);
 

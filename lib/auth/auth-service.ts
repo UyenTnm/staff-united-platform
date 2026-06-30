@@ -33,7 +33,11 @@ export async function getCurrentEmployee() {
     return null;
   }
 
-  return await getEmployeeByAuthUserId(user.id);
+  const employee = await getEmployeeByAuthUserId(user.id);
+
+  return employee;
+
+  // return await getEmployeeByAuthUserId(user.id);
 }
 
 export async function getCurrentUser() {
@@ -51,6 +55,16 @@ export async function getCurrentUser() {
 
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function updatePassword(newPassword: string) {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
 
   if (error) {
     throw error;

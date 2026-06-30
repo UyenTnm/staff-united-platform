@@ -3,6 +3,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IssueTypeSelect } from "@/components/employees/issue-type-select";
+import type { UserRole } from "@/lib/auth";
+
 import {
   EMPLOYEE_DEPARTMENTS,
   EMPLOYEE_STATUSES,
@@ -29,8 +31,8 @@ interface Props {
   role: string;
   setRole: (v: string) => void;
 
-  userRole: string;
-  setUserRole: (v: string) => void;
+  userRole: UserRole;
+  setUserRole: (v: UserRole) => void;
 
   managerId: string;
   setManagerId: (v: string) => void;
@@ -141,7 +143,7 @@ export function EmployeeForm({
           <IssueTypeSelect
             items={USER_ROLES}
             value={userRole}
-            onChange={setUserRole}
+            onChange={(value) => setUserRole(value as UserRole)}
             placeholder="Select System Role"
           />
         </div>

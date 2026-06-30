@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
   Users,
   Shield,
   Box,
@@ -24,7 +23,52 @@ export function Sidebar() {
   const { employee } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
-  const menuItems = [
+  // const menuItems = [
+  //   {
+  //     label: "Dashboard",
+  //     href: "/dashboard",
+  //   },
+
+  //   {
+  //     label: "Employees",
+  //     href: "/employees",
+  //   },
+
+  //   {
+  //     label: "Assets",
+  //     href: "/assets",
+  //   },
+
+  //   {
+  //     label: "CRM",
+  //     href: "/crm",
+  //   },
+  //   {
+  //     label: "Quotes",
+  //     href: "/crm/quotes",
+  //   },
+  //   {
+  //     label: "Clients",
+  //     href: "/clients",
+  //   },
+
+  //   {
+  //     label: "Assignments",
+  //     href: "/assignments",
+  //   },
+
+  //   {
+  //     label: "Reports",
+  //     href: "/reports",
+  //   },
+
+  //   {
+  //     label: "Settings",
+  //     href: "/settings",
+  //   },
+  // ];
+
+  const ADMIN_MENU = [
     {
       label: "Dashboard",
       href: "/dashboard",
@@ -36,38 +80,99 @@ export function Sidebar() {
     },
 
     {
-      label: "Assets",
-      href: "/assets",
+      label: "Pending Reviews",
+      href: "/reviews/pending",
     },
 
     {
-      label: "CRM",
-      href: "/crm",
-    },
-    {
-      label: "Quotes",
-      href: "/crm/quotes",
-    },
-    {
-      label: "Clients",
-      href: "/clients",
+      label: "Pending Kaizens",
+      href: "/kaizens/pending",
     },
 
     {
-      label: "Assignments",
-      href: "/assignments",
-    },
-
-    {
-      label: "Reports",
-      href: "/reports",
-    },
-
-    {
-      label: "Settings",
-      href: "/settings",
+      label: "Approved Kaizens",
+      href: "/kaizens/approved",
     },
   ];
+
+  const HR_MENU = [
+    // {
+    //   label: "Dashboard",
+    //   href: "/dashboard",
+    // },
+
+    {
+      label: "Employees",
+      href: "/employees",
+    },
+
+    {
+      label: "Pending Reviews",
+      href: "/reviews/pending",
+    },
+
+    {
+      label: "Pending Kaizens",
+      href: "/kaizens/pending",
+    },
+
+    {
+      label: "Approved Kaizens",
+      href: "/kaizens/approved",
+    },
+    {
+      label: "Rewarded Kaizens",
+      href: "/kaizens/rewarded",
+    },
+  ];
+
+  const MANAGER_MENU = [
+    {
+      label: "Employees",
+      href: "/employees",
+    },
+
+    {
+      label: "Pending Reviews",
+      href: "/reviews/pending",
+    },
+
+    {
+      label: "Pending Kaizens",
+      href: "/kaizens/pending",
+    },
+  ];
+
+  const EMPLOYEE_MENU = [
+    {
+      label: "My Performance",
+      href: "/performance",
+    },
+    {
+      label: "My Kaizens",
+      href: "/performance/kaizen",
+    },
+  ];
+
+  let menuItems = HR_MENU;
+
+  switch (employee?.user_role) {
+    case "Admin":
+      menuItems = ADMIN_MENU;
+      break;
+
+    case "HR":
+      menuItems = HR_MENU;
+      break;
+
+    case "Manager":
+      menuItems = MANAGER_MENU;
+      break;
+
+    case "Employee":
+      menuItems = EMPLOYEE_MENU;
+      break;
+  }
 
   async function handleLogout() {
     try {
@@ -118,12 +223,13 @@ export function Sidebar() {
       {/* Navigation Menu */}
       <nav className="p-4 flex flex-col gap-2">
         {menuItems.map((item) => {
-          // const Icon = item.icon;
-          // const isActive = pathname === item.href;
-          const isActive =
-            item.href === "/crm"
-              ? pathname === "/crm"
-              : pathname.startsWith(item.href);
+          let isActive = false;
+
+          if (item.href === "/performance") {
+            isActive = pathname === "/performance";
+          } else {
+            isActive = pathname.startsWith(item.href);
+          }
           return (
             <Link key={item.href} href={item.href}>
               <button
@@ -134,7 +240,6 @@ export function Sidebar() {
                     : "text-slate-400 hover:bg-slate-900 hover:text-slate-200",
                 )}
               >
-                {/* <Icon className="w-5 h-5 flex-shrink-0" /> */}
                 {!collapsed && <span>{item.label}</span>}
               </button>
             </Link>
@@ -142,23 +247,13 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom Section */}
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800">
         <button
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium",
-            "text-slate-400 hover:bg-slate-900 hover:text-slate-200",
-          )}
-        >
-          <Settings className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>Settings</span>}
-        </button>
-        <button
-          onClick={handleLogout}
-          className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium mt-2",
             "text-slate-400 hover:bg-slate-900 hover:text-red-400",
           )}
+          onClick={handleLogout}
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span>Logout</span>}

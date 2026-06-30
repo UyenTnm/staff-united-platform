@@ -60,3 +60,31 @@ export function calculateBehaviorScore(issues: BehaviorIssue[]) {
     currentScore: Math.max(startingScore - totalDeduction, 0),
   };
 }
+
+export async function getBehaviorIssue(issueId: string) {
+  const { data, error } = await supabase
+    .from("employee_behavior_issues")
+    .select("*")
+    .eq("id", issueId)
+    .single();
+
+  if (error) throw error;
+
+  return data as BehaviorIssue;
+}
+
+export async function updateBehaviorIssue(
+  issueId: string,
+  values: {
+    issue_type: string;
+    description: string;
+    deduction: number;
+  },
+) {
+  const { error } = await supabase
+    .from("employee_behavior_issues")
+    .update(values)
+    .eq("id", issueId);
+
+  if (error) throw error;
+}

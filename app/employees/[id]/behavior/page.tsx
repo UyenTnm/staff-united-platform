@@ -114,7 +114,7 @@ export default function BehaviorPage() {
                       <p className="text-sm mt-3">{issue.description}</p>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-right space-y-2">
                       <p className="text-red-600 font-bold">
                         -{issue.deduction}%
                       </p>
@@ -122,6 +122,14 @@ export default function BehaviorPage() {
                       <p className="text-xs text-slate-500 mt-2">
                         {issue.evaluator_id ?? "-"}
                       </p>
+
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={`/employees/${params.id}/behavior/edit/${issue.id}`}
+                        >
+                          Edit
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 </div>

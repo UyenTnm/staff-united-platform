@@ -34,6 +34,15 @@ export interface PerformanceReview {
   updated_at: string;
 }
 
+export interface ManagerReview extends PerformanceReview {
+  employees: {
+    id: string;
+    full_name: string;
+    department: string;
+    role: string;
+  };
+}
+
 export async function getReview(reviewId: string) {
   const { data, error } = await supabase
     .from("performance_reviews")
@@ -77,6 +86,10 @@ export async function getCurrentReview(employeeId: string) {
   if (error) throw error;
 
   return data;
+}
+
+export async function getCurrentReviewByEmployee(employeeId: string) {
+  return await getCurrentReview(employeeId);
 }
 
 export async function createPerformanceReview(
@@ -157,4 +170,37 @@ export async function getReviewByMonth(
   if (error) throw error;
 
   return data;
+}
+
+export async function employeeAcceptReview(reviewId: string) {
+  const { error } = await supabase
+    .from("performance_reviews")
+    .update({
+      status: "WaitingManager",
+    })
+    .eq("id", reviewId);
+
+  if (error) throw error;
+}
+
+export async function getWaitingManagerReviews() {
+  const { data, error } = await supabase
+    .from("performance_reviews")
+    .select(
+      `
+      *,
+      employees (
+        id,
+        full_name,
+        department,
+        role
+      )
+    `,
+    )
+    .eq("status", "WaitingManager")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data as ManagerReview[];
 }

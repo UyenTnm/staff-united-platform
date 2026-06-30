@@ -1,36 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { getCurrentSession } from "@/lib/auth";
+import { useAuth } from "./auth-provider";
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+interface Props {
+  children: ReactNode;
+}
+
+export function AuthGuard({ children }: Props) {
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
+  const { employee, loading } = useAuth();
 
   useEffect(() => {
-    async function checkSession() {
-      const session = await getCurrentSession();
+    if (loading) return;
 
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      setLoading(false);
+    if (!employee) {
+      router.replace("/login");
     }
-
-    checkSession();
-  }, [router]);
+  }, [employee, loading, router]);
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Checking session...
-      </div>
-    );
+    return <div>Loading...</div>;
+  }
+
+  if (!employee) {
+    return null;
   }
 
   return <>{children}</>;
