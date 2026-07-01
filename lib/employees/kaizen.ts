@@ -216,3 +216,14 @@ export async function markKaizenRewarded(id: string) {
 
   if (error) throw error;
 }
+
+export async function markKaizenUnderReview(id: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Under Review",
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
