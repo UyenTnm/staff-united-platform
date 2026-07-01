@@ -3,6 +3,7 @@ import { supabase } from "../supabase";
 export type KaizenImpact = "Small" | "Medium" | "Major" | "Innovation";
 
 export type KaizenStatus =
+  | "Draft"
   | "Submitted"
   | "Under Review"
   | "Approved"
@@ -68,7 +69,7 @@ export async function getKaizen(id: string) {
 }
 
 export async function createKaizen(
-  kaizen: Omit<KaizenRecord, "id" | "created_at">,
+  kaizen: Omit<KaizenRecord, "id" | "created_at" | "updated_at">,
 ) {
   const { data, error } = await supabase
     .from("employee_kaizens")
