@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "./auth/auth-provider";
 import { signOut } from "@/lib/auth";
+import { toast } from "sonner";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -182,7 +183,7 @@ export function Sidebar() {
     } catch (error) {
       console.error(error);
 
-      alert("Logout failed.");
+      toast.error("Logout failed.");
     }
   }
 
@@ -225,9 +226,28 @@ export function Sidebar() {
         {menuItems.map((item) => {
           let isActive = false;
 
-          if (item.href === "/performance") {
+          // Review Kaizen từ Pending Kaizens
+          const isKaizenReviewPage =
+            pathname.includes("/kaizen/") && pathname.includes("/edit");
+
+          // Pending Kaizens
+          if (item.href === "/kaizens/pending") {
+            isActive =
+              pathname.startsWith("/kaizens/pending") || isKaizenReviewPage;
+          }
+
+          // Employees
+          else if (item.href === "/employees") {
+            isActive = pathname.startsWith("/employees") && !isKaizenReviewPage;
+          }
+
+          // My Performance
+          else if (item.href === "/performance") {
             isActive = pathname === "/performance";
-          } else {
+          }
+
+          // Các menu còn lại
+          else {
             isActive = pathname.startsWith(item.href);
           }
           return (

@@ -22,6 +22,7 @@ import {
   KAIZEN_POINTS,
   KAIZEN_STATUSES,
 } from "@/lib/employees/kaizen-options";
+import { toast } from "sonner";
 
 export default function NewKaizenPage() {
   const params = useParams();
@@ -56,17 +57,17 @@ export default function NewKaizenPage() {
 
   async function handleSave() {
     if (!title.trim()) {
-      alert("Please enter a title.");
+      toast.warning("Please enter a title.");
       return;
     }
 
     if (!category) {
-      alert("Please select a category.");
+      toast.warning("Please select a category.");
       return;
     }
 
     if (isManager && !impact) {
-      alert("Please select an impact level.");
+      toast.warning("Please select an impact level.");
       return;
     }
     const finalImpact: KaizenImpact = isManager
@@ -118,7 +119,7 @@ export default function NewKaizenPage() {
     } catch (err) {
       //   console.error("Create Kaizen Error:", JSON.stringify(err, null, 2));
       console.error("Create Kaizen Error:", err);
-      alert("Unable to save improvement.");
+      toast.error("Unable to save improvement.");
     } finally {
       setSaving(false);
     }

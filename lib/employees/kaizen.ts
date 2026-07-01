@@ -144,7 +144,7 @@ export async function getPendingKaizens() {
       )
     `,
     )
-    .eq("status", "Submitted")
+    .in("status", ["Submitted", "Under Review"])
     .order("created_at", {
       ascending: false,
     });
@@ -167,6 +167,7 @@ export async function approveKaizen(
       approved_by: managerId,
       impact,
       performance_points: points,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", id);
 

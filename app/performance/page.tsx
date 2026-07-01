@@ -20,6 +20,7 @@ import {
   PerformanceSummary,
 } from "@/lib/employees/performance";
 import { RoleGuard } from "@/components/auth/role-guard";
+import { toast } from "sonner";
 
 export default function MyPerformancePage() {
   const { employee } = useAuth();
@@ -63,11 +64,11 @@ export default function MyPerformancePage() {
         status: "WaitingManager",
       });
 
-      alert("Review accepted successfully.");
+      toast.success("Review accepted successfully.");
     } catch (error) {
       console.error(error);
 
-      alert("Unable to accept review.");
+      toast.error("Unable to accept review.");
     }
   }
 

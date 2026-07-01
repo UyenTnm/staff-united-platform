@@ -14,6 +14,7 @@ import {
   updateEmployee,
 } from "@/lib/employees/employees";
 import type { UserRole } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function EditEmployeePage() {
   const params = useParams();
@@ -45,7 +46,7 @@ export default function EditEmployeePage() {
       ]);
 
       if (!employee) {
-        alert("Employee not found.");
+        toast.error("Employee not found.");
         router.push("/employees");
         return;
       }
@@ -68,22 +69,22 @@ export default function EditEmployeePage() {
 
   async function handleSave() {
     if (!fullName.trim()) {
-      alert("Please enter employee name.");
+      toast.warning("Please enter employee name.");
       return;
     }
 
     if (!email.trim()) {
-      alert("Please enter email.");
+      toast.warning("Please enter email.");
       return;
     }
 
     if (!department) {
-      alert("Please select department.");
+      toast.warning("Please select department.");
       return;
     }
 
     if (!role.trim()) {
-      alert("Please enter position.");
+      toast.warning("Please enter position.");
       return;
     }
 
@@ -104,7 +105,7 @@ export default function EditEmployeePage() {
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert("Unable to update employee.");
+      toast.error("Unable to update employee.");
     } finally {
       setSaving(false);
     }

@@ -23,6 +23,7 @@ import {
   KAIZEN_STATUSES,
 } from "@/lib/employees/kaizen-options";
 import { useAuth } from "@/components/auth/auth-provider";
+import { toast } from "sonner";
 
 export default function NewKaizenPage() {
   const router = useRouter();
@@ -48,24 +49,24 @@ export default function NewKaizenPage() {
   const isManager =
     employee?.user_role === "HR" || employee?.user_role === "Manager";
 
-  async function handleSave() {
+  async function saveKaizen(submitStatus: KaizenStatus) {
     if (!employee) {
-      alert("Unable to identify current employee.");
+      toast.info("Unable to identify current employee.");
       return;
     }
 
     if (!title.trim()) {
-      alert("Please enter a title.");
+      toast.warning("Please enter a title.");
       return;
     }
 
     if (!category) {
-      alert("Please select a category.");
+      toast.warning("Please select a category.");
       return;
     }
 
     if (isManager && !impact) {
-      alert("Please select an impact level.");
+      toast.warning("Please select an impact level.");
       return;
     }
     const finalImpact: KaizenImpact = isManager
@@ -85,7 +86,7 @@ export default function NewKaizenPage() {
 
         performance_points: isManager ? parseInt(points, 10) : 0,
 
-        status: isManager ? status : "Submitted",
+        status: isManager ? status : submitStatus,
         approved_by: null,
         implemented_date: null,
         review_note: null,
@@ -104,7 +105,7 @@ export default function NewKaizenPage() {
 
         performance_points: isManager ? parseInt(points, 10) : 0,
 
-        status: isManager ? status : "Submitted",
+        status: isManager ? status : submitStatus,
 
         approved_by: null,
         implemented_date: null,
@@ -112,12 +113,12 @@ export default function NewKaizenPage() {
         review_month: getReviewMonth(new Date()),
       });
       console.log("Created:", kaizen);
-
+      toast.success("Draft saved successfully.");
       router.push("/performance/kaizen");
     } catch (err) {
       //   console.error("Create Kaizen Error:", JSON.stringify(err, null, 2));
       console.error("Create Kaizen Error:", err);
-      alert("Unable to save improvement.");
+      toast.error("Unable to save improvement.");
     } finally {
       setSaving(false);
     }
@@ -236,9 +237,19 @@ export default function NewKaizenPage() {
             </>
           )}
 
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Submit Improvement"}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => saveKaizen("Draft")}
+              disabled={saving}
+            >
+              Save Draft
+            </Button>
+
+            <Button onClick={() => saveKaizen("Submitted")} disabled={saving}>
+              Submit Improvement
+            </Button>
+          </div>
         </Card>
       </div>
     </AppLayout>

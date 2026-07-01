@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 // import { getPendingKaizens } from "@/lib/employees/kaizen";
-import { getKaizensByStatus } from "@/lib/employees/kaizen";
+import { getPendingKaizens } from "@/lib/employees/kaizen";
 import { getCurrentEmployee } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
@@ -50,7 +50,7 @@ export default function PendingKaizensPage() {
           return;
         }
 
-        const data = await getKaizensByStatus("Submitted");
+        const data = await getPendingKaizens();
         setKaizens(data as PendingKaizen[]);
       } catch (error) {
         console.error(error);
@@ -118,8 +118,10 @@ export default function PendingKaizensPage() {
                     )}
 
                     <p className="text-xs text-slate-400">
-                      Submitted{" "}
-                      {new Date(kaizen.created_at).toLocaleDateString()}
+                      Submitted {new Date(kaizen.created_at).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm font-medium mt-2">
+                      Status: {kaizen.status}
                     </p>
                   </div>
 

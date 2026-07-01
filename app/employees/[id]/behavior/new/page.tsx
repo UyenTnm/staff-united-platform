@@ -13,6 +13,7 @@ import { useState } from "react";
 import { createBehaviorIssue } from "@/lib/employees/behavior";
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
+import { toast } from "sonner";
 
 export default function NewBehaviorIssuePage() {
   const params = useParams();
@@ -29,12 +30,12 @@ export default function NewBehaviorIssuePage() {
 
   async function handleSave() {
     if (!issueType) {
-      alert("Please select an issue type.");
+      toast.warning("Please select an issue type.");
       return;
     }
 
     if (!description.trim()) {
-      alert("Please enter a description.");
+      toast.warning("Please enter a description.");
       return;
     }
 
@@ -58,7 +59,7 @@ export default function NewBehaviorIssuePage() {
       router.push(`/employees/${params.id}/behavior`);
     } catch (err) {
       console.error(err);
-      alert("Unable to save issue.");
+      toast.error("Unable to save issue.");
     }
   }
 

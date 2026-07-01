@@ -14,6 +14,7 @@ import {
 } from "@/lib/employees/employees";
 import { EmployeeForm } from "@/components/employees/employee-form";
 import type { UserRole } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function NewEmployeePage() {
   const router = useRouter();
@@ -55,50 +56,37 @@ export default function NewEmployeePage() {
 
   async function handleCreate() {
     if (!fullName.trim()) {
-      alert("Please enter employee name.");
+      toast.warning("Please enter employee name.");
       return;
     }
 
     if (!email.trim()) {
-      alert("Please enter email.");
+      toast.warning("Please enter email.");
       return;
     }
 
     if (!department) {
-      alert("Please select department.");
+      toast.warning("Please select department.");
       return;
     }
 
     if (!role.trim()) {
-      alert("Please enter position.");
+      toast.warning("Please enter position.");
       return;
     }
 
     if (!employeeNumber) {
-      alert("Unable to generate employee number.");
+      toast.error("Unable to generate employee number.");
       return;
     }
 
     if (!status) {
-      alert("Please select a status.");
+      toast.warning("Please select a status.");
       return;
     }
 
     try {
       setSaving(true);
-
-      // await createEmployee({
-      //   employee_number: employeeNumber,
-      //   full_name: fullName,
-      //   email,
-      //   department,
-      //   role,
-      //   user_role: userRole,
-      //   manager_id: managerId || null,
-      //   status,
-      // });
-
-      // router.replace("/employees");
 
       const employee = await createEmployee({
         employee_number: employeeNumber,
@@ -126,19 +114,11 @@ export default function NewEmployeePage() {
         throw new Error(result.message);
       }
 
-      //       alert(
-      //         `Employee account created successfully!
-
-      // Email: ${result.email}
-
-      // Temporary Password: ${result.temporaryPassword}`,
-      //       );
-
       router.replace("/employees");
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert("Unable to create employee.");
+      toast.error("Unable to create employee.");
     } finally {
       setSaving(false);
     }

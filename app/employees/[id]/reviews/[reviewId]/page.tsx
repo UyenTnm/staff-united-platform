@@ -19,6 +19,7 @@ import {
   type PerformanceSummary,
 } from "@/lib/employees/performance";
 import { useAuth } from "@/components/auth/auth-provider";
+import { toast } from "sonner";
 
 export default function ReviewDetailPage() {
   const params = useParams();
@@ -64,11 +65,11 @@ export default function ReviewDetailPage() {
         status: "WaitingEmployee",
       });
 
-      alert("Review sent to employee successfully.");
+      toast.success("Review sent to employee successfully.");
     } catch (err) {
       console.error(err);
 
-      alert("Unable to send review.");
+      toast.error("Unable to send review.");
     }
   }
 
@@ -83,11 +84,11 @@ export default function ReviewDetailPage() {
         status: "Approved",
       });
 
-      alert("Review approved successfully.");
+      toast.success("Review approved successfully.");
     } catch (err) {
       console.error(err);
 
-      alert("Unable to approve review.");
+      toast.error("Unable to approve review.");
     }
   }
 
@@ -218,6 +219,7 @@ export default function ReviewDetailPage() {
             score={performance?.quality ?? 5}
             maxScore={5}
             count={performance?.qualityIssues ?? 0}
+            countLabel="Issue"
             href={`/employees/${params.id}/quality?reviewId=${review.id}`}
             color="text-red-600"
           />
@@ -227,6 +229,7 @@ export default function ReviewDetailPage() {
             score={performance?.behavior ?? 5}
             maxScore={5}
             count={performance?.behaviorIssues ?? 0}
+            countLabel="Issue"
             href={`/employees/${params.id}/behavior?reviewId=${review.id}`}
             color="text-amber-600"
           />
@@ -235,7 +238,8 @@ export default function ReviewDetailPage() {
             title="Kaizen"
             score={performance?.kaizen ?? 0}
             maxScore={5}
-            count={0}
+            count={performance?.kaizenRecords ?? 0}
+            countLabel="Kaizen"
             href={`/employees/${params.id}/kaizen?reviewId=${review.id}`}
             color="text-emerald-600"
           />

@@ -25,6 +25,7 @@ import {
   getEmployees,
   updateEmployeeStatus,
 } from "@/lib/employees/employees";
+import { toast } from "sonner";
 
 function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
@@ -78,7 +79,7 @@ export function EmployeesTable() {
       );
     } catch (err) {
       console.error(err);
-      alert("Unable to update employee status.");
+      toast.error("Unable to update employee status.");
     }
   }
 

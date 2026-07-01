@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { createQuote } from "@/lib/crm/quotes";
 // import { getLead } from "@/lib/lead";
 import { getLead, updateLeadStatus, type Lead } from "@/lib/crm/lead";
+import { toast } from "sonner";
 
 export default function CreateQuotePage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function CreateQuotePage() {
 
   async function handleCreateQuote() {
     if (!leadId || !lead) {
-      alert("Lead ID not found.");
+      toast.warning("Lead ID not found.");
       return;
     }
 
@@ -52,12 +53,12 @@ export default function CreateQuotePage() {
       // Update Lead Status
       await updateLeadStatus(lead.id, "Proposal Sent");
 
-      alert("Quote created successfully!");
+      toast.success("Quote created successfully!");
 
       router.push("/crm/quotes");
     } catch (err) {
       console.error(err);
-      alert("Failed to create quote.");
+      toast.error("Failed to create quote.");
     }
   }
   if (!lead) {

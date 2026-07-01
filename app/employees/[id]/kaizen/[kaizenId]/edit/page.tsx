@@ -28,6 +28,7 @@ import {
   KAIZEN_POINTS,
   KAIZEN_STATUSES,
 } from "@/lib/employees/kaizen-options";
+import { toast } from "sonner";
 
 export default function EditKaizenPage() {
   const params = useParams();
@@ -89,10 +90,10 @@ export default function EditKaizenPage() {
         parseInt(points, 10),
       );
 
-      alert("Kaizen approved.");
+      toast.success("Kaizen approved.");
 
       router.refresh();
-      window.location.reload();
+      setStatus("Under Review");
     } catch (error) {
       console.error(error);
     }
@@ -102,10 +103,10 @@ export default function EditKaizenPage() {
     try {
       await markKaizenUnderReview(params.kaizenId as string);
 
-      alert("Kaizen is now under review.");
+      toast.warning("Kaizen is now under review.");
 
       router.refresh();
-      window.location.reload();
+      setStatus("Under Review");
     } catch (error) {
       console.error(error);
     }
@@ -115,10 +116,10 @@ export default function EditKaizenPage() {
     try {
       await markKaizenImplemented(params.kaizenId as string);
 
-      alert("Marked as Implemented.");
+      toast.success("Marked as Implemented.");
 
       router.refresh();
-      window.location.reload();
+      setStatus("Under Review");
     } catch (error) {
       console.error(error);
     }
@@ -128,10 +129,10 @@ export default function EditKaizenPage() {
     try {
       await markKaizenRewarded(params.kaizenId as string);
 
-      alert("Marked as Rewarded.");
+      toast.success("Marked as Rewarded.");
 
       router.refresh();
-      window.location.reload();
+      setStatus("Under Review");
     } catch (error) {
       console.error(error);
     }
@@ -139,17 +140,17 @@ export default function EditKaizenPage() {
 
   async function handleSave() {
     if (!title.trim()) {
-      alert("Please enter a title.");
+      toast.warning("Please enter a title.");
       return;
     }
 
     if (!category) {
-      alert("Please select a category.");
+      toast.warning("Please select a category.");
       return;
     }
 
     if (!impact) {
-      alert("Please select an impact level.");
+      toast.warning("Please select an impact level.");
       return;
     }
 
@@ -171,6 +172,22 @@ export default function EditKaizenPage() {
         review_month: getReviewMonth(new Date()),
       });
 
+      const payload = {
+        title,
+        description,
+        category,
+        business_benefit: businessBenefit,
+        impact,
+        performance_points: parseInt(points, 10),
+        status,
+        review_note: reviewNote,
+        implemented_date: implementedDate || null,
+      };
+
+      console.log("Update payload:", payload);
+
+      await updateKaizen(params.kaizenId as string, payload);
+
       await updateKaizen(params.kaizenId as string, {
         title,
         description,
@@ -185,10 +202,16 @@ export default function EditKaizenPage() {
       console.log("Updated");
 
       router.push(`/employees/${params.id}/kaizen`);
-    } catch (err) {
-      //   console.error("Create Kaizen Error:", JSON.stringify(err, null, 2));
-      console.error("Create Kaizen Error:", err);
-      alert("Unable to save improvement.");
+    } catch (err: unknown) {
+      console.error(err);
+
+      if (err instanceof Error) {
+        console.log("message:", err.message);
+      } else {
+        console.log("Unknown error:", err);
+      }
+
+      toast.error("Unable to save improvement.");
     } finally {
       setSaving(false);
     }
@@ -347,9 +370,9 @@ export default function EditKaizenPage() {
           )}
 
           <div className="flex gap-3 flex-wrap">
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
+            {status === "Under Review" && (
+              <Button onClick={handleSave}>Save Changes</Button>
+            )}
 
             {status === "Submitted" && (
               <>
@@ -368,6 +391,8 @@ export default function EditKaizenPage() {
             {status === "Implemented" && (
               <Button onClick={handleRewarded}>Reward Employee</Button>
             )}
+
+            {status === "Rewarded" && <Button disabled>Completed</Button>}
           </div>
         </Card>
       </div>
