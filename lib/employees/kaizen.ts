@@ -3,6 +3,7 @@ import { supabase } from "../supabase";
 export type KaizenImpact = "Small" | "Medium" | "Major" | "Innovation";
 
 export type KaizenStatus =
+  | "Draft"
   | "Submitted"
   | "Under Review"
   | "Approved"
@@ -39,6 +40,8 @@ export interface KaizenRecord {
   review_month: string;
 
   created_at: string;
+
+  updated_at: string;
 }
 
 export async function getEmployeeKaizens(employeeId: string) {
@@ -66,7 +69,7 @@ export async function getKaizen(id: string) {
 }
 
 export async function createKaizen(
-  kaizen: Omit<KaizenRecord, "id" | "created_at">,
+  kaizen: Omit<KaizenRecord, "id" | "created_at" | "updated_at">,
 ) {
   const { data, error } = await supabase
     .from("employee_kaizens")
@@ -87,7 +90,7 @@ export async function createKaizen(
 export async function updateKaizen(id: string, values: Partial<KaizenRecord>) {
   const { error } = await supabase
     .from("employee_kaizens")
-    .update(values)
+    .update({ ...values, updated_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw error;
@@ -208,6 +211,17 @@ export async function markKaizenRewarded(id: string) {
     .from("employee_kaizens")
     .update({
       status: "Rewarded",
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function markKaizenUnderReview(id: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Under Review",
     })
     .eq("id", id);
 

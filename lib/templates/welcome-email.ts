@@ -25,7 +25,7 @@ export function welcomeEmailTemplate({
       <table cellpadding="8" cellspacing="0">
         <tr>
           <td><strong>Login URL</strong></td>
-          <td>http://localhost:3000/login</td>
+          <td>https://staff-united-platform.vercel.app/login</td>
         </tr>
 
         <tr>

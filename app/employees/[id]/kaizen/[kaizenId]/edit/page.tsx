@@ -19,6 +19,7 @@ import {
   markKaizenRewarded,
   KaizenImpact,
   KaizenStatus,
+  markKaizenUnderReview,
 } from "@/lib/employees/kaizen";
 
 import {
@@ -89,6 +90,19 @@ export default function EditKaizenPage() {
       );
 
       alert("Kaizen approved.");
+
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleStartReview() {
+    try {
+      await markKaizenUnderReview(params.kaizenId as string);
+
+      alert("Kaizen is now under review.");
 
       router.refresh();
       window.location.reload();
@@ -338,7 +352,13 @@ export default function EditKaizenPage() {
             </Button>
 
             {status === "Submitted" && (
-              <Button onClick={handleApprove}>Approve Kaizen</Button>
+              <>
+                <Button onClick={handleStartReview}>Start Review</Button>
+
+                <Button variant="outline" onClick={handleApprove}>
+                  Approve Directly
+                </Button>
+              </>
             )}
 
             {status === "Approved" && (
