@@ -39,6 +39,8 @@ export interface KaizenRecord {
   review_month: string;
 
   created_at: string;
+
+  updated_at: string;
 }
 
 export async function getEmployeeKaizens(employeeId: string) {
@@ -87,7 +89,7 @@ export async function createKaizen(
 export async function updateKaizen(id: string, values: Partial<KaizenRecord>) {
   const { error } = await supabase
     .from("employee_kaizens")
-    .update(values)
+    .update({ ...values, updated_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw error;
