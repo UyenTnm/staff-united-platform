@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 // import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { useAuth } from "./auth-provider";
+import { Eye, EyeOff } from "lucide-react";
 
 export function LoginForm() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const { refreshEmployee } = useAuth();
@@ -39,7 +41,7 @@ export function LoginForm() {
         case "Admin":
           router.replace("/dashboard");
           break;
-          
+
         case "Employee":
           router.replace("/performance");
           break;
@@ -78,13 +80,22 @@ export function LoginForm() {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-lg border p-3"
         />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border p-3"
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-lg border p-3 pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
 
         <button
           onClick={handleLogin}
