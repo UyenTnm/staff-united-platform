@@ -1,6 +1,11 @@
 import { supabase } from "../supabase";
 
-export type KaizenImpact = "Small" | "Medium" | "Major" | "Innovation";
+export type KaizenImpact =
+  | "Small"
+  | "Medium"
+  | "Major"
+  | "Innovation"
+  | "Outstanding Innovation";
 
 export type KaizenStatus =
   | "Draft"
@@ -227,4 +232,12 @@ export async function markKaizenUnderReview(id: string) {
     .eq("id", id);
 
   if (error) throw error;
+}
+
+export interface KaizenWithEmployee extends KaizenRecord {
+  employees: {
+    id: string;
+    full_name: string;
+    department: string;
+  };
 }

@@ -25,10 +25,11 @@ import {
 import {
   KAIZEN_CATEGORIES,
   KAIZEN_IMPACTS,
-  KAIZEN_POINTS,
   KAIZEN_STATUSES,
 } from "@/lib/employees/kaizen-options";
 import { toast } from "sonner";
+import { KaizenTimeline } from "@/components/employees/kaizen/kaizen-timeline";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export default function EditKaizenPage() {
   const params = useParams();
@@ -47,7 +48,7 @@ export default function EditKaizenPage() {
 
   const [businessBenefit, setBusinessBenefit] = useState("");
 
-  const [points, setPoints] = useState("1");
+  // const [points, setPoints] = useState("1");
 
   const [impact, setImpact] = useState<KaizenImpact | "">("");
 
@@ -55,6 +56,18 @@ export default function EditKaizenPage() {
   const [reviewNote, setReviewNote] = useState("");
 
   const [implementedDate, setImplementedDate] = useState("");
+  const { employee } = useAuth();
+
+  const isHRReview =
+    employee?.user_role === "HR" || employee?.user_role === "Manager";
+
+  const POINT_MAP: Record<KaizenImpact, number> = {
+    Small: 1,
+    Medium: 2,
+    Major: 3,
+    Innovation: 4,
+    "Outstanding Innovation": 5,
+  };
 
   useEffect(() => {
     async function loadKaizen() {
@@ -67,7 +80,7 @@ export default function EditKaizenPage() {
       setDescription(kaizen.description ?? "");
       setBusinessBenefit(kaizen.business_benefit ?? "");
       setImpact(kaizen.impact);
-      setPoints(String(kaizen.performance_points));
+      // setPoints(String(kaizen.performance_points));
       setStatus(kaizen.status);
       setReviewNote(kaizen.review_note ?? "");
 
@@ -82,18 +95,42 @@ export default function EditKaizenPage() {
   }, [params.kaizenId]);
 
   async function handleApprove() {
+    if (!impact) {
+      toast.warning("Please select an impact level.");
+      return;
+    }
+
+    // if (!points || parseInt(points) <= 0) {
+    //   toast.warning("Please select performance points.");
+    //   return;
+    // }
+
+    if (!reviewNote.trim()) {
+      toast.warning("Please enter a review note.");
+      return;
+    }
+
+    if (!employee) {
+      toast.error("Unable to identify current user.");
+      return;
+    }
+
     try {
       await approveKaizen(
         params.kaizenId as string,
-        "SYSTEM",
-        impact as KaizenImpact,
-        parseInt(points, 10),
+        employee.id,
+        impact,
+        POINT_MAP[impact],
       );
+      await updateKaizen(params.kaizenId as string, {
+        review_note: reviewNote,
+      });
+      setStatus("Approved");
 
       toast.success("Kaizen approved.");
 
       router.refresh();
-      setStatus("Under Review");
+      router.replace("/kaizens/approved");
     } catch (error) {
       console.error(error);
     }
@@ -119,7 +156,7 @@ export default function EditKaizenPage() {
       toast.success("Marked as Implemented.");
 
       router.refresh();
-      setStatus("Under Review");
+      setStatus("Implemented");
     } catch (error) {
       console.error(error);
     }
@@ -132,7 +169,7 @@ export default function EditKaizenPage() {
       toast.success("Marked as Rewarded.");
 
       router.refresh();
-      setStatus("Under Review");
+      setStatus("Rewarded");
     } catch (error) {
       console.error(error);
     }
@@ -154,6 +191,16 @@ export default function EditKaizenPage() {
       return;
     }
 
+    // if (!points || parseInt(points) <= 0) {
+    //   toast.warning("Please select performance points.");
+    //   return;
+    // }
+
+    if (!reviewNote.trim()) {
+      toast.warning("Please enter a review note.");
+      return;
+    }
+
     try {
       setSaving(true);
       console.log({
@@ -164,7 +211,7 @@ export default function EditKaizenPage() {
         category,
         business_benefit: businessBenefit,
         impact,
-        performance_points: parseInt(points, 10),
+        // performance_points: parseInt(points, 10),
         status,
         approved_by: null,
         implemented_date: null,
@@ -172,33 +219,24 @@ export default function EditKaizenPage() {
         review_month: getReviewMonth(new Date()),
       });
 
-      const payload = {
-        title,
-        description,
-        category,
-        business_benefit: businessBenefit,
-        impact,
-        performance_points: parseInt(points, 10),
-        status,
-        review_note: reviewNote,
-        implemented_date: implementedDate || null,
-      };
+      const payload = isHRReview
+        ? {
+            impact,
+            status,
+            review_note: reviewNote,
+            implemented_date: implementedDate || null,
+          }
+        : {
+            title,
+            description,
+            category,
+            business_benefit: businessBenefit,
+          };
 
       console.log("Update payload:", payload);
 
       await updateKaizen(params.kaizenId as string, payload);
 
-      await updateKaizen(params.kaizenId as string, {
-        title,
-        description,
-        category,
-        business_benefit: businessBenefit,
-        impact,
-        performance_points: parseInt(points, 10),
-        status,
-        review_note: reviewNote,
-        implemented_date: implementedDate || null,
-      });
       console.log("Updated");
 
       router.push(`/employees/${params.id}/kaizen`);
@@ -252,7 +290,12 @@ export default function EditKaizenPage() {
             <label className="text-sm font-medium">Improvement Title</label>
 
             <input
-              className="w-full border rounded-lg p-3 mt-2"
+              readOnly={isHRReview}
+              className={`w-full border rounded-lg p-3 mt-2 ${
+                isHRReview
+                  ? "bg-slate-50 text-slate-600 cursor-not-allowed"
+                  : ""
+              }`}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter improvement title"
@@ -263,8 +306,13 @@ export default function EditKaizenPage() {
             <label className="text-sm font-medium">Description</label>
 
             <textarea
+              readOnly={isHRReview}
               rows={5}
-              className="w-full border rounded-lg p-3 mt-2"
+              className={`w-full border rounded-lg p-3 mt-2 ${
+                isHRReview
+                  ? "bg-slate-50 text-slate-600 cursor-not-allowed"
+                  : ""
+              }`}
               placeholder="Describe this improvement..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -280,6 +328,7 @@ export default function EditKaizenPage() {
                 value={category}
                 onChange={setCategory}
                 placeholder="Select Category"
+                disabled={isHRReview}
               />
             </div>
           </div>
@@ -288,8 +337,13 @@ export default function EditKaizenPage() {
             <label className="text-sm font-medium">Business Benefit</label>
 
             <textarea
+              readOnly={isHRReview}
               rows={4}
-              className="w-full border rounded-lg p-3 mt-2"
+              className={`w-full border rounded-lg p-3 mt-2 ${
+                isHRReview
+                  ? "bg-slate-50 text-slate-600 cursor-not-allowed"
+                  : ""
+              }`}
               placeholder="What value does this improvement bring?"
               value={businessBenefit}
               onChange={(e) => setBusinessBenefit(e.target.value)}
@@ -297,9 +351,14 @@ export default function EditKaizenPage() {
           </div>
 
           <hr />
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold mb-4">Kaizen Progress</h2>
+
+            <KaizenTimeline status={status} />
+          </Card>
 
           <div className="pt-2">
-            <h2 className="text-lg font-semibold">Manager Review</h2>
+            <h2 className="text-lg font-semibold">HR Review</h2>
 
             <p className="text-sm text-slate-500 mt-1">
               Evaluation completed by HR or Manager.
@@ -313,21 +372,10 @@ export default function EditKaizenPage() {
               <IssueTypeSelect
                 items={KAIZEN_IMPACTS}
                 value={impact}
-                onChange={(value) => setImpact(value as KaizenImpact)}
+                onChange={(value) => {
+                  setImpact(value as KaizenImpact);
+                }}
                 placeholder="Select Impact"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Performance Points</label>
-
-            <div className="mt-2">
-              <IssueTypeSelect
-                items={KAIZEN_POINTS}
-                value={points}
-                onChange={setPoints}
-                placeholder="Select Points"
               />
             </div>
           </div>
@@ -340,14 +388,16 @@ export default function EditKaizenPage() {
                 items={KAIZEN_STATUSES}
                 value={status}
                 onChange={(value) => setStatus(value as KaizenStatus)}
+                disabled={false}
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium">Manager Review Note</label>
+            <label className="text-sm font-medium">Reviewer Notes</label>
 
             <textarea
+              readOnly={false}
               rows={4}
               className="w-full border rounded-lg p-3 mt-2"
               placeholder="Write your review..."
@@ -361,6 +411,7 @@ export default function EditKaizenPage() {
               <label className="text-sm font-medium">Implemented Date</label>
 
               <input
+                // readOnly={isHRReview}
                 type="date"
                 className="w-full border rounded-lg p-3 mt-2"
                 value={implementedDate}
@@ -370,17 +421,15 @@ export default function EditKaizenPage() {
           )}
 
           <div className="flex gap-3 flex-wrap">
-            {status === "Under Review" && (
-              <Button onClick={handleSave}>Save Changes</Button>
+            {status === "Submitted" && (
+              <Button onClick={handleStartReview}>Start Review</Button>
             )}
 
-            {status === "Submitted" && (
+            {status === "Under Review" && (
               <>
-                <Button onClick={handleStartReview}>Start Review</Button>
+                <Button onClick={handleSave}>Save Changes</Button>
 
-                <Button variant="outline" onClick={handleApprove}>
-                  Approve Directly
-                </Button>
+                <Button onClick={handleApprove}>Approve</Button>
               </>
             )}
 

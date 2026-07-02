@@ -113,7 +113,11 @@ export default function NewKaizenPage() {
         review_month: getReviewMonth(new Date()),
       });
       console.log("Created:", kaizen);
-      toast.success("Draft saved successfully.");
+      toast.success(
+        submitStatus === "Draft"
+          ? "Draft saved successfully."
+          : "Kaizen submitted successfully.",
+      );
       router.push("/performance/kaizen");
     } catch (err) {
       //   console.error("Create Kaizen Error:", JSON.stringify(err, null, 2));

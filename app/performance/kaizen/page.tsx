@@ -4,12 +4,14 @@ import Link from "next/link";
 
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
+// import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { getEmployeeKaizens, type KaizenRecord } from "@/lib/employees/kaizen";
+import { KaizenCard } from "@/components/employees/kaizen/KaizenCard";
 
 export default function MyKaizensPage() {
   const { employee } = useAuth();
@@ -39,6 +41,37 @@ export default function MyKaizensPage() {
       </AppLayout>
     );
   }
+
+  // function getStatusBadge(status: string) {
+  //   switch (status) {
+  //     case "Draft":
+  //       return <Badge variant="secondary">Draft</Badge>;
+
+  //     case "Submitted":
+  //       return <Badge className="bg-blue-100 text-blue-700">Submitted</Badge>;
+
+  //     case "Under Review":
+  //       return (
+  //         <Badge className="bg-yellow-100 text-yellow-800">Under Review</Badge>
+  //       );
+
+  //     case "Approved":
+  //       return <Badge className="bg-green-100 text-green-700">Approved</Badge>;
+
+  //     case "Implemented":
+  //       return (
+  //         <Badge className="bg-purple-100 text-purple-700">Implemented</Badge>
+  //       );
+
+  //     case "Rewarded":
+  //       return (
+  //         <Badge className="bg-emerald-100 text-emerald-700">Rewarded</Badge>
+  //       );
+
+  //     default:
+  //       return <Badge>{status}</Badge>;
+  //   }
+  // }
 
   return (
     <AppLayout>
@@ -78,25 +111,29 @@ export default function MyKaizensPage() {
         ) : (
           <div className="space-y-4">
             {kaizens.map((kaizen) => (
-              <Card key={kaizen.id} className="p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-semibold">{kaizen.title}</h2>
-
-                    <p className="text-slate-500 mt-2">{kaizen.category}</p>
-
-                    <p className="mt-4">{kaizen.description}</p>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="font-medium">{kaizen.status}</p>
-
-                    <p className="text-sm text-slate-500 mt-2">
-                      {kaizen.review_month}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+              <KaizenCard
+                key={kaizen.id}
+                kaizen={kaizen}
+                action={
+                  kaizen.status === "Draft" ? (
+                    <Button asChild>
+                      <Link href={`/performance/kaizen/${kaizen.id}/edit`}>
+                        Continue Editing
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="outline">
+                      {/* <Link href={`/performance/kaizen/${kaizen.id}/view`}>
+                        View
+                      </Link> */}
+                      {/* Tam thời là edit khi chua có view  */}
+                      <Link href={`/performance/kaizen/${kaizen.id}/edit`}>
+                        View
+                      </Link>
+                    </Button>
+                  )
+                }
+              />
             ))}
           </div>
         )}

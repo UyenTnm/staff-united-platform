@@ -11,16 +11,11 @@ import { Card } from "@/components/ui/card";
 import { getPendingKaizens } from "@/lib/employees/kaizen";
 import { getCurrentEmployee } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+// import { KaizenStatusBadge } from "@/components/employees/kaizen/KaizenStatusBadge";
+import { KaizenCard } from "@/components/employees/kaizen/KaizenCard";
+import type { KaizenRecord } from "@/lib/employees/kaizen";
 
-type PendingKaizen = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  impact: string;
-  status: string;
-  created_at: string;
-
+type PendingKaizen = KaizenRecord & {
   employees: {
     id: string;
     full_name: string;
@@ -92,52 +87,19 @@ export default function PendingKaizensPage() {
         ) : (
           <div className="space-y-4">
             {kaizens.map((kaizen) => (
-              <Card key={kaizen.id} className="p-5">
-                <div className="flex items-start justify-between gap-6">
-                  {/* Left */}
-
-                  <div className="space-y-2 flex-1">
-                    <h2 className="text-lg font-semibold">{kaizen.title}</h2>
-
-                    <p className="text-sm text-slate-500">
-                      {kaizen.employees.full_name} •{" "}
-                      {kaizen.employees.department}
-                    </p>
-
-                    {kaizen.category && (
-                      <p className="text-sm">
-                        <span className="font-medium">Category:</span>{" "}
-                        {kaizen.category}
-                      </p>
-                    )}
-
-                    {kaizen.description && (
-                      <p className="text-sm text-slate-700">
-                        {kaizen.description}
-                      </p>
-                    )}
-
-                    <p className="text-xs text-slate-400">
-                      Submitted {new Date(kaizen.created_at).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm font-medium mt-2">
-                      Status: {kaizen.status}
-                    </p>
-                  </div>
-
-                  {/* Right */}
-
-                  <div className="flex flex-col items-end gap-3">
-                    <Button asChild>
-                      <Link
-                        href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit`}
-                      >
-                        Review
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
+              <KaizenCard
+                key={kaizen.id}
+                kaizen={kaizen}
+                action={
+                  <Button asChild>
+                    <Link
+                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit`}
+                    >
+                      Open
+                    </Link>
+                  </Button>
+                }
+              />
             ))}
           </div>
         )}
