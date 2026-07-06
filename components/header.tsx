@@ -1,8 +1,15 @@
 "use client";
 
-import { Bell, ChevronDown, Search, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// TODO (V2)
+// Bell -> Notification Center
+// Search -> Global Search
+// Profile -> User Menu
+// Settings -> User Settings
+
+import { ChevronDown, User } from "lucide-react";
+// import { Bell, , Search, } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth";

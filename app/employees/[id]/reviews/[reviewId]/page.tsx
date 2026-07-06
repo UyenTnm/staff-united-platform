@@ -8,16 +8,18 @@ import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   getReview,
   PerformanceReview,
   updateReviewStatus,
+  updateHrNotes,
+  updateManagerNotes,
+  updateEmployeeComment,
 } from "@/lib/performance/review";
 import { ReviewCard } from "@/components/employees/performance/review-card";
-import {
-  calculateEmployeePerformance,
-  type PerformanceSummary,
-} from "@/lib/employees/performance";
+import { calculateReviewScores } from "@/lib/performance/engine";
+import type { ReviewScores } from "@/lib/performance/engine";
 import { useAuth } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
 
@@ -27,9 +29,7 @@ export default function ReviewDetailPage() {
 
   const [review, setReview] = useState<PerformanceReview | null>(null);
 
-  const [performance, setPerformance] = useState<PerformanceSummary | null>(
-    null,
-  );
+  const [performance, setPerformance] = useState<ReviewScores | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +44,7 @@ export default function ReviewDetailPage() {
 
       setReview(data);
 
-      const perf = await calculateEmployeePerformance(data.employee_id);
+      const perf = await calculateReviewScores(data.employee_id);
 
       setPerformance(perf);
 
@@ -238,11 +238,110 @@ export default function ReviewDetailPage() {
             title="Kaizen"
             score={performance?.kaizen ?? 0}
             maxScore={5}
-            count={performance?.kaizenRecords ?? 0}
+            count={performance?.rewardedKaizens ?? 0}
             countLabel="Kaizen"
             href={`/employees/${params.id}/kaizen?reviewId=${review.id}`}
             color="text-emerald-600"
           />
+
+          <Card className="p-6 space-y-6">
+            <h2 className="text-xl font-semibold">Review Notes</h2>
+
+            {/* HR */}
+
+            {(isAdmin || isHR) && (
+              <div className="space-y-3">
+                <label className="font-medium">HR Notes</label>
+
+                <Textarea
+                  rows={5}
+                  value={review.hr_notes ?? ""}
+                  onChange={(e) =>
+                    setReview({
+                      ...review,
+                      hr_notes: e.target.value,
+                    })
+                  }
+                />
+
+                <Button
+                  onClick={async () => {
+                    await updateHrNotes(review.id, review.hr_notes ?? "");
+
+                    toast.success("HR notes saved.");
+                  }}
+                >
+                  Save HR Notes
+                </Button>
+              </div>
+            )}
+
+            {/* Employee */}
+
+            {isEmployee && (
+              <div className="space-y-3">
+                <label className="font-medium">Employee Comment</label>
+
+                <Textarea
+                  rows={5}
+                  value={review.employee_comment ?? ""}
+                  onChange={(e) =>
+                    setReview({
+                      ...review,
+                      employee_comment: e.target.value,
+                    })
+                  }
+                />
+
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    await updateEmployeeComment(
+                      review.id,
+                      review.employee_comment ?? "",
+                    );
+
+                    toast.success("Comment saved.");
+                  }}
+                >
+                  Save Comment
+                </Button>
+              </div>
+            )}
+
+            {/* Manager */}
+
+            {isManager && (
+              <div className="space-y-3">
+                <label className="font-medium">Manager Notes</label>
+
+                <Textarea
+                  rows={5}
+                  value={review.manager_notes ?? ""}
+                  onChange={(e) =>
+                    setReview({
+                      ...review,
+                      manager_notes: e.target.value,
+                    })
+                  }
+                />
+
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    await updateManagerNotes(
+                      review.id,
+                      review.manager_notes ?? "",
+                    );
+
+                    toast.success("Manager notes saved.");
+                  }}
+                >
+                  Save Manager Notes
+                </Button>
+              </div>
+            )}
+          </Card>
 
           <Card className="p-6 md:col-span-3">
             <h2 className="text-xl font-semibold mb-6">Review Actions</h2>

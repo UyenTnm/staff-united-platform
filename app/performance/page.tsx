@@ -16,7 +16,7 @@ import {
 } from "@/lib/performance/review";
 
 import {
-  calculateEmployeePerformance,
+  calculateReviewScores,
   PerformanceSummary,
 } from "@/lib/employees/performance";
 import { RoleGuard } from "@/components/auth/role-guard";
@@ -42,7 +42,7 @@ export default function MyPerformancePage() {
       setReview(currentReview);
 
       if (currentReview) {
-        const perf = await calculateEmployeePerformance(employee.id);
+        const perf = await calculateReviewScores(employee.id);
 
         setPerformance(perf);
       }

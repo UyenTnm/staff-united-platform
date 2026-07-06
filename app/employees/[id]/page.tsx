@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Employee, getEmployee } from "@/lib/employees/employees";
 import {
-  calculateEmployeePerformance,
+  calculateReviewScores,
   PerformanceSummary,
 } from "@/lib/employees/performance";
 import {
@@ -36,13 +36,13 @@ export default function EmployeeDetailPage() {
     async function loadEmployee() {
       // const data = await getEmployee(params.id as string);
 
-      // const perf = await calculateEmployeePerformance(params.id as string);
+      // const perf = await calculateReviewScores(params.id as string);
 
       // const review = await getCurrentReview(params.id as string);
 
       const [data, perf, review, history] = await Promise.all([
         getEmployee(params.id as string),
-        calculateEmployeePerformance(params.id as string),
+        calculateReviewScores(params.id as string),
         getCurrentReview(params.id as string),
         getEmployeeReviews(params.id as string),
       ]);

@@ -10,6 +10,11 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  UsersRound,
+  ClipboardCheck,
+  Lightbulb,
+  LayoutDashboard,
+  LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,6 +24,26 @@ import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
 
 export function Sidebar() {
+  type MenuSection = {
+    title: string;
+    icon: LucideIcon;
+    items: {
+      label: string;
+      href: string;
+    }[];
+  };
+
+  type SidebarItem = {
+    label: string;
+    href: string;
+  };
+
+  type SidebarSection = {
+    title: string;
+    icon: LucideIcon;
+    items: SidebarItem[];
+  };
+
   const pathname = usePathname();
   const router = useRouter();
   const { employee } = useAuth();
@@ -69,93 +94,156 @@ export function Sidebar() {
   //   },
   // ];
 
-  const ADMIN_MENU = [
+  const ADMIN_MENU: SidebarSection[] = [
     {
-      label: "Dashboard",
-      href: "/dashboard",
+      title: "Dashboard",
+      icon: LayoutDashboard,
+      items: [
+        {
+          label: "Dashboard",
+          href: "/dashboard",
+        },
+      ],
     },
 
     {
-      label: "Employees",
-      href: "/employees",
+      title: "Employee Management",
+      icon: UsersRound,
+      items: [
+        {
+          label: "Employees",
+          href: "/employees",
+        },
+      ],
     },
 
     {
-      label: "Pending Reviews",
-      href: "/reviews/pending",
+      title: "Performance Management",
+      icon: ClipboardCheck,
+      items: [
+        {
+          label: "Pending Reviews",
+          href: "/reviews/pending",
+        },
+      ],
     },
 
     {
-      label: "Pending Kaizens",
-      href: "/kaizens/pending",
-    },
-
-    {
-      label: "Approved Kaizens",
-      href: "/kaizens/approved",
+      title: "Kaizen Management",
+      icon: Lightbulb,
+      items: [
+        {
+          label: "Pending",
+          href: "/kaizens/pending",
+        },
+        {
+          label: "Approved",
+          href: "/kaizens/approved",
+        },
+        {
+          label: "Rewarded",
+          href: "/kaizens/rewarded",
+        },
+      ],
     },
   ];
 
-  const HR_MENU = [
-    // {
-    //   label: "Dashboard",
-    //   href: "/dashboard",
-    // },
-
+  const HR_MENU: SidebarSection[] = [
     {
-      label: "Employees",
-      href: "/employees",
+      title: "Employee Management",
+      icon: UsersRound,
+      items: [
+        {
+          label: "Employees",
+          href: "/employees",
+        },
+      ],
     },
 
     {
-      label: "Pending Reviews",
-      href: "/reviews/pending",
+      title: "Performance Management",
+      icon: ClipboardCheck,
+      items: [
+        {
+          label: "Pending Reviews",
+          href: "/reviews/pending",
+        },
+      ],
     },
 
     {
-      label: "Pending Kaizens",
-      href: "/kaizens/pending",
-    },
-
-    {
-      label: "Approved Kaizens",
-      href: "/kaizens/approved",
-    },
-    {
-      label: "Rewarded Kaizens",
-      href: "/kaizens/rewarded",
+      title: "Kaizen Management",
+      icon: Lightbulb,
+      items: [
+        {
+          label: "Pending",
+          href: "/kaizens/pending",
+        },
+        {
+          label: "Approved",
+          href: "/kaizens/approved",
+        },
+        {
+          label: "Rewarded",
+          href: "/kaizens/rewarded",
+        },
+      ],
     },
   ];
 
-  const MANAGER_MENU = [
+  const MANAGER_MENU: SidebarSection[] = [
     {
-      label: "Employees",
-      href: "/employees",
+      title: "Employee Management",
+      icon: UsersRound,
+      items: [
+        {
+          label: "Employees",
+          href: "/employees",
+        },
+      ],
     },
 
     {
-      label: "Pending Reviews",
-      href: "/reviews/pending",
+      title: "Performance Management",
+      icon: ClipboardCheck,
+      items: [
+        {
+          label: "Pending Reviews",
+          href: "/reviews/pending",
+        },
+      ],
     },
 
     {
-      label: "Pending Kaizens",
-      href: "/kaizens/pending",
+      title: "Kaizen Management",
+      icon: Lightbulb,
+      items: [
+        {
+          label: "Pending",
+          href: "/kaizens/pending",
+        },
+      ],
     },
   ];
 
-  const EMPLOYEE_MENU = [
+  const EMPLOYEE_MENU: SidebarSection[] = [
     {
-      label: "My Performance",
-      href: "/performance",
-    },
-    {
-      label: "My Kaizens",
-      href: "/performance/kaizen",
+      title: "My Workspace",
+      icon: UsersRound,
+      items: [
+        {
+          label: "My Performance",
+          href: "/performance",
+        },
+        {
+          label: "My Kaizens",
+          href: "/performance/kaizen",
+        },
+      ],
     },
   ];
 
-  let menuItems = HR_MENU;
+  let menuItems: SidebarSection[] = HR_MENU;
 
   switch (employee?.user_role) {
     case "Admin":
@@ -222,49 +310,65 @@ export function Sidebar() {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="p-4 flex flex-col gap-2">
-        {menuItems.map((item) => {
-          let isActive = false;
+      <nav className="p-4 space-y-6 overflow-y-auto">
+        {menuItems.map((section, index) => (
+          <div key={section.title}>
+            {!collapsed && (
+              <div className="mb-2 flex items-center gap-3 px-3">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/10">
+                  <section.icon className="h-4 w-4 text-emerald-500" />
+                </div>
 
-          // Review Kaizen từ Pending Kaizens
-          const isKaizenReviewPage =
-            pathname.includes("/kaizen/") && pathname.includes("/edit");
-
-          // Pending Kaizens
-          if (item.href === "/kaizens/pending") {
-            isActive =
-              pathname.startsWith("/kaizens/pending") || isKaizenReviewPage;
-          }
-
-          // Employees
-          else if (item.href === "/employees") {
-            isActive = pathname.startsWith("/employees") && !isKaizenReviewPage;
-          }
-
-          // My Performance
-          else if (item.href === "/performance") {
-            isActive = pathname === "/performance";
-          }
-
-          // Các menu còn lại
-          else {
-            isActive = pathname.startsWith(item.href);
-          }
-          return (
-            <Link key={item.href} href={item.href}>
-              <button
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium",
-                  isActive
-                    ? "bg-emerald-600 text-white"
-                    : "text-slate-400 hover:bg-slate-900 hover:text-slate-200",
+                {!collapsed && (
+                  <span className="text-xs font-semibold text-slate-500 whitespace-nowrap">
+                    {section.title}
+                  </span>
                 )}
-              >
-                {!collapsed && <span>{item.label}</span>}
-              </button>
-            </Link>
-          );
-        })}
+              </div>
+            )}
+
+            <div className="space-y-1">
+              {section.items.map((item) => {
+                let isActive = false;
+
+                const isKaizenReviewPage =
+                  pathname.includes("/kaizen/") && pathname.includes("/edit");
+
+                if (item.href === "/kaizens/pending") {
+                  isActive =
+                    pathname.startsWith("/kaizens/pending") ||
+                    isKaizenReviewPage;
+                } else if (item.href === "/employees") {
+                  isActive =
+                    pathname.startsWith("/employees") && !isKaizenReviewPage;
+                } else if (item.href === "/performance") {
+                  isActive = pathname === "/performance";
+                } else {
+                  isActive = pathname.startsWith(item.href);
+                }
+
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <button
+                      className={cn(
+                        "w-full rounded-lg pl-8 pr-3 py-2 text-left text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-emerald-600 text-white"
+                          : "text-slate-300 hover:bg-slate-900 hover:text-white",
+                      )}
+                    >
+                      {!collapsed && item.label}
+                    </button>
+                  </Link>
+                );
+              })}
+            </div>
+            {/* Divider */}
+            {index < menuItems.length - 1 && (
+              <div className="mx-2 my-5 border-t border-slate-800" />
+            )}
+          </div>
+        ))}
       </nav>
 
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800">

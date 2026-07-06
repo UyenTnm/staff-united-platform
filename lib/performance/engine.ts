@@ -1,43 +1,83 @@
-import { getQualityIssues } from "@/lib/employees/quality";
-import { getBehaviorIssues } from "@/lib/employees/behavior";
+import {
+  getQualityIssues,
+  calculateQualityScore,
+} from "@/lib/employees/quality";
+
+import {
+  getBehaviorIssues,
+  calculateBehaviorScore,
+} from "@/lib/employees/behavior";
+
+import { getEmployeeKaizens } from "@/lib/employees/kaizen";
+
+import { calculateMonthlyBonus } from "./calculator";
 
 export interface ReviewScores {
   quality: number;
   behavior: number;
   kaizen: number;
+
   total: number;
+
+  qualityIssues: number;
+  behaviorIssues: number;
+  rewardedKaizens: number;
 }
 
 export async function calculateReviewScores(
   employeeId: string,
 ): Promise<ReviewScores> {
+  /**
+   * QUALITY
+   */
   const qualityIssues = await getQualityIssues(employeeId);
 
+  const qualityScore = calculateQualityScore(qualityIssues);
+
+  /**
+   * BEHAVIOR
+   */
   const behaviorIssues = await getBehaviorIssues(employeeId);
 
-  const qualityDeduction = qualityIssues.reduce(
-    (sum, issue) => sum + issue.deduction,
+  const behaviorScore = calculateBehaviorScore(behaviorIssues);
+
+  /**
+   * KAIZEN
+   */
+  const kaizens = await getEmployeeKaizens(employeeId);
+
+  const rewardedKaizens = kaizens.filter((item) => item.status === "Rewarded");
+
+  const kaizenPoints = rewardedKaizens.reduce(
+    (sum, item) => sum + (item.performance_points ?? 0),
     0,
   );
 
-  const behaviorDeduction = behaviorIssues.reduce(
-    (sum, issue) => sum + issue.deduction,
-    0,
-  );
+  // Kaizen bonus tối đa 5%
+  const kaizen = Math.min(kaizenPoints, 5);
 
-  const quality = Math.max(5 - qualityDeduction, 0);
-
-  const behavior = Math.max(5 - behaviorDeduction, 0);
-
-  const kaizen = 0;
+  /**
+   * MONTHLY BONUS
+   */
+  const total = calculateMonthlyBonus({
+    quality: qualityScore.currentScore,
+    behavior: behaviorScore.currentScore,
+    kaizen,
+  });
 
   return {
-    quality,
+    quality: qualityScore.currentScore,
 
-    behavior,
+    behavior: behaviorScore.currentScore,
 
     kaizen,
 
-    total: quality + behavior + kaizen,
+    total,
+
+    qualityIssues: qualityIssues.length,
+
+    behaviorIssues: behaviorIssues.length,
+
+    rewardedKaizens: rewardedKaizens.length,
   };
 }
