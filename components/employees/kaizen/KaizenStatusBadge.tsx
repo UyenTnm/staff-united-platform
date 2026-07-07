@@ -1,14 +1,18 @@
 import { Badge } from "@/components/ui/badge";
+import { KaizenStatus } from "@/lib/employees/kaizen";
 
 interface Props {
-  status:
-    | "Draft"
-    | "Submitted"
-    | "Under Review"
-    | "Approved"
-    | "Implemented"
-    | "Rewarded";
+  status: KaizenStatus;
 }
+// interface Props {
+//   status:
+//     | "Draft"
+//     | "Submitted"
+//     | "Under Review"
+//     | "Approved"
+//     | "Implemented"
+//     | "Rewarded";
+// }
 
 export function KaizenStatusBadge({ status }: Props) {
   switch (status) {
@@ -23,8 +27,28 @@ export function KaizenStatusBadge({ status }: Props) {
         <Badge className="bg-yellow-100 text-yellow-800">Under Review</Badge>
       );
 
+    case "Waiting Manager Review":
+      return (
+        <Badge className="bg-orange-100 text-orange-700">Waiting Manager</Badge>
+      );
+
     case "Approved":
       return <Badge className="bg-green-100 text-green-700">Approved</Badge>;
+
+    case "In Progress":
+      return (
+        <Badge className="bg-indigo-100 text-indigo-700">In Progress</Badge>
+      );
+
+    case "Waiting Verification":
+      return (
+        <Badge className="bg-amber-100 text-amber-700">
+          Waiting Verification
+        </Badge>
+      );
+
+    case "Verified":
+      return <Badge className="bg-cyan-100 text-cyan-700">Verified</Badge>;
 
     case "Implemented":
       return (

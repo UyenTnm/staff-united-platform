@@ -8,17 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 // import { getPendingKaizens } from "@/lib/employees/kaizen";
-import {
-  getPendingKaizens,
-  getWaitingManagerKaizens,
-} from "@/lib/employees/kaizen";
+import { getKaizensByStatus } from "@/lib/employees/kaizen";
 import { getCurrentEmployee } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-// import { KaizenStatusBadge } from "@/components/employees/kaizen/KaizenStatusBadge";
-import { KaizenCard } from "@/components/employees/kaizen/KaizenCard";
+// import { formatDate } from "@/lib/utils";
 import type { KaizenRecord } from "@/lib/employees/kaizen";
+import { KaizenCard } from "@/components/employees/kaizen/KaizenCard";
 
-type PendingKaizen = KaizenRecord & {
+type ImplementedKaizen = KaizenRecord & {
   employees: {
     id: string;
     full_name: string;
@@ -26,8 +23,8 @@ type PendingKaizen = KaizenRecord & {
   };
 };
 
-export default function PendingKaizensPage() {
-  const [kaizens, setKaizens] = useState<PendingKaizen[]>([]);
+export default function ImplementedKaizensPage() {
+  const [kaizens, setKaizens] = useState<ImplementedKaizen[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -48,16 +45,8 @@ export default function PendingKaizensPage() {
           return;
         }
 
-        // const data = await getPendingKaizens();
-        let data;
-
-        if (employee.user_role === "Manager") {
-          data = await getWaitingManagerKaizens();
-        } else {
-          data = await getPendingKaizens();
-        }
-
-        setKaizens(data as PendingKaizen[]);
+        const data = await getKaizensByStatus("Implemented");
+        setKaizens(data as ImplementedKaizen[]);
       } catch (error) {
         console.error(error);
       } finally {
@@ -82,10 +71,10 @@ export default function PendingKaizensPage() {
         {/* Header */}
 
         <div>
-          <h1 className="text-3xl font-bold">Pending Kaizen Approval</h1>
+          <h1 className="text-3xl font-bold">Implemented Kaizens</h1>
 
           <p className="text-slate-500 mt-2">
-            Review employee improvement submissions.
+            View implemented employee improvements waiting for reward.
           </p>
         </div>
 
@@ -93,7 +82,7 @@ export default function PendingKaizensPage() {
 
         {kaizens.length === 0 ? (
           <Card className="p-10 text-center text-slate-500">
-            No pending improvements found.
+            No implemented kaizens are waiting for reward.
           </Card>
         ) : (
           <div className="space-y-4">
@@ -104,7 +93,7 @@ export default function PendingKaizensPage() {
                 action={
                   <Button asChild>
                     <Link
-                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit?from=pending`}
+                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit`}
                     >
                       Open
                     </Link>

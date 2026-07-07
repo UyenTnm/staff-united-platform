@@ -1,28 +1,42 @@
-interface Props {
-  status:
-    | "Draft"
-    | "Submitted"
-    | "Under Review"
-    | "Approved"
-    | "Implemented"
-    | "Rewarded";
+import { KaizenStatus } from "@/lib/employees/kaizen";
 
+type Props = {
+  status: KaizenStatus;
   createdAt?: string;
   updatedAt?: string;
-  implementedAt?: string | null;
-}
+  implementedAt?: string;
+};
 
 const STEPS = [
   "Draft",
   "Submitted",
   "Under Review",
+  "Waiting Manager Review",
   "Approved",
-  "Implemented",
+  "In Progress",
+  "Waiting Verification",
+  "Verified",
   "Rewarded",
 ] as const;
 
+const STEP_LABELS: Record<KaizenStatus, string> = {
+  Draft: "Draft",
+  Submitted: "Submitted",
+  "Under Review": "Administrative Review",
+  "Waiting Manager Review": "Waiting Manager Review",
+  Approved: "Approved",
+  "In Progress": "Execution",
+  "Waiting Verification": "Waiting Verification",
+  Verified: "Verified",
+  Implemented: "Implemented",
+  Rewarded: "Rewarded",
+};
+
 function getStepState(current: Props["status"], step: (typeof STEPS)[number]) {
-  const currentIndex = STEPS.indexOf(current);
+  const workflow = current === "Implemented" ? "Verified" : current;
+
+  const currentIndex = STEPS.indexOf(workflow as (typeof STEPS)[number]);
+
   const stepIndex = STEPS.indexOf(step);
 
   if (stepIndex < currentIndex) return "completed";
@@ -72,20 +86,24 @@ export function KaizenTimeline({
                     : "font-semibold text-slate-900"
                 }
               >
-                {step}
+                {STEP_LABELS[step]}
               </p>
 
-              {step === "Draft" && createdAt && (
+              {/* {step === "Draft" && createdAt && (
                 <p className="text-xs text-slate-500">Created</p>
-              )}
+              )} */}
 
-              {step === "Approved" && status !== "Draft" && updatedAt && (
+              {/* {step === "Approved" && status !== "Draft" && updatedAt && (
+                <p className="text-xs text-slate-500">Approved</p>
+              )} */}
+
+              {step === "Approved" && updatedAt && (
                 <p className="text-xs text-slate-500">Approved</p>
               )}
 
-              {step === "Implemented" && implementedAt && (
+              {/* {step === "Implemented" && implementedAt && (
                 <p className="text-xs text-slate-500">Implemented</p>
-              )}
+              )} */}
             </div>
           </div>
         );

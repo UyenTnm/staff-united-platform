@@ -17,8 +17,8 @@ import {
 
 import {
   calculateReviewScores,
-  PerformanceSummary,
-} from "@/lib/employees/performance";
+  type ReviewScores,
+} from "@/lib/performance/engine";
 import { RoleGuard } from "@/components/auth/role-guard";
 import { toast } from "sonner";
 
@@ -27,9 +27,7 @@ export default function MyPerformancePage() {
 
   const [review, setReview] = useState<PerformanceReview | null>(null);
 
-  const [performance, setPerformance] = useState<PerformanceSummary | null>(
-    null,
-  );
+  const [performance, setPerformance] = useState<ReviewScores | null>(null);
 
   const [loading, setLoading] = useState(true);
 

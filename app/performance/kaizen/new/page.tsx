@@ -108,6 +108,8 @@ export default function NewKaizenPage() {
         status: isManager ? status : submitStatus,
 
         approved_by: null,
+        reviewed_by: null,
+        reviewed_at: null,
         implemented_date: null,
         review_note: null,
         review_month: getReviewMonth(new Date()),

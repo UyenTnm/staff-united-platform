@@ -10,8 +10,9 @@ import { useEffect, useState } from "react";
 import { Employee, getEmployee } from "@/lib/employees/employees";
 import {
   calculateReviewScores,
-  PerformanceSummary,
-} from "@/lib/employees/performance";
+  type ReviewScores,
+} from "@/lib/performance/engine";
+
 import {
   getCurrentReview,
   getEmployeeReviews,
@@ -22,9 +23,7 @@ export default function EmployeeDetailPage() {
   const params = useParams();
 
   const [employee, setEmployee] = useState<Employee | null>(null);
-  const [performance, setPerformance] = useState<PerformanceSummary | null>(
-    null,
-  );
+  const [performance, setPerformance] = useState<ReviewScores | null>(null);
   const [currentReview, setCurrentReview] = useState<PerformanceReview | null>(
     null,
   );

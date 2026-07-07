@@ -11,7 +11,11 @@ export type KaizenStatus =
   | "Draft"
   | "Submitted"
   | "Under Review"
+  | "Waiting Manager Review"
   | "Approved"
+  | "In Progress"
+  | "Waiting Verification"
+  | "Verified"
   | "Implemented"
   | "Rewarded";
 
@@ -37,6 +41,10 @@ export interface KaizenRecord {
   status: KaizenStatus;
 
   approved_by: string | null;
+
+  reviewed_by: string | null;
+
+  reviewed_at: string | null;
 
   implemented_date: string | null;
 
@@ -164,19 +172,31 @@ export async function approveKaizen(
   managerId: string,
   impact: KaizenImpact,
   points: number,
+  reviewNote: string,
 ) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("employee_kaizens")
     .update({
       status: "Approved",
       approved_by: managerId,
+      approved_at: new Date().toISOString(),
       impact,
       performance_points: points,
+      review_note: reviewNote,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select();
 
-  if (error) throw error;
+  console.log("Approve data:", data);
+  console.log("Approve error:", error);
+
+  if (error) {
+    console.error("Supabase approve error:", JSON.stringify(error, null, 2));
+    throw error;
+  }
+
+  return data;
 }
 
 export async function getKaizensByStatus(status: KaizenStatus) {
@@ -223,11 +243,24 @@ export async function markKaizenRewarded(id: string) {
   if (error) throw error;
 }
 
-export async function markKaizenUnderReview(id: string) {
+export async function startExecution(id: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "In Progress",
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function markKaizenUnderReview(id: string, reviewerId: string) {
   const { error } = await supabase
     .from("employee_kaizens")
     .update({
       status: "Under Review",
+      reviewed_by: reviewerId,
+      reviewed_at: new Date().toISOString(),
     })
     .eq("id", id);
 
@@ -240,4 +273,69 @@ export interface KaizenWithEmployee extends KaizenRecord {
     full_name: string;
     department: string;
   };
+}
+
+export async function sendKaizenToManager(
+  id: string,
+  reviewerId: string,
+  reviewNote: string,
+) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Waiting Manager Review",
+      reviewed_by: reviewerId,
+      reviewed_at: new Date().toISOString(),
+      review_note: reviewNote,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function getWaitingManagerKaizens() {
+  const { data, error } = await supabase
+    .from("employee_kaizens")
+    .select(
+      `
+      *,
+      employees(
+        id,
+        full_name,
+        department
+      )
+    `,
+    )
+    .eq("status", "Waiting Manager Review")
+    .order("updated_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function requestVerification(id: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Waiting Verification",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function verifyKaizen(id: string, managerId: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Verified",
+      approved_by: managerId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) throw error;
 }

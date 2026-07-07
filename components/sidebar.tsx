@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Users,
   Shield,
@@ -45,6 +45,9 @@ export function Sidebar() {
   };
 
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const from = searchParams.get("from");
   const router = useRouter();
   const { employee } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
@@ -137,8 +140,8 @@ export function Sidebar() {
           href: "/kaizens/pending",
         },
         {
-          label: "Approved",
-          href: "/kaizens/approved",
+          label: "Waiting Verification",
+          href: "/kaizens/waiting-verification",
         },
         {
           label: "Rewarded",
@@ -179,9 +182,17 @@ export function Sidebar() {
           label: "Pending",
           href: "/kaizens/pending",
         },
+        // {
+        //   label: "Approved",
+        //   href: "/kaizens/approved",
+        // },
+        // {
+        //   label: "Implemented",
+        //   href: "/kaizens/implemented",
+        // },
         {
-          label: "Approved",
-          href: "/kaizens/approved",
+          label: "Waiting Verification",
+          href: "/kaizens/waiting-verification",
         },
         {
           label: "Rewarded",
@@ -221,6 +232,14 @@ export function Sidebar() {
         {
           label: "Pending",
           href: "/kaizens/pending",
+        },
+        {
+          label: "Waiting Verification",
+          href: "/kaizens/waiting-verification",
+        },
+        {
+          label: "Rewarded",
+          href: "/kaizens/rewarded",
         },
       ],
     },
@@ -331,16 +350,38 @@ export function Sidebar() {
               {section.items.map((item) => {
                 let isActive = false;
 
-                const isKaizenReviewPage =
-                  pathname.includes("/kaizen/") && pathname.includes("/edit");
+                // const isKaizenReviewPage =
+                //   pathname.includes("/kaizen/") && pathname.includes("/edit");
+
+                // if (item.href === "/kaizens/pending") {
+                //   isActive =
+                //     pathname.startsWith("/kaizens/pending") ||
+                //     isKaizenReviewPage;
+                // } else if (item.href === "/employees") {
+                //   isActive =
+                //     pathname.startsWith("/employees") && !isKaizenReviewPage;
+                // } else if (item.href === "/performance") {
+                //   isActive = pathname === "/performance";
+                // } else if (item.href === "/kaizens/waiting-verification") {
+                //   isActive = pathname.startsWith(
+                //     "/kaizens/waiting-verification",
+                //   );
+                // } else {
+                //   isActive = pathname.startsWith(item.href);
+                // }
 
                 if (item.href === "/kaizens/pending") {
                   isActive =
                     pathname.startsWith("/kaizens/pending") ||
-                    isKaizenReviewPage;
+                    from === "pending";
+                } else if (item.href === "/kaizens/waiting-verification") {
+                  isActive =
+                    pathname.startsWith("/kaizens/waiting-verification") ||
+                    from === "verification";
                 } else if (item.href === "/employees") {
                   isActive =
-                    pathname.startsWith("/employees") && !isKaizenReviewPage;
+                    pathname.startsWith("/employees") &&
+                    !pathname.includes("/kaizen/");
                 } else if (item.href === "/performance") {
                   isActive = pathname === "/performance";
                 } else {

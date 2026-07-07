@@ -123,11 +123,7 @@ export default function MyKaizensPage() {
                     </Button>
                   ) : (
                     <Button asChild variant="outline">
-                      {/* <Link href={`/performance/kaizen/${kaizen.id}/view`}>
-                        View
-                      </Link> */}
-                      {/* Tam thời là edit khi chua có view  */}
-                      <Link href={`/performance/kaizen/${kaizen.id}/edit`}>
+                      <Link href={`/performance/kaizen/${kaizen.id}`}>
                         View
                       </Link>
                     </Button>
