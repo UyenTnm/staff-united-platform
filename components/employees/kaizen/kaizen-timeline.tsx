@@ -33,13 +33,21 @@ const STEP_LABELS: Record<KaizenStatus, string> = {
 };
 
 function getStepState(current: Props["status"], step: (typeof STEPS)[number]) {
-  const workflow = current === "Implemented" ? "Verified" : current;
+  const normalizedStatus = current === "Implemented" ? "Verified" : current;
 
-  const currentIndex = STEPS.indexOf(workflow as (typeof STEPS)[number]);
+  const currentIndex = STEPS.indexOf(
+    normalizedStatus as (typeof STEPS)[number],
+  );
 
   const stepIndex = STEPS.indexOf(step);
 
+  // Rewarded là trạng thái hoàn tất cuối cùng
+  if (current === "Rewarded") {
+    return "completed";
+  }
+
   if (stepIndex < currentIndex) return "completed";
+
   if (stepIndex === currentIndex) return "current";
 
   return "upcoming";
@@ -72,8 +80,17 @@ export function KaizenTimeline({
                 {state === "completed" && "✓"}
               </div>
 
-              {index < STEPS.length - 1 && (
+              {/* {index < STEPS.length - 1 && (
                 <div className="w-px h-8 bg-slate-300 mt-1" />
+              )} */}
+              {index < STEPS.length - 1 && (
+                <div
+                  className={
+                    state === "completed"
+                      ? "w-px h-8 bg-green-500 mt-1"
+                      : "w-px h-8 bg-slate-300 mt-1"
+                  }
+                />
               )}
             </div>
 
@@ -89,21 +106,9 @@ export function KaizenTimeline({
                 {STEP_LABELS[step]}
               </p>
 
-              {/* {step === "Draft" && createdAt && (
-                <p className="text-xs text-slate-500">Created</p>
-              )} */}
-
-              {/* {step === "Approved" && status !== "Draft" && updatedAt && (
-                <p className="text-xs text-slate-500">Approved</p>
-              )} */}
-
               {step === "Approved" && updatedAt && (
                 <p className="text-xs text-slate-500">Approved</p>
               )}
-
-              {/* {step === "Implemented" && implementedAt && (
-                <p className="text-xs text-slate-500">Implemented</p>
-              )} */}
             </div>
           </div>
         );

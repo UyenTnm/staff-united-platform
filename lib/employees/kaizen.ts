@@ -42,6 +42,16 @@ export interface KaizenRecord {
 
   approved_by: string | null;
 
+  approved_at: string | null;
+
+  verified_by: string | null;
+
+  verified_at: string | null;
+
+  rewarded_by: string | null;
+
+  rewarded_at: string | null;
+
   reviewed_by: string | null;
 
   reviewed_at: string | null;
@@ -55,6 +65,19 @@ export interface KaizenRecord {
   created_at: string;
 
   updated_at: string;
+
+  reviewer?: KaizenUser | null;
+
+  approver?: KaizenUser | null;
+
+  verifier?: KaizenUser | null;
+
+  rewarder?: KaizenUser | null;
+}
+
+export interface KaizenUser {
+  id: string;
+  full_name: string;
 }
 
 export async function getEmployeeKaizens(employeeId: string) {
@@ -72,7 +95,27 @@ export async function getEmployeeKaizens(employeeId: string) {
 export async function getKaizen(id: string) {
   const { data, error } = await supabase
     .from("employee_kaizens")
-    .select("*")
+    .select(
+      `
+  *,
+  reviewer:employees!employee_kaizens_reviewed_by_fkey(
+    id,
+    full_name
+  ),
+  approver:employees!employee_kaizens_approved_by_fkey(
+    id,
+    full_name
+  ),
+  verifier:employees!employee_kaizens_verified_by_fkey(
+    id,
+    full_name
+  ),
+  rewarder:employees!employee_kaizens_rewarded_by_fkey(
+    id,
+    full_name
+  )
+`,
+    )
     .eq("id", id)
     .single();
 
@@ -150,11 +193,11 @@ export async function getPendingKaizens() {
     .select(
       `
       *,
-      employees(
-        id,
-        full_name,
-        department
-      )
+      employees!employee_kaizens_employee_id_fkey(
+    id,
+    full_name,
+    department
+  )
     `,
     )
     .in("status", ["Submitted", "Under Review"])
@@ -205,11 +248,11 @@ export async function getKaizensByStatus(status: KaizenStatus) {
     .select(
       `
       *,
-      employees(
-        id,
-        full_name,
-        department
-      )
+      employees!employee_kaizens_employee_id_fkey(
+    id,
+    full_name,
+    department
+  )
     `,
     )
     .eq("status", status)
@@ -300,11 +343,11 @@ export async function getWaitingManagerKaizens() {
     .select(
       `
       *,
-      employees(
-        id,
-        full_name,
-        department
-      )
+      employees!employee_kaizens_employee_id_fkey(
+    id,
+    full_name,
+    department
+  )
     `,
     )
     .eq("status", "Waiting Manager Review")
@@ -332,7 +375,22 @@ export async function verifyKaizen(id: string, managerId: string) {
     .from("employee_kaizens")
     .update({
       status: "Verified",
-      approved_by: managerId,
+      verified_by: managerId,
+      verified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function rewardKaizen(id: string, managerId: string) {
+  const { error } = await supabase
+    .from("employee_kaizens")
+    .update({
+      status: "Rewarded",
+      rewarded_by: managerId,
+      rewarded_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);

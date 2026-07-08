@@ -24,6 +24,7 @@ import {
   KaizenImpact,
   KaizenStatus,
   KaizenRecord,
+  rewardKaizen,
 } from "@/lib/employees/kaizen";
 
 import {
@@ -204,16 +205,26 @@ export default function EditKaizenPage() {
   }
 
   async function handleRewarded() {
-    try {
-      await markKaizenRewarded(params.kaizenId as string);
+    if (!employee) {
+      toast.error("Current user not found.");
+      return;
+    }
 
-      toast.success("Marked as Rewarded.");
+    try {
+      setSaving(true);
+
+      await rewardKaizen(params.kaizenId as string, employee.id);
+
+      toast.success("Employee rewarded successfully.");
+
+      setStatus("Rewarded");
 
       router.refresh();
-      setStatus("Rewarded");
+
       router.replace("/kaizens/rewarded");
     } catch (error) {
       console.error(error);
+
       toast.error("Unable to reward employee.");
     } finally {
       setSaving(false);
@@ -476,37 +487,85 @@ export default function EditKaizenPage() {
           </div>
 
           <Card className="p-6 bg-slate-50">
-            <h3 className="text-lg font-semibold mb-4">Review Information</h3>
+            <h3 className="text-lg font-semibold mb-6">Audit Trail</h3>
 
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div className="grid md:grid-cols-2 gap-6 text-sm">
+              {/* Administrative Review */}
+
               <div>
                 <p className="text-slate-500">Reviewed By</p>
-                <p className="font-medium">{employee?.full_name ?? "-"}</p>
+
+                <p className="font-medium">
+                  {kaizen?.reviewer?.full_name ?? "-"}
+                </p>
               </div>
 
               <div>
                 <p className="text-slate-500">Reviewed At</p>
-                <p className="font-medium">{new Date().toLocaleString()}</p>
+
+                <p className="font-medium">
+                  {kaizen?.reviewed_at
+                    ? new Date(kaizen.reviewed_at).toLocaleString()
+                    : "-"}
+                </p>
               </div>
+
+              {/* Manager Approval */}
 
               <div>
                 <p className="text-slate-500">Approved By</p>
+
                 <p className="font-medium">
-                  {status === "Approved" ||
-                  status === "Implemented" ||
-                  status === "Rewarded"
-                    ? employee?.full_name
-                    : "-"}
+                  {kaizen?.approver?.full_name ?? "-"}
                 </p>
               </div>
 
               <div>
                 <p className="text-slate-500">Approved At</p>
+
                 <p className="font-medium">
-                  {status === "Approved" ||
-                  status === "Implemented" ||
-                  status === "Rewarded"
-                    ? new Date().toLocaleString()
+                  {kaizen?.approved_at
+                    ? new Date(kaizen.approved_at).toLocaleString()
+                    : "-"}
+                </p>
+              </div>
+
+              {/* Verification */}
+
+              <div>
+                <p className="text-slate-500">Verified By</p>
+
+                <p className="font-medium">
+                  {kaizen?.verifier?.full_name ?? "-"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">Verified At</p>
+
+                <p className="font-medium">
+                  {kaizen?.verified_at
+                    ? new Date(kaizen.verified_at).toLocaleString()
+                    : "-"}
+                </p>
+              </div>
+
+              {/* Reward */}
+
+              <div>
+                <p className="text-slate-500">Rewarded By</p>
+
+                <p className="font-medium">
+                  {kaizen?.rewarder?.full_name ?? "-"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">Rewarded At</p>
+
+                <p className="font-medium">
+                  {kaizen?.rewarded_at
+                    ? new Date(kaizen.rewarded_at).toLocaleString()
                     : "-"}
                 </p>
               </div>
@@ -582,15 +641,6 @@ export default function EditKaizenPage() {
                 Reward Employee
               </Button>
             )}
-
-            {/* {status === "Implemented" && (
-              <Button
-                onClick={handleRewarded}
-                className="bg-emerald-600 hover:bg-emerald-700"
-              >
-                Reward Employee
-              </Button>
-            )} */}
 
             {status === "Rewarded" && <Button disabled>Completed</Button>}
           </div>

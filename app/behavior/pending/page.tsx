@@ -2,36 +2,29 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { AppLayout } from "@/components/app-layout";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-// import { getPendingKaizens } from "@/lib/employees/kaizen";
-import { getKaizensByStatus } from "@/lib/employees/kaizen";
 import { getCurrentEmployee } from "@/lib/auth";
-import { useRouter } from "next/navigation";
-// import { formatDate } from "@/lib/utils";
-import type { KaizenRecord } from "@/lib/employees/kaizen";
-import { KaizenCard } from "@/components/employees/kaizen/KaizenCard";
 
-type ImplementedKaizen = KaizenRecord & {
-  employees: {
-    id: string;
-    full_name: string;
-    department: string;
-  };
-};
+import {
+  getBehaviorIssuesByStatus,
+  type BehaviorWithEmployee,
+} from "@/lib/employees/behavior";
+import { BehaviorCard } from "@/components/employees/behavior/BehaviorCard";
 
-export default function ImplementedKaizensPage() {
-  const [kaizens, setKaizens] = useState<ImplementedKaizen[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function PendingBehaviorPage() {
   const router = useRouter();
+
+  const [issues, setIssues] = useState<BehaviorWithEmployee[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        // Lấy nhân viên hiện tại
         const employee = await getCurrentEmployee();
 
         if (!employee) {
@@ -39,16 +32,16 @@ export default function ImplementedKaizensPage() {
           return;
         }
 
-        // Chỉ Manager / HR / Admin được vào
         if (!["Admin", "HR", "Manager"].includes(employee.user_role)) {
           router.push("/403");
           return;
         }
 
-        const data = await getKaizensByStatus("Waiting Verification");
-        setKaizens(data as ImplementedKaizen[]);
+        const data = await getBehaviorIssuesByStatus("Waiting Employee");
+
+        setIssues(data);
       } catch (error) {
-        console.error("Waiting Verification Error:", error);
+        console.error("Behavior Error:", error);
 
         if (error instanceof Error) {
           console.error(error.message);
@@ -74,32 +67,28 @@ export default function ImplementedKaizensPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Header */}
-
         <div>
-          <h1 className="text-3xl font-bold">Waiting Verification</h1>
+          <h1 className="text-3xl font-bold">Pending Behavior Issues</h1>
 
           <p className="text-slate-500 mt-2">
-            Employee improvements waiting for verification.
+            Behavior issues waiting for employee or manager action.
           </p>
         </div>
 
-        {/* Empty */}
-
-        {kaizens.length === 0 ? (
+        {issues.length === 0 ? (
           <Card className="p-10 text-center text-slate-500">
-            No Kaizens are waiting for verification.
+            No pending behavior issues.
           </Card>
         ) : (
           <div className="space-y-4">
-            {kaizens.map((kaizen) => (
-              <KaizenCard
-                key={kaizen.id}
-                kaizen={kaizen}
+            {issues.map((issue) => (
+              <BehaviorCard
+                key={issue.id}
+                issue={issue}
                 action={
                   <Button asChild>
                     <Link
-                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit?from=verification`}
+                      href={`/employees/${issue.employee_id}/behavior/edit/${issue.id}`}
                     >
                       Open
                     </Link>

@@ -9,13 +9,47 @@ export interface BehaviorIssue {
   evaluator_id: string | null;
   issue_date: string;
   review_month: string;
+  status: BehaviorStatus;
   created_at: string;
+}
+
+export type BehaviorStatus =
+  | "Waiting Employee"
+  | "Employee Appealed"
+  | "Waiting Manager"
+  | "Approved"
+  | "Locked";
+
+export interface BehaviorWithEmployee extends BehaviorIssue {
+  employees: {
+    id: string;
+    full_name: string;
+    department: string;
+  };
+
+  evaluator?: {
+    id: string;
+    full_name: string;
+  } | null;
 }
 
 export async function getBehaviorIssues(employeeId: string) {
   const { data, error } = await supabase
     .from("employee_behavior_issues")
-    .select("*")
+    .select(
+      `
+  *,
+  employees!employee_behavior_issues_employee_id_fkey(
+    id,
+    full_name,
+    department
+  ),
+  evaluator:employees!employee_behavior_issues_evaluator_id_fkey(
+    id,
+    full_name
+  )
+`,
+    )
     .eq("employee_id", employeeId)
     .order("issue_date", { ascending: false });
 
@@ -87,4 +121,37 @@ export async function updateBehaviorIssue(
     .eq("id", issueId);
 
   if (error) throw error;
+}
+
+export async function getBehaviorIssuesByStatus(status: BehaviorStatus) {
+  const { data, error } = await supabase
+    .from("employee_behavior_issues")
+    .select(
+      `
+      *,
+      employees!employee_behavior_issues_employee_id_fkey(
+        id,
+        full_name,
+        department
+      ),
+      evaluator:employees!employee_behavior_issues_evaluator_id_fkey(
+        id,
+        full_name
+      )
+    `,
+    )
+    .eq("status", status)
+    .order("issue_date", {
+      ascending: false,
+    });
+
+  console.log("Behavior DATA:", data);
+  console.log("Behavior ERROR:", error);
+
+  if (error) {
+    console.log(JSON.stringify(error, null, 2));
+    throw error;
+  }
+
+  return data as BehaviorWithEmployee[];
 }

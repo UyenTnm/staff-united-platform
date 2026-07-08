@@ -128,6 +128,14 @@ export function Sidebar() {
           label: "Pending Reviews",
           href: "/reviews/pending",
         },
+        {
+          label: "Quality",
+          href: "/quality",
+        },
+        {
+          label: "Behavior",
+          href: "/behavior",
+        },
       ],
     },
 
@@ -171,6 +179,14 @@ export function Sidebar() {
           label: "Pending Reviews",
           href: "/reviews/pending",
         },
+        {
+          label: "Quality",
+          href: "/quality",
+        },
+        {
+          label: "Behavior",
+          href: "/behavior",
+        },
       ],
     },
 
@@ -182,14 +198,7 @@ export function Sidebar() {
           label: "Pending",
           href: "/kaizens/pending",
         },
-        // {
-        //   label: "Approved",
-        //   href: "/kaizens/approved",
-        // },
-        // {
-        //   label: "Implemented",
-        //   href: "/kaizens/implemented",
-        // },
+
         {
           label: "Waiting Verification",
           href: "/kaizens/waiting-verification",
@@ -221,6 +230,14 @@ export function Sidebar() {
         {
           label: "Pending Reviews",
           href: "/reviews/pending",
+        },
+        {
+          label: "Quality",
+          href: "/quality",
+        },
+        {
+          label: "Behavior",
+          href: "/behavior",
         },
       ],
     },
@@ -349,26 +366,6 @@ export function Sidebar() {
             <div className="space-y-1">
               {section.items.map((item) => {
                 let isActive = false;
-
-                // const isKaizenReviewPage =
-                //   pathname.includes("/kaizen/") && pathname.includes("/edit");
-
-                // if (item.href === "/kaizens/pending") {
-                //   isActive =
-                //     pathname.startsWith("/kaizens/pending") ||
-                //     isKaizenReviewPage;
-                // } else if (item.href === "/employees") {
-                //   isActive =
-                //     pathname.startsWith("/employees") && !isKaizenReviewPage;
-                // } else if (item.href === "/performance") {
-                //   isActive = pathname === "/performance";
-                // } else if (item.href === "/kaizens/waiting-verification") {
-                //   isActive = pathname.startsWith(
-                //     "/kaizens/waiting-verification",
-                //   );
-                // } else {
-                //   isActive = pathname.startsWith(item.href);
-                // }
 
                 if (item.href === "/kaizens/pending") {
                   isActive =

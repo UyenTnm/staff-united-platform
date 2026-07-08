@@ -85,7 +85,7 @@ export default function RewardedKaizensPage() {
           <h1 className="text-3xl font-bold">Rewarded Kaizens</h1>
 
           <p className="text-slate-500 mt-2">
-            View rewarded Kaizens and performance rewards.
+            Successfully rewarded employee improvements.
           </p>
         </div>
 
@@ -104,9 +104,9 @@ export default function RewardedKaizensPage() {
                 action={
                   <Button asChild>
                     <Link
-                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit`}
+                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit?from=rewarded`}
                     >
-                      Open
+                      View
                     </Link>
                   </Button>
                 }

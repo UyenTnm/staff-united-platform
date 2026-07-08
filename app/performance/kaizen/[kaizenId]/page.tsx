@@ -179,27 +179,63 @@ export default function MyKaizenPage() {
             Current Status :<strong className="ml-2">{kaizen.status}</strong>
           </p>
 
-          <div className="flex gap-3 flex-wrap">
-            {kaizen.status === "Approved" && (
-              <Button onClick={handleStartExecution}>🚀 Start Execution</Button>
-            )}
+          {/* Approved */}
+          {kaizen.status === "Approved" && (
+            <Button onClick={handleStartExecution}>🚀 Start Execution</Button>
+          )}
 
-            {kaizen.status === "In Progress" && (
-              <Button onClick={handleRequestVerification}>
-                Request Verification
-              </Button>
-            )}
+          {/* In Progress */}
+          {kaizen.status === "In Progress" && (
+            <Button onClick={handleRequestVerification}>
+              Request Verification
+            </Button>
+          )}
 
-            {kaizen.status === "Waiting Verification" && (
-              <Button disabled>Waiting for Manager Verification</Button>
-            )}
+          {/* Waiting Verification */}
+          {kaizen.status === "Waiting Verification" && (
+            <Button disabled>Waiting for Manager Verification</Button>
+          )}
 
-            {kaizen.status === "Verified" && <Button disabled>Verified</Button>}
+          {/* Verified */}
+          {kaizen.status === "Verified" && <Button disabled>Verified</Button>}
 
-            {kaizen.status === "Rewarded" && (
-              <Button disabled>Rewarded 🎉</Button>
-            )}
-          </div>
+          {/* Rewarded */}
+          {kaizen.status === "Rewarded" && (
+            <div className="rounded-xl border border-green-200 bg-green-50 p-6 space-y-4">
+              <div>
+                <h3 className="text-2xl font-bold text-green-700">
+                  🎉 Congratulations!
+                </h3>
+
+                <p className="text-slate-600 mt-2">
+                  Your Kaizen has been successfully implemented and rewarded.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <p className="text-sm text-slate-500">Performance Points</p>
+
+                  <p className="text-3xl font-bold text-green-700">
+                    +{kaizen.performance_points}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500">Impact Level</p>
+
+                  <p className="font-semibold">{kaizen.impact}</p>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="text-slate-600">
+                  Thank you for contributing to continuous improvement at STAFF
+                  United.
+                </p>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </AppLayout>
