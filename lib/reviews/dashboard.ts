@@ -1,5 +1,6 @@
 import { getBehaviorStatistics } from "@/lib/employees/behavior";
 import { getQualityStatistics } from "@/lib/employees/quality";
+import { getKaizenStatistics } from "../employees/kaizen";
 // import { getKaizenStatistics } from "@/lib/employees/kaizen";
 
 export interface ReviewDashboardData {
@@ -34,7 +35,7 @@ export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
   const [behavior, quality, kaizen] = await Promise.all([
     getBehaviorStatistics(),
     getQualityStatistics(),
-    // getKaizenStatistics(),
+    getKaizenStatistics(),
   ]);
 
   return {

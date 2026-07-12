@@ -10,6 +10,7 @@ import {
 } from "@/lib/notifications";
 
 import { NotificationItem } from "./NotificationItem";
+import { useRouter } from "next/navigation";
 
 interface NotificationDropdownProps {
   employeeId: string;
@@ -24,6 +25,7 @@ export function NotificationDropdown({
 }: NotificationDropdownProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   async function loadNotifications() {
     try {
@@ -71,8 +73,14 @@ export function NotificationDropdown({
               onClick={async () => {
                 if (!notification.is_read) {
                   await markAsRead(notification.id);
-                  await loadNotifications();
-                  await onRefresh();
+                }
+
+                await loadNotifications();
+                await onRefresh();
+
+                if (notification.action_url) {
+                  onClose();
+                  router.push(notification.action_url);
                 }
               }}
             />

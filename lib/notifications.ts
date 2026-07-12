@@ -111,3 +111,21 @@ export async function markAllAsRead(employeeId: string) {
     throw error;
   }
 }
+
+export function getKaizenActionUrl(
+  employeeId: string,
+  kaizenId: string,
+  from?: string,
+) {
+  return `/employees/${employeeId}/kaizen/${kaizenId}/edit${
+    from ? `?from=${from}` : ""
+  }`;
+}
+
+export function getPerformanceActionUrl(employeeId: string) {
+  return `/employees/${employeeId}/performance`;
+}
+
+export function getMyKaizenActionUrl(employeeId: string) {
+  return `/employees/${employeeId}/kaizen`;
+}

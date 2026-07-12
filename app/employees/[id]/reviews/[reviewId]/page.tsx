@@ -328,17 +328,17 @@ export default function ReviewDetailPage() {
             </div>
           </Card>
 
-          <Card className="p-6 space-y-6">
-            <h2 className="text-xl font-semibold">Review Notes</h2>
-
-            {/* HR */}
+          <div className="rounded-xl border bg-white p-6 shadow-sm md:col-span-3">
+            <h2 className="text-xl font-semibold mb-6">Review Notes</h2>
 
             {(isAdmin || isHR) && (
-              <div className="space-y-3">
-                <label className="font-medium">HR Notes</label>
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-slate-700">
+                  HR Notes
+                </label>
 
                 <Textarea
-                  rows={5}
+                  rows={4}
                   value={review.hr_notes ?? ""}
                   onChange={(e) =>
                     setReview({
@@ -348,20 +348,19 @@ export default function ReviewDetailPage() {
                   }
                 />
 
-                <Button
-                  onClick={async () => {
-                    await updateHrNotes(review.id, review.hr_notes ?? "");
-
-                    toast.success("HR notes saved.");
-                  }}
-                >
-                  Save HR Notes
-                </Button>
+                <div className="mt-4">
+                  <Button
+                    onClick={async () => {
+                      await updateHrNotes(review.id, review.hr_notes ?? "");
+                      toast.success("HR notes saved.");
+                    }}
+                  >
+                    Save HR Notes
+                  </Button>
+                </div>
               </div>
             )}
-
             {/* Employee */}
-
             {isEmployee && (
               <div className="space-y-3">
                 <label className="font-medium">Employee Comment</label>
@@ -392,9 +391,7 @@ export default function ReviewDetailPage() {
                 </Button>
               </div>
             )}
-
             {/* Manager */}
-
             {isManager && (
               <div className="space-y-3">
                 <label className="font-medium">Manager Notes</label>
@@ -425,9 +422,9 @@ export default function ReviewDetailPage() {
                 </Button>
               </div>
             )}
-          </Card>
+          </div>
 
-          <Card className="p-6 md:col-span-3">
+          <div className="rounded-xl border bg-white p-6 shadow-sm md:col-span-3">
             <h2 className="text-xl font-semibold mb-6">Review Actions</h2>
 
             <div className="flex gap-3">
@@ -483,7 +480,7 @@ export default function ReviewDetailPage() {
 
               {review.status === "Locked" && "This review has been locked."}
             </p>
-          </Card>
+          </div>
         </div>
       </div>
     </AppLayout>

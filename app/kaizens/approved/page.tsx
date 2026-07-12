@@ -82,7 +82,7 @@ export default function PendingKaizensPage() {
 
         {kaizens.length === 0 ? (
           <Card className="p-10 text-center text-slate-500">
-            No pending improvements found.
+            No approved Kaizens found.
           </Card>
         ) : (
           <div className="space-y-4">
@@ -93,7 +93,7 @@ export default function PendingKaizensPage() {
                 action={
                   <Button asChild>
                     <Link
-                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit`}
+                      href={`/employees/${kaizen.employees.id}/kaizen/${kaizen.id}/edit?from=approved`}
                     >
                       Open
                     </Link>

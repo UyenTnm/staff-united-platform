@@ -102,7 +102,41 @@ export async function calculateReviewScores(
    * KAIZEN
    */
   const kaizens = await getEmployeeKaizens(employeeId, reviewMonth);
-  const rewardedKaizens = kaizens.filter((item) => item.status === "Rewarded");
+  console.log("Kaizens from DB", kaizens);
+  // const rewardedKaizens = kaizens.filter((item) => item.status === "Rewarded");
+
+  // console.table(
+  //   kaizens.map((k) => ({
+  //     title: k.title,
+  //     status: JSON.stringify(k.status),
+  //     points: k.performance_points,
+  //   })),
+  // );
+
+  const rewardedKaizens = kaizens.filter((k) => {
+    console.log(
+      "Compare:",
+      JSON.stringify(k.status),
+      JSON.stringify("Rewarded"),
+      k.status === "Rewarded",
+    );
+
+    return k.status === "Rewarded";
+  });
+
+  // console.log("Review Month:", reviewMonth);
+  // console.log("Employee:", employeeId);
+  // console.log("Kaizens:", kaizens);
+  // console.log("Rewarded:", rewardedKaizens);
+
+  // console.table(
+  //   kaizens.map((k) => ({
+  //     title: k.title,
+  //     status: k.status,
+  //     points: k.performance_points,
+  //     month: k.review_month,
+  //   })),
+  // );
 
   const kaizenSummary = {
     draft: kaizens.filter((k) => k.status === "Draft").length,

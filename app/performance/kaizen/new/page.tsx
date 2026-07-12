@@ -24,6 +24,8 @@ import {
 } from "@/lib/employees/kaizen-options";
 import { useAuth } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
+import { supabase } from "@/lib/supabase";
 
 export default function NewKaizenPage() {
   const router = useRouter();
@@ -46,8 +48,9 @@ export default function NewKaizenPage() {
 
   const [status, setStatus] = useState<KaizenStatus>("Submitted");
 
-  const isManager =
-    employee?.user_role === "HR" || employee?.user_role === "Manager";
+  // const isManager =
+  //   employee?.user_role === "HR" || employee?.user_role === "Manager";
+  const isManager = employee?.user_role === "Manager";
 
   async function saveKaizen(submitStatus: KaizenStatus) {
     if (!employee) {
@@ -114,6 +117,53 @@ export default function NewKaizenPage() {
         review_note: null,
         review_month: getReviewMonth(new Date()),
       });
+      // Chỉ gửi notification khi nhân viên SUBMIT (không gửi khi Save Draft)
+      if (submitStatus === "Submitted") {
+        if (employee.user_role === "HR") {
+          // HR submit -> Notify Manager
+
+          const { data: managers, error } = await supabase
+            .from("employees")
+            .select("id")
+            .eq("user_role", "Manager");
+
+          if (error) {
+            console.error(error);
+          } else if (managers) {
+            for (const manager of managers) {
+              await createNotification(
+                manager.id,
+                "New HR Kaizen Submitted",
+                `${employee.full_name} submitted a new Kaizen: "${title}"`,
+                "kaizen",
+                `/employees/${employee.id}/kaizen/${kaizen.id}/edit?from=pending`,
+              );
+            }
+          }
+        } else {
+          // Employee submit -> Notify HR
+
+          const { data: hrUsers, error } = await supabase
+            .from("employees")
+            .select("id")
+            .eq("user_role", "HR");
+
+          if (error) {
+            console.error(error);
+          } else if (hrUsers) {
+            for (const hr of hrUsers) {
+              await createNotification(
+                hr.id,
+                "New Kaizen Submitted",
+                `${employee.full_name} submitted a new Kaizen: "${title}"`,
+                "kaizen",
+                `/employees/${employee.id}/kaizen/${kaizen.id}/edit?from=pending`,
+              );
+            }
+          }
+        }
+      }
+
       // console.log("Created:", kaizen);
       toast.success(
         submitStatus === "Draft"

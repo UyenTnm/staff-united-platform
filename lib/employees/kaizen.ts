@@ -410,8 +410,22 @@ export async function verifyKaizen(id: string, managerId: string) {
   if (error) throw error;
 }
 
+// export async function rewardKaizen(id: string, managerId: string) {
+//   const { error } = await supabase
+//     .from("employee_kaizens")
+//     .update({
+//       status: "Rewarded",
+//       rewarded_by: managerId,
+//       rewarded_at: new Date().toISOString(),
+//       updated_at: new Date().toISOString(),
+//     })
+//     .eq("id", id);
+
+//   if (error) throw error;
+// }
+
 export async function rewardKaizen(id: string, managerId: string) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("employee_kaizens")
     .update({
       status: "Rewarded",
@@ -419,7 +433,39 @@ export async function rewardKaizen(id: string, managerId: string) {
       rewarded_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select()
+    .single();
+
+  console.log("Reward DB:", data);
 
   if (error) throw error;
+
+  return data;
+}
+
+export async function getEmployeeKaizensForDashboard() {
+  const { data, error } = await supabase.from("employee_kaizens").select("*");
+
+  if (error) throw error;
+
+  return data as KaizenRecord[];
+}
+
+export async function getKaizenStatistics() {
+  const kaizens = await getEmployeeKaizensForDashboard();
+
+  return {
+    draft: kaizens.filter((k) => k.status === "Draft").length,
+
+    pending: kaizens.filter(
+      (k) => k.status === "Submitted" || k.status === "Waiting Manager Review",
+    ).length,
+
+    underReview: kaizens.filter((k) => k.status === "Under Review").length,
+
+    approved: kaizens.filter((k) => k.status === "Approved").length,
+
+    rewarded: kaizens.filter((k) => k.status === "Rewarded").length,
+  };
 }

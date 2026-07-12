@@ -84,7 +84,8 @@ export default function BehaviorManagementPage() {
 
         {/* Dashboard */}
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4">
+        {/* <div className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4"> */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <Card className="p-6">
             <p className="text-sm text-slate-500">Waiting Employee</p>
 

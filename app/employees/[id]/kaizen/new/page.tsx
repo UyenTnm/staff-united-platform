@@ -141,7 +141,7 @@ export default function NewKaizenPage() {
             "New Kaizen Submitted",
             `${title} has been submitted and is waiting for HR review.`,
             "kaizen",
-            `/performance/kaizen/${kaizen.id}/edit`,
+            `/employees/${params.id}/kaizen/${kaizen.id}/edit?from=pending`,
           );
 
           console.log("Notification Result:", result);

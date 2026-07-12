@@ -7,8 +7,8 @@ export default function QuotesPage() {
   return (
     <AppLayout>
       <div className="min-h-screen bg-white dark:bg-slate-950">
-        <Sidebar />
-        <Header />
+        {/* <Sidebar /> */}
+        {/* <Header /> */}
 
         <main className="pt-20 px-4 md:px-6 pb-12">
           <div className="w-full">

@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { getUnreadCount } from "@/lib/notifications";
 import { NotificationDropdown } from "./NotificationDropdown";
@@ -14,29 +14,27 @@ export function NotificationBell({ employeeId }: NotificationBellProps) {
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  async function loadUnreadCount() {
+  const loadUnreadCount = useCallback(async () => {
     try {
       const count = await getUnreadCount(employeeId);
       setUnreadCount(count);
     } catch (error) {
       console.error(error);
     }
-  }
+  }, [employeeId]);
 
   useEffect(() => {
-    if (!employeeId) return;
+    const timer = setTimeout(() => {
+      loadUnreadCount();
+    }, 0);
 
-    async function load() {
-      try {
-        const count = await getUnreadCount(employeeId);
-        setUnreadCount(count);
-      } catch (error) {
-        console.error("Load unread notifications failed:", error);
-      }
-    }
+    const interval = setInterval(loadUnreadCount, 10000);
 
-    load();
-  }, [employeeId]);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+  }, [loadUnreadCount]);
 
   return (
     <div className="relative">
