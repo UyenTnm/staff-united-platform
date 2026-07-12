@@ -9,9 +9,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Employee, getEmployee } from "@/lib/employees/employees";
 import {
-  calculateEmployeePerformance,
-  PerformanceSummary,
-} from "@/lib/employees/performance";
+  calculateReviewScores,
+  type ReviewScores,
+} from "@/lib/performance/engine";
+
 import {
   getCurrentReview,
   getEmployeeReviews,
@@ -22,9 +23,7 @@ export default function EmployeeDetailPage() {
   const params = useParams();
 
   const [employee, setEmployee] = useState<Employee | null>(null);
-  const [performance, setPerformance] = useState<PerformanceSummary | null>(
-    null,
-  );
+  const [performance, setPerformance] = useState<ReviewScores | null>(null);
   const [currentReview, setCurrentReview] = useState<PerformanceReview | null>(
     null,
   );
@@ -36,13 +35,13 @@ export default function EmployeeDetailPage() {
     async function loadEmployee() {
       // const data = await getEmployee(params.id as string);
 
-      // const perf = await calculateEmployeePerformance(params.id as string);
+      // const perf = await calculateReviewScores(params.id as string);
 
       // const review = await getCurrentReview(params.id as string);
 
       const [data, perf, review, history] = await Promise.all([
         getEmployee(params.id as string),
-        calculateEmployeePerformance(params.id as string),
+        calculateReviewScores(params.id as string),
         getCurrentReview(params.id as string),
         getEmployeeReviews(params.id as string),
       ]);
@@ -155,7 +154,7 @@ export default function EmployeeDetailPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Current Review</p>
+              <p className="text-sm text-slate-500">Open Current Review</p>
 
               <h2 className="text-3xl font-bold mt-2">
                 {currentReview
@@ -207,30 +206,36 @@ export default function EmployeeDetailPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold">Review History</h2>
 
-          <div className="mt-5 space-y-3">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className="flex items-center justify-between border rounded-lg p-4"
-              >
-                <div>
-                  <p className="font-medium">
-                    {new Date(review.review_month).toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
+          <div className="mt-5 flex items-center justify-between">
+            <div className="space-y-2">
+              <p>
+                <strong>Total Reviews:</strong> {reviews.length}
+              </p>
 
-                  <p className="text-sm text-slate-500">{review.status}</p>
-                </div>
+              <p>
+                <strong>Latest Review:</strong>{" "}
+                {reviews.length > 0
+                  ? new Date(reviews[0].review_month).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        year: "numeric",
+                      },
+                    )
+                  : "-"}
+              </p>
 
-                <Button asChild variant="outline">
-                  <Link href={`/employees/${employee.id}/reviews/${review.id}`}>
-                    Open
-                  </Link>
-                </Button>
-              </div>
-            ))}
+              <p>
+                <strong>Status:</strong>{" "}
+                {reviews.length > 0 ? reviews[0].status : "-"}
+              </p>
+            </div>
+
+            <Button asChild>
+              <Link href={`/employees/${employee.id}/reviews`}>
+                View All Reviews
+              </Link>
+            </Button>
           </div>
         </Card>
       </div>

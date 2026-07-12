@@ -23,6 +23,9 @@ import {
   KAIZEN_STATUSES,
 } from "@/lib/employees/kaizen-options";
 import { useAuth } from "@/components/auth/auth-provider";
+import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
+import { supabase } from "@/lib/supabase";
 
 export default function NewKaizenPage() {
   const router = useRouter();
@@ -45,27 +48,28 @@ export default function NewKaizenPage() {
 
   const [status, setStatus] = useState<KaizenStatus>("Submitted");
 
-  const isManager =
-    employee?.user_role === "HR" || employee?.user_role === "Manager";
+  // const isManager =
+  //   employee?.user_role === "HR" || employee?.user_role === "Manager";
+  const isManager = employee?.user_role === "Manager";
 
-  async function handleSave() {
+  async function saveKaizen(submitStatus: KaizenStatus) {
     if (!employee) {
-      alert("Unable to identify current employee.");
+      toast.info("Unable to identify current employee.");
       return;
     }
 
     if (!title.trim()) {
-      alert("Please enter a title.");
+      toast.warning("Please enter a title.");
       return;
     }
 
     if (!category) {
-      alert("Please select a category.");
+      toast.warning("Please select a category.");
       return;
     }
 
     if (isManager && !impact) {
-      alert("Please select an impact level.");
+      toast.warning("Please select an impact level.");
       return;
     }
     const finalImpact: KaizenImpact = isManager
@@ -74,23 +78,23 @@ export default function NewKaizenPage() {
 
     try {
       setSaving(true);
-      console.log({
-        review_id: null,
-        employee_id: employee!.id,
-        title,
-        description,
-        category,
-        business_benefit: businessBenefit,
-        impact: isManager ? impact : "Small",
+      // console.log({
+      //   review_id: null,
+      //   employee_id: employee!.id,
+      //   title,
+      //   description,
+      //   category,
+      //   business_benefit: businessBenefit,
+      //   impact: isManager ? impact : "Small",
 
-        performance_points: isManager ? parseInt(points, 10) : 0,
+      //   performance_points: isManager ? parseInt(points, 10) : 0,
 
-        status: isManager ? status : "Submitted",
-        approved_by: null,
-        implemented_date: null,
-        review_note: null,
-        review_month: getReviewMonth(new Date()),
-      });
+      //   status: isManager ? status : submitStatus,
+      //   approved_by: null,
+      //   implemented_date: null,
+      //   review_note: null,
+      //   review_month: getReviewMonth(new Date()),
+      // });
 
       const kaizen = await createKaizen({
         review_id: null,
@@ -104,20 +108,73 @@ export default function NewKaizenPage() {
 
         performance_points: isManager ? parseInt(points, 10) : 0,
 
-        status: isManager ? status : "Submitted",
+        status: isManager ? status : submitStatus,
 
         approved_by: null,
+        // reviewed_by: null,
+        // reviewed_at: null,
         implemented_date: null,
         review_note: null,
         review_month: getReviewMonth(new Date()),
       });
-      console.log("Created:", kaizen);
+      // Chỉ gửi notification khi nhân viên SUBMIT (không gửi khi Save Draft)
+      if (submitStatus === "Submitted") {
+        if (employee.user_role === "HR") {
+          // HR submit -> Notify Manager
 
+          const { data: managers, error } = await supabase
+            .from("employees")
+            .select("id")
+            .eq("user_role", "Manager");
+
+          if (error) {
+            console.error(error);
+          } else if (managers) {
+            for (const manager of managers) {
+              await createNotification(
+                manager.id,
+                "New HR Kaizen Submitted",
+                `${employee.full_name} submitted a new Kaizen: "${title}"`,
+                "kaizen",
+                `/employees/${employee.id}/kaizen/${kaizen.id}/edit?from=pending`,
+              );
+            }
+          }
+        } else {
+          // Employee submit -> Notify HR
+
+          const { data: hrUsers, error } = await supabase
+            .from("employees")
+            .select("id")
+            .eq("user_role", "HR");
+
+          if (error) {
+            console.error(error);
+          } else if (hrUsers) {
+            for (const hr of hrUsers) {
+              await createNotification(
+                hr.id,
+                "New Kaizen Submitted",
+                `${employee.full_name} submitted a new Kaizen: "${title}"`,
+                "kaizen",
+                `/employees/${employee.id}/kaizen/${kaizen.id}/edit?from=pending`,
+              );
+            }
+          }
+        }
+      }
+
+      // console.log("Created:", kaizen);
+      toast.success(
+        submitStatus === "Draft"
+          ? "Draft saved successfully."
+          : "Kaizen submitted successfully.",
+      );
       router.push("/performance/kaizen");
     } catch (err) {
       //   console.error("Create Kaizen Error:", JSON.stringify(err, null, 2));
       console.error("Create Kaizen Error:", err);
-      alert("Unable to save improvement.");
+      toast.error("Unable to save improvement.");
     } finally {
       setSaving(false);
     }
@@ -236,9 +293,19 @@ export default function NewKaizenPage() {
             </>
           )}
 
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Submit Improvement"}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => saveKaizen("Draft")}
+              disabled={saving}
+            >
+              Save Draft
+            </Button>
+
+            <Button onClick={() => saveKaizen("Submitted")} disabled={saving}>
+              Submit Improvement
+            </Button>
+          </div>
         </Card>
       </div>
     </AppLayout>

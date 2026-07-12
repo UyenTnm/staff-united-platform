@@ -1,4 +1,4 @@
-import { ReviewStatus } from "./types";
+import { ReviewStatus } from "./review";
 
 export const REVIEW_WORKFLOW: Record<ReviewStatus, ReviewStatus[]> = {
   Draft: ["WaitingEmployee"],

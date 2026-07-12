@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./auth-provider";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 export function LoginForm() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export function LoginForm() {
       const current = await loadCurrentEmployee();
 
       if (!current) {
-        alert("Unable to load employee.");
+        toast.warning("Unable to load employee.");
         return;
       }
       if (current.account_status === "Password Change Required") {
@@ -60,7 +61,7 @@ export function LoginForm() {
     } catch (error) {
       console.error(error);
 
-      alert("Invalid email or password.");
+      toast.error("Invalid email or password.");
     } finally {
       setLoading(false);
     }

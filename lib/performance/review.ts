@@ -29,6 +29,20 @@ export interface PerformanceReview {
 
   created_by: string | null;
 
+  /**
+   * Review Notes
+   */
+  hr_notes: string | null;
+
+  manager_notes: string | null;
+
+  employee_comment: string | null;
+
+  approved_at: string | null;
+
+  /**
+   * Audit
+   */
   created_at: string;
 
   updated_at: string;
@@ -100,7 +114,18 @@ export async function createPerformanceReview(
     .from("performance_reviews")
     .insert({
       employee_id: employeeId,
+
       review_month: reviewMonth,
+
+      status: "Draft",
+
+      hr_notes: null,
+
+      manager_notes: null,
+
+      employee_comment: null,
+
+      approved_at: null,
     })
     .select()
     .single();
@@ -118,6 +143,28 @@ export async function updateReviewStatus(
     .from("performance_reviews")
     .update({
       status,
+    })
+    .eq("id", reviewId);
+
+  if (error) throw error;
+}
+
+export async function updateHrNotes(reviewId: string, notes: string) {
+  const { error } = await supabase
+    .from("performance_reviews")
+    .update({
+      hr_notes: notes,
+    })
+    .eq("id", reviewId);
+
+  if (error) throw error;
+}
+
+export async function updateEmployeeComment(reviewId: string, comment: string) {
+  const { error } = await supabase
+    .from("performance_reviews")
+    .update({
+      employee_comment: comment,
     })
     .eq("id", reviewId);
 
@@ -203,4 +250,38 @@ export async function getWaitingManagerReviews() {
   if (error) throw error;
 
   return data as ManagerReview[];
+}
+
+export async function updateManagerNotes(reviewId: string, notes: string) {
+  const { error } = await supabase
+    .from("performance_reviews")
+    .update({
+      manager_notes: notes,
+    })
+    .eq("id", reviewId);
+
+  if (error) throw error;
+}
+
+export async function approveReview(reviewId: string) {
+  const { error } = await supabase
+    .from("performance_reviews")
+    .update({
+      status: "Approved",
+      approved_at: new Date().toISOString(),
+    })
+    .eq("id", reviewId);
+
+  if (error) throw error;
+}
+
+export async function lockReview(reviewId: string) {
+  const { error } = await supabase
+    .from("performance_reviews")
+    .update({
+      status: "Locked",
+    })
+    .eq("id", reviewId);
+
+  if (error) throw error;
 }

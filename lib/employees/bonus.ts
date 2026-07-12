@@ -1,5 +1,6 @@
 export function getReviewMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}-01`;
 }

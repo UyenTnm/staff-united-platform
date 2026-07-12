@@ -22,6 +22,9 @@ import {
   KAIZEN_POINTS,
   KAIZEN_STATUSES,
 } from "@/lib/employees/kaizen-options";
+import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
+import { supabase } from "@/lib/supabase";
 
 export default function NewKaizenPage() {
   const params = useParams();
@@ -56,17 +59,17 @@ export default function NewKaizenPage() {
 
   async function handleSave() {
     if (!title.trim()) {
-      alert("Please enter a title.");
+      toast.warning("Please enter a title.");
       return;
     }
 
     if (!category) {
-      alert("Please select a category.");
+      toast.warning("Please select a category.");
       return;
     }
 
     if (isManager && !impact) {
-      alert("Please select an impact level.");
+      toast.warning("Please select an impact level.");
       return;
     }
     const finalImpact: KaizenImpact = isManager
@@ -112,13 +115,44 @@ export default function NewKaizenPage() {
         review_note: null,
         review_month: getReviewMonth(new Date()),
       });
+      console.log("Notification created.");
+      console.log("========== STEP 1 ==========");
+      console.log(kaizen);
+
       console.log("Created:", kaizen);
+      console.log("===== START NOTIFICATION =====");
+      const { data: hrs, error } = await supabase
+        .from("employees")
+        .select("id, full_name, user_role")
+        .eq("user_role", "HR");
+
+      console.log("HRs:", hrs);
+      console.log("HR Error:", error);
+
+      // Notify all HR users
+      console.log("========== STEP 2 ==========");
+
+      if (hrs) {
+        for (const hr of hrs) {
+          console.log("Sending to:", hr);
+
+          const result = await createNotification(
+            hr.id,
+            "New Kaizen Submitted",
+            `${title} has been submitted and is waiting for HR review.`,
+            "kaizen",
+            `/employees/${params.id}/kaizen/${kaizen.id}/edit?from=pending`,
+          );
+
+          console.log("Notification Result:", result);
+        }
+      }
 
       router.push(`/employees/${params.id}/kaizen`);
     } catch (err) {
       //   console.error("Create Kaizen Error:", JSON.stringify(err, null, 2));
       console.error("Create Kaizen Error:", err);
-      alert("Unable to save improvement.");
+      toast.error("Unable to save improvement.");
     } finally {
       setSaving(false);
     }

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { Quote, getQuote, updateQuote } from "@/lib/crm/quotes";
 import { syncLeadStatusFromQuote, updateLeadStatus } from "@/lib/crm/lead";
+import { toast } from "sonner";
 
 export default function EditQuotePage() {
   const params = useParams();
@@ -82,7 +83,7 @@ export default function EditQuotePage() {
       await updateLeadStatus(quote.lead_id, leadStatus);
     }
 
-    alert("Quote updated!");
+    toast.success("Quote updated!");
 
     router.push(`/crm/quotes/${quote.id}`);
   }

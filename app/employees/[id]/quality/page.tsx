@@ -16,7 +16,6 @@ import { EmployeeHeader } from "@/components/employees/employee-header";
 import { getEmployee, Employee } from "@/lib/employees/employees";
 
 export default function QualityPage() {
-  // const summary = calculateQualityScore(getQualityIssues);
   const [issues, setIssues] = useState<QualityIssue[]>([]);
   const [employee, setEmployee] = useState<Employee | null>(null);
 
@@ -26,14 +25,21 @@ export default function QualityPage() {
   const searchParams = useSearchParams();
 
   const reviewId = searchParams.get("reviewId");
+  const reviewMonth = searchParams.get("reviewMonth");
 
   useEffect(() => {
     async function loadData() {
       const [issueData, employeeData] = await Promise.all([
-        getQualityIssues(params.id as string),
+        getQualityIssues(params.id as string, reviewMonth ?? undefined),
         getEmployee(params.id as string),
       ]);
-
+      console.table(
+        issueData.map((i) => ({
+          type: i.issue_type,
+          status: i.status,
+          deduction: i.deduction,
+        })),
+      );
       setIssues(issueData);
       setEmployee(employeeData);
     }

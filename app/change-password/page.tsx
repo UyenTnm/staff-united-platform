@@ -11,6 +11,7 @@ import { loadCurrentEmployee, updatePassword } from "@/lib/auth/auth-client";
 
 import { updateEmployee } from "@/lib/employees/employees";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -26,17 +27,17 @@ export default function ChangePasswordPage() {
 
   async function handleSave() {
     if (!newPassword.trim()) {
-      alert("Please enter a new password.");
+      toast.warning("Please enter a new password.");
       return;
     }
 
     if (newPassword.length < 8) {
-      alert("Password must be at least 8 characters.");
+      toast.warning("Password must be at least 8 characters.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert("Passwords do not match.");
+      toast.warning("Passwords do not match.");
       return;
     }
 
@@ -46,7 +47,7 @@ export default function ChangePasswordPage() {
       const employee = await loadCurrentEmployee();
 
       if (!employee) {
-        alert("Unable to load employee.");
+        toast.warning("Unable to load employee.");
         return;
       }
 
@@ -56,9 +57,7 @@ export default function ChangePasswordPage() {
         account_status: "Active",
       });
 
-      alert(
-        "✅ Your password has been updated successfully. Welcome to STAFF United!",
-      );
+      toast.success("Your password has been updated successfully.");
 
       switch (employee.user_role) {
         case "Employee":
@@ -83,7 +82,7 @@ export default function ChangePasswordPage() {
     } catch (error) {
       console.error(error);
 
-      alert("Unable to change password.");
+      toast.warning("Unable to change password.");
     } finally {
       setSaving(false);
     }

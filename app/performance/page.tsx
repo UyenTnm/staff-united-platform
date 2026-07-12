@@ -16,19 +16,18 @@ import {
 } from "@/lib/performance/review";
 
 import {
-  calculateEmployeePerformance,
-  PerformanceSummary,
-} from "@/lib/employees/performance";
+  calculateReviewScores,
+  type ReviewScores,
+} from "@/lib/performance/engine";
 import { RoleGuard } from "@/components/auth/role-guard";
+import { toast } from "sonner";
 
 export default function MyPerformancePage() {
   const { employee } = useAuth();
 
   const [review, setReview] = useState<PerformanceReview | null>(null);
 
-  const [performance, setPerformance] = useState<PerformanceSummary | null>(
-    null,
-  );
+  const [performance, setPerformance] = useState<ReviewScores | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +40,7 @@ export default function MyPerformancePage() {
       setReview(currentReview);
 
       if (currentReview) {
-        const perf = await calculateEmployeePerformance(employee.id);
+        const perf = await calculateReviewScores(employee.id);
 
         setPerformance(perf);
       }
@@ -63,11 +62,11 @@ export default function MyPerformancePage() {
         status: "WaitingManager",
       });
 
-      alert("Review accepted successfully.");
+      toast.success("Review accepted successfully.");
     } catch (error) {
       console.error(error);
 
-      alert("Unable to accept review.");
+      toast.error("Unable to accept review.");
     }
   }
 
@@ -125,7 +124,41 @@ export default function MyPerformancePage() {
               </div>
             </Card>
           )}
+          {/* Quality */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">My Quality</h2>
 
+                <p className="text-slate-500 mt-2">
+                  View your quality issues and respond to HR reviews.
+                </p>
+              </div>
+
+              <Button asChild>
+                <Link href="/performance/quality">View My Quality</Link>
+              </Button>
+            </div>
+          </Card>
+
+          {/* Behavior */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">My Behavior</h2>
+
+                <p className="text-slate-500 mt-2">
+                  View your behavior issues and respond to HR reviews.
+                </p>
+              </div>
+
+              <Button asChild>
+                <Link href="/performance/behavior">View My Behavior</Link>
+              </Button>
+            </div>
+          </Card>
+
+          {/* Kaizen */}
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>

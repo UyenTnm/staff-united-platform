@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { getQualityIssue, updateQualityIssue } from "@/lib/employees/quality";
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
+import { toast } from "sonner";
 
 export default function EditQualityIssuePage() {
   const params = useParams();
@@ -47,12 +48,12 @@ export default function EditQualityIssuePage() {
 
   async function handleSave() {
     if (!issueType) {
-      alert("Please select an issue type.");
+      toast.warning("Please select an issue type.");
       return;
     }
 
     if (!description.trim()) {
-      alert("Please enter a description.");
+      toast.warning("Please enter a description.");
       return;
     }
     setSaving(true);
@@ -73,7 +74,7 @@ export default function EditQualityIssuePage() {
       router.push(`/employees/${params.id}/quality`);
     } catch (err) {
       console.error(err);
-      alert("Unable to save issue.");
+      toast.info("Unable to save issue.");
     } finally {
       setSaving(false);
     }

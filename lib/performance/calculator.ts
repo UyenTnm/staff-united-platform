@@ -4,10 +4,13 @@ export interface PerformanceScores {
   kaizen: number;
 }
 
-export function calculateTotalScore(scores: PerformanceScores) {
-  return scores.quality + scores.behavior + scores.kaizen;
-}
+export const MAX_QUALITY_SCORE = 5;
+export const MAX_BEHAVIOR_SCORE = 5;
+export const MAX_KAIZEN_SCORE = 5;
 
-export function calculatePercentage(totalScore: number) {
-  return Number(((totalScore / 15) * 100).toFixed(1));
+export const MAX_MONTHLY_BONUS =
+  MAX_QUALITY_SCORE + MAX_BEHAVIOR_SCORE + MAX_KAIZEN_SCORE;
+
+export function calculateMonthlyBonus(scores: PerformanceScores) {
+  return scores.quality + scores.behavior + scores.kaizen;
 }

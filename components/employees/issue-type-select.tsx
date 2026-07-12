@@ -18,6 +18,7 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function IssueTypeSelect({
@@ -25,9 +26,10 @@ export function IssueTypeSelect({
   value,
   onChange,
   placeholder = "Select",
+  disabled = false,
 }: Props) {
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger className="w-full">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

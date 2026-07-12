@@ -11,6 +11,8 @@ interface Props {
   href: string;
 
   color?: string;
+
+  countLabel?: string;
 }
 
 export function ReviewCard({
@@ -20,6 +22,7 @@ export function ReviewCard({
   count,
   href,
   color = "text-slate-900",
+  countLabel = "Issue",
 }: Props) {
   return (
     <Card className="p-6">
@@ -30,11 +33,12 @@ export function ReviewCard({
       </h2>
 
       <p className="text-sm text-slate-500 mt-2">
-        {count} Issue{count !== 1 ? "s" : ""}
+        {count} {countLabel}
+        {count !== 1 ? "s" : ""}
       </p>
 
       <Button asChild className="mt-6 w-full" variant="outline">
-      <Link href={href} target="_blank">
+        <Link href={href} target="_blank">
           View Details
         </Link>
       </Button>

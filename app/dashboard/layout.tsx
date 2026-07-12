@@ -1,5 +1,4 @@
-import { Header } from "@/components/header";
-import { Sidebar } from "@/components/sidebar";
+import { AppLayout } from "@/components/app-layout";
 
 export default function DashboardLayout({
   children,
@@ -7,13 +6,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Sidebar />
-      <Header />
-
-      <main className="md:ml-64 pt-20 px-4 md:px-6 pb-12">
-        <div className="max-w-7xl mx-auto">{children}</div>
-      </main>
-    </>
+    <AppLayout>
+      <div className="max-w-7xl mx-auto">{children}</div>
+    </AppLayout>
   );
 }
