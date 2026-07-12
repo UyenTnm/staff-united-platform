@@ -15,6 +15,7 @@ import {
   type BehaviorWithEmployee,
 } from "@/lib/employees/behavior";
 import { BehaviorCard } from "@/components/employees/behavior/BehaviorCard";
+import { IssueCard } from "@/components/issues/IssueCard";
 
 export default function PendingBehaviorPage() {
   const router = useRouter();
@@ -81,19 +82,28 @@ export default function PendingBehaviorPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {issues.map((issue) => (
+            {/* {issues.map((issue) => (
               <BehaviorCard
                 key={issue.id}
                 issue={issue}
                 action={
                   <Button asChild>
-                    <Link
-                      href={`/employees/${issue.employee_id}/behavior/edit/${issue.id}`}
-                    >
-                      Open
-                    </Link>
+                    <Link href={`/behavior/review/${issue.id}`}>Open</Link>
                   </Button>
                 }
+              />
+            ))} */}
+            {issues.map((issue) => (
+              <IssueCard
+                key={issue.id}
+                id={issue.id}
+                title={issue.issue_type}
+                employee={issue.employees.full_name}
+                department={issue.employees.department}
+                description={issue.description}
+                deduction={issue.deduction}
+                status={issue.status}
+                openUrl={`/behavior/review/${issue.id}`}
               />
             ))}
           </div>

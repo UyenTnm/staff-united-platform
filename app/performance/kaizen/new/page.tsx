@@ -75,23 +75,23 @@ export default function NewKaizenPage() {
 
     try {
       setSaving(true);
-      console.log({
-        review_id: null,
-        employee_id: employee!.id,
-        title,
-        description,
-        category,
-        business_benefit: businessBenefit,
-        impact: isManager ? impact : "Small",
+      // console.log({
+      //   review_id: null,
+      //   employee_id: employee!.id,
+      //   title,
+      //   description,
+      //   category,
+      //   business_benefit: businessBenefit,
+      //   impact: isManager ? impact : "Small",
 
-        performance_points: isManager ? parseInt(points, 10) : 0,
+      //   performance_points: isManager ? parseInt(points, 10) : 0,
 
-        status: isManager ? status : submitStatus,
-        approved_by: null,
-        implemented_date: null,
-        review_note: null,
-        review_month: getReviewMonth(new Date()),
-      });
+      //   status: isManager ? status : submitStatus,
+      //   approved_by: null,
+      //   implemented_date: null,
+      //   review_note: null,
+      //   review_month: getReviewMonth(new Date()),
+      // });
 
       const kaizen = await createKaizen({
         review_id: null,
@@ -108,13 +108,13 @@ export default function NewKaizenPage() {
         status: isManager ? status : submitStatus,
 
         approved_by: null,
-        reviewed_by: null,
-        reviewed_at: null,
+        // reviewed_by: null,
+        // reviewed_at: null,
         implemented_date: null,
         review_note: null,
         review_month: getReviewMonth(new Date()),
       });
-      console.log("Created:", kaizen);
+      // console.log("Created:", kaizen);
       toast.success(
         submitStatus === "Draft"
           ? "Draft saved successfully."

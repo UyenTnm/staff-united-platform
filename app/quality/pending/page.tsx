@@ -36,7 +36,7 @@ export default function PendingQualityPage() {
           return;
         }
 
-        const data = await getQualityIssuesByStatus("Waiting Manager");
+        const data = await getQualityIssuesByStatus("Waiting Employee");
 
         setIssues(data);
       } catch (error) {
@@ -95,11 +95,7 @@ export default function PendingQualityPage() {
                   <p className="font-bold text-red-600">-{issue.deduction}</p>
 
                   <Button asChild size="sm" className="mt-3">
-                    <Link
-                      href={`/employees/${issue.employee_id}/quality/edit/${issue.id}`}
-                    >
-                      Open
-                    </Link>
+                    <Link href={`/quality/review/${issue.id}`}>Open</Link>
                   </Button>
                 </div>
               </Card>

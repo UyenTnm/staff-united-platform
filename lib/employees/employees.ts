@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { UserRole } from "../auth";
+import { createNotification } from "../notifications";
 
 export interface Employee {
   id: string;
@@ -63,20 +64,6 @@ export async function getEmployee(id: string) {
   return data as Employee;
 }
 
-// export async function createEmployee(
-//   employee: Omit<Employee, "id" | "created_at">,
-// ) {
-//   const { data, error } = await supabase
-//     .from("employees")
-//     .insert(employee)
-//     .select()
-//     .single();
-
-//   if (error) throw error;
-
-//   return data as Employee;
-// }
-
 export async function createEmployee(employee: CreateEmployeeInput) {
   const { data, error } = await supabase
     .from("employees")
@@ -86,7 +73,20 @@ export async function createEmployee(employee: CreateEmployeeInput) {
 
   if (error) throw error;
 
-  return data as Employee;
+  try {
+    await createNotification(
+      data.id,
+      "Welcome to STAFF United",
+      "Your account has been created. Please log in and change your temporary password.",
+      "employee",
+      "/profile",
+    );
+  } catch (error) {
+    console.error("Create Notification Failed:", error);
+    // Không throw để tránh làm hỏng luồng tạo employee
+  }
+
+  return data as Employee; // ⭐ Bắt buộc phải có
 }
 
 export async function updateEmployee(id: string, values: Partial<Employee>) {
@@ -127,21 +127,6 @@ export async function generateEmployeeNumber() {
 
   return `EMP-${String(next).padStart(3, "0")}`;
 }
-
-// export async function getEmployeeByAuthUserId(authUserId: string) {
-//   const { data, error } = await supabase
-//     .from("employees")
-//     .select("*")
-//     .eq("auth_user_id", authUserId)
-//     .single();
-
-//   if (error) {
-//     console.error(error);
-//     return null;
-//   }
-
-//   return data as Employee;
-// }
 
 export async function getEmployeeByAuthUserId(authUserId: string) {
   const { data, error } = await supabase

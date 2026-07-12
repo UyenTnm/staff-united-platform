@@ -129,6 +129,10 @@ export function Sidebar() {
           href: "/reviews/pending",
         },
         {
+          label: "Monthly Reviews",
+          href: "/reviews",
+        },
+        {
           label: "Quality",
           href: "/quality",
         },
@@ -180,6 +184,10 @@ export function Sidebar() {
           href: "/reviews/pending",
         },
         {
+          label: "Monthly Reviews",
+          href: "/reviews",
+        },
+        {
           label: "Quality",
           href: "/quality",
         },
@@ -211,6 +219,57 @@ export function Sidebar() {
     },
   ];
 
+  // const MANAGER_MENU: SidebarSection[] = [
+  //   {
+  //     title: "Employee Management",
+  //     icon: UsersRound,
+  //     items: [
+  //       {
+  //         label: "Employees",
+  //         href: "/employees",
+  //       },
+  //     ],
+  //   },
+
+  //   {
+  //     title: "Performance Management",
+  //     icon: ClipboardCheck,
+  //     items: [
+  //       {
+  //         label: "Pending Reviews",
+  //         href: "/reviews/pending",
+  //       },
+  //       {
+  //         label: "Quality",
+  //         href: "/quality",
+  //       },
+  //       {
+  //         label: "Behavior",
+  //         href: "/behavior",
+  //       },
+  //     ],
+  //   },
+
+  //   {
+  //     title: "Kaizen Management",
+  //     icon: Lightbulb,
+  //     items: [
+  //       {
+  //         label: "Pending",
+  //         href: "/kaizens/pending",
+  //       },
+  //       {
+  //         label: "Waiting Verification",
+  //         href: "/kaizens/waiting-verification",
+  //       },
+  //       {
+  //         label: "Rewarded",
+  //         href: "/kaizens/rewarded",
+  //       },
+  //     ],
+  //   },
+  // ];
+
   const MANAGER_MENU: SidebarSection[] = [
     {
       title: "Employee Management",
@@ -222,7 +281,6 @@ export function Sidebar() {
         },
       ],
     },
-
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -232,12 +290,12 @@ export function Sidebar() {
           href: "/reviews/pending",
         },
         {
-          label: "Quality",
-          href: "/quality",
+          label: "Quality Approval",
+          href: "/quality/manager",
         },
         {
-          label: "Behavior",
-          href: "/behavior",
+          label: "Behavior Approval",
+          href: "/behavior/manager",
         },
       ],
     },

@@ -80,12 +80,39 @@ export interface KaizenUser {
   full_name: string;
 }
 
-export async function getEmployeeKaizens(employeeId: string) {
-  const { data, error } = await supabase
+export interface CreateKaizenInput {
+  review_id: string | null;
+  employee_id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  impact: KaizenImpact;
+  business_benefit: string | null;
+  performance_points: number;
+  status: KaizenStatus;
+
+  approved_by: string | null;
+  implemented_date: string | null;
+  review_note: string | null;
+  review_month: string;
+}
+
+export async function getEmployeeKaizens(
+  employeeId: string,
+  reviewMonth?: string,
+) {
+  let query = supabase
     .from("employee_kaizens")
     .select("*")
-    .eq("employee_id", employeeId)
-    .order("created_at", { ascending: false });
+    .eq("employee_id", employeeId);
+
+  if (reviewMonth) {
+    query = query.eq("review_month", reviewMonth);
+  }
+
+  const { data, error } = await query.order("created_at", {
+    ascending: false,
+  });
 
   if (error) throw error;
 
@@ -124,16 +151,15 @@ export async function getKaizen(id: string) {
   return data as KaizenRecord;
 }
 
-export async function createKaizen(
-  kaizen: Omit<KaizenRecord, "id" | "created_at" | "updated_at">,
-) {
+export async function createKaizen(kaizen: CreateKaizenInput) {
   const { data, error } = await supabase
     .from("employee_kaizens")
     .insert(kaizen)
-    .select();
+    .select()
+    .single();
 
-  console.log("Insert Data:", data);
-  console.log("Insert Error:", error);
+  // console.log("Insert Data:", data);
+  // console.log("Insert Error:", error);
 
   if (error) {
     alert(JSON.stringify(error, null, 2));
@@ -231,8 +257,8 @@ export async function approveKaizen(
     .eq("id", id)
     .select();
 
-  console.log("Approve data:", data);
-  console.log("Approve error:", error);
+  // console.log("Approve data:", data);
+  // console.log("Approve error:", error);
 
   if (error) {
     console.error("Supabase approve error:", JSON.stringify(error, null, 2));

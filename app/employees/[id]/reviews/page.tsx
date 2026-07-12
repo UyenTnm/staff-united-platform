@@ -12,6 +12,8 @@ import {
   getOrCreateCurrentReview,
   PerformanceReview,
 } from "@/lib/performance/review";
+import { generateMonthlyReviews } from "@/lib/performance/monthly-review";
+import { toast } from "sonner";
 
 export default function PerformanceReviewsPage() {
   const router = useRouter();
@@ -24,6 +26,9 @@ export default function PerformanceReviewsPage() {
     async function loadReviews() {
       try {
         const data = await getEmployeeReviews(params.id as string);
+
+        console.log("Reviews:", data);
+
         setReviews(data);
       } finally {
         setLoading(false);
@@ -37,6 +42,24 @@ export default function PerformanceReviewsPage() {
     const review = await getOrCreateCurrentReview(params.id as string);
 
     router.push(`/employees/${params.id}/reviews/${review.id}`);
+  }
+
+  async function handleGenerateReviews() {
+    try {
+      const result = await generateMonthlyReviews();
+
+      toast.success(
+        `${result.created} reviews created • ${result.skipped} already existed`,
+      );
+
+      const data = await getEmployeeReviews(params.id as string);
+
+      setReviews(data);
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Unable to generate monthly reviews.");
+    }
   }
 
   if (loading) {
@@ -59,8 +82,13 @@ export default function PerformanceReviewsPage() {
               Monthly performance history for this employee.
             </p>
           </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={handleGenerateReviews}>
+              Start New Review Cycle
+            </Button>
 
-          <Button onClick={handleCurrentReview}>Current Review</Button>
+            <Button onClick={handleCurrentReview}>Current Review</Button>
+          </div>{" "}
         </div>
 
         {reviews.length === 0 ? (
@@ -94,6 +122,40 @@ export default function PerformanceReviewsPage() {
                     </Link>
                   </Button>
                 </div>
+
+                <Card className="p-6">
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-sm text-slate-500">Total Reviews</p>
+
+                      <h2 className="text-3xl font-bold">{reviews.length}</h2>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-slate-500">Draft</p>
+
+                      <h2 className="text-3xl font-bold">
+                        {reviews.filter((r) => r.status === "Draft").length}
+                      </h2>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-slate-500">Approved</p>
+
+                      <h2 className="text-3xl font-bold">
+                        {reviews.filter((r) => r.status === "Approved").length}
+                      </h2>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-slate-500">Locked</p>
+
+                      <h2 className="text-3xl font-bold">
+                        {reviews.filter((r) => r.status === "Locked").length}
+                      </h2>
+                    </div>
+                  </div>
+                </Card>
               </Card>
             ))}
           </div>
@@ -102,5 +164,3 @@ export default function PerformanceReviewsPage() {
     </AppLayout>
   );
 }
-
-// TẠM ẨN

@@ -26,11 +26,12 @@ export default function BehaviorPage() {
   const searchParams = useSearchParams();
 
   const reviewId = searchParams.get("reviewId");
+  const reviewMonth = searchParams.get("reviewMonth");
 
   useEffect(() => {
     async function loadData() {
       const [issueData, employeeData] = await Promise.all([
-        getBehaviorIssues(params.id as string),
+        getBehaviorIssues(params.id as string, reviewMonth ?? undefined),
         getEmployee(params.id as string),
       ]);
 

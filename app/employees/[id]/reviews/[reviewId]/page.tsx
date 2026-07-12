@@ -44,7 +44,10 @@ export default function ReviewDetailPage() {
 
       setReview(data);
 
-      const perf = await calculateReviewScores(data.employee_id);
+      const perf = await calculateReviewScores(
+        data.employee_id,
+        data.review_month,
+      );
 
       setPerformance(perf);
 
@@ -78,6 +81,13 @@ export default function ReviewDetailPage() {
 
     try {
       await updateReviewStatus(review.id, "Approved");
+
+      const perf = await calculateReviewScores(
+        review.employee_id,
+        review.review_month,
+      );
+
+      setPerformance(perf);
 
       setReview({
         ...review,
@@ -220,7 +230,7 @@ export default function ReviewDetailPage() {
             maxScore={5}
             count={performance?.qualityIssues ?? 0}
             countLabel="Issue"
-            href={`/employees/${params.id}/quality?reviewId=${review.id}`}
+            href={`/employees/${params.id}/quality?reviewId=${review.id}&reviewMonth=${review.review_month}`}
             color="text-red-600"
           />
 
@@ -230,7 +240,7 @@ export default function ReviewDetailPage() {
             maxScore={5}
             count={performance?.behaviorIssues ?? 0}
             countLabel="Issue"
-            href={`/employees/${params.id}/behavior?reviewId=${review.id}`}
+            href={`/employees/${params.id}/behavior?reviewId=${review.id}&reviewMonth=${review.review_month}`}
             color="text-amber-600"
           />
 
@@ -240,9 +250,83 @@ export default function ReviewDetailPage() {
             maxScore={5}
             count={performance?.rewardedKaizens ?? 0}
             countLabel="Kaizen"
-            href={`/employees/${params.id}/kaizen?reviewId=${review.id}`}
+            href={`/employees/${params.id}/kaizen?reviewId=${review.id}&reviewMonth=${review.review_month}`}
             color="text-emerald-600"
           />
+
+          <Card className="p-6 md:col-span-3">
+            <h2 className="text-xl font-semibold mb-6">
+              Monthly Performance Summary
+            </h2>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">Quality</h3>
+
+                <div className="space-y-2 text-sm">
+                  <p>
+                    Waiting Employee :
+                    {performance?.qualitySummary.waitingEmployee}
+                  </p>
+
+                  <p>
+                    Returned to HR :{performance?.qualitySummary.returnedToHR}
+                  </p>
+
+                  <p>
+                    Waiting Manager :
+                    {performance?.qualitySummary.waitingManager}
+                  </p>
+
+                  <p>Approved :{performance?.qualitySummary.approved}</p>
+
+                  <p>Locked :{performance?.qualitySummary.locked}</p>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">Behavior</h3>
+
+                <div className="space-y-2 text-sm">
+                  <p>
+                    Waiting Employee :
+                    {performance?.behaviorSummary.waitingEmployee}
+                  </p>
+
+                  <p>
+                    Returned to HR :{performance?.behaviorSummary.returnedToHR}
+                  </p>
+
+                  <p>
+                    Waiting Manager :
+                    {performance?.behaviorSummary.waitingManager}
+                  </p>
+
+                  <p>Approved :{performance?.behaviorSummary.approved}</p>
+
+                  <p>Locked :{performance?.behaviorSummary.locked}</p>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">Kaizen</h3>
+
+                <div className="space-y-2 text-sm">
+                  <p>Draft : {performance?.kaizenSummary.draft}</p>
+
+                  <p>Submitted : {performance?.kaizenSummary.submitted}</p>
+
+                  <p>Under Review : {performance?.kaizenSummary.underReview}</p>
+
+                  <p>Approved : {performance?.kaizenSummary.approved}</p>
+
+                  <p>Implemented : {performance?.kaizenSummary.implemented}</p>
+
+                  <p>Rewarded : {performance?.kaizenSummary.rewarded}</p>
+                </div>
+              </Card>
+            </div>
+          </Card>
 
           <Card className="p-6 space-y-6">
             <h2 className="text-xl font-semibold">Review Notes</h2>

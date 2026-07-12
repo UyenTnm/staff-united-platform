@@ -23,6 +23,8 @@ import {
   KAIZEN_STATUSES,
 } from "@/lib/employees/kaizen-options";
 import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
+import { supabase } from "@/lib/supabase";
 
 export default function NewKaizenPage() {
   const params = useParams();
@@ -113,7 +115,38 @@ export default function NewKaizenPage() {
         review_note: null,
         review_month: getReviewMonth(new Date()),
       });
+      console.log("Notification created.");
+      console.log("========== STEP 1 ==========");
+      console.log(kaizen);
+
       console.log("Created:", kaizen);
+      console.log("===== START NOTIFICATION =====");
+      const { data: hrs, error } = await supabase
+        .from("employees")
+        .select("id, full_name, user_role")
+        .eq("user_role", "HR");
+
+      console.log("HRs:", hrs);
+      console.log("HR Error:", error);
+
+      // Notify all HR users
+      console.log("========== STEP 2 ==========");
+
+      if (hrs) {
+        for (const hr of hrs) {
+          console.log("Sending to:", hr);
+
+          const result = await createNotification(
+            hr.id,
+            "New Kaizen Submitted",
+            `${title} has been submitted and is waiting for HR review.`,
+            "kaizen",
+            `/performance/kaizen/${kaizen.id}/edit`,
+          );
+
+          console.log("Notification Result:", result);
+        }
+      }
 
       router.push(`/employees/${params.id}/kaizen`);
     } catch (err) {

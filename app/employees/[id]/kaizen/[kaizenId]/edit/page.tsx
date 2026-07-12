@@ -34,6 +34,8 @@ import {
 import { toast } from "sonner";
 import { KaizenTimeline } from "@/components/employees/kaizen/kaizen-timeline";
 import { useAuth } from "@/components/auth/auth-provider";
+import { createNotification } from "@/lib/notifications";
+import { supabase } from "@/lib/supabase";
 
 export default function EditKaizenPage() {
   const params = useParams();
@@ -124,6 +126,14 @@ export default function EditKaizenPage() {
         reviewNote,
       );
 
+      await createNotification(
+        kaizen!.employee_id,
+        "Kaizen Approved",
+        "Congratulations! Your Kaizen has been approved.",
+        "kaizen",
+        `/employees/${kaizen!.employee_id}/kaizen`,
+      );
+
       toast.success("Kaizen approved.");
 
       setStatus("Approved");
@@ -138,6 +148,22 @@ export default function EditKaizenPage() {
   async function handleStartExecution() {
     try {
       await startExecution(params.kaizenId as string);
+
+      const { data: hr } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("user_role", "HR")
+        .maybeSingle();
+
+      if (hr) {
+        await createNotification(
+          hr.id,
+          "Execution Started",
+          `${kaizen?.title} is now in progress.`,
+          "kaizen",
+          `/performance/kaizen/${params.kaizenId}/edit`,
+        );
+      }
 
       toast.success("Execution started.");
 
@@ -160,6 +186,14 @@ export default function EditKaizenPage() {
     try {
       await markKaizenUnderReview(params.kaizenId as string, employee.id);
 
+      await createNotification(
+        kaizen!.employee_id,
+        "Kaizen Under Review",
+        "Your Kaizen is now being reviewed by HR.",
+        "kaizen",
+        `/performance/kaizen/${params.kaizenId}/edit`,
+      );
+
       toast.success("Kaizen is now under review.");
 
       router.refresh();
@@ -173,6 +207,22 @@ export default function EditKaizenPage() {
   async function handleRequestVerification() {
     try {
       await requestVerification(params.kaizenId as string);
+
+      const { data: manager } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("user_role", "Manager")
+        .maybeSingle();
+
+      if (manager) {
+        await createNotification(
+          manager.id,
+          "Verification Requested",
+          `${kaizen?.title} is waiting for verification.`,
+          "kaizen",
+          `/performance/kaizen/${params.kaizenId}/edit`,
+        );
+      }
 
       toast.success("Verification requested.");
 
@@ -191,6 +241,14 @@ export default function EditKaizenPage() {
 
     try {
       await verifyKaizen(params.kaizenId as string, employee.id);
+
+      await createNotification(
+        kaizen!.employee_id,
+        "Kaizen Verified",
+        "Your Kaizen has been verified successfully.",
+        "kaizen",
+        `/employees/${kaizen!.employee_id}/kaizen`,
+      );
 
       toast.success("Kaizen verified successfully.");
 
@@ -214,6 +272,14 @@ export default function EditKaizenPage() {
       setSaving(true);
 
       await rewardKaizen(params.kaizenId as string, employee.id);
+
+      await createNotification(
+        kaizen!.employee_id,
+        "Reward Received",
+        "Congratulations! Your Kaizen has been rewarded.",
+        "kaizen",
+        `/employees/${kaizen!.employee_id}/kaizen`,
+      );
 
       toast.success("Employee rewarded successfully.");
 
@@ -320,6 +386,22 @@ export default function EditKaizenPage() {
         employee.id,
         reviewNote,
       );
+
+      const { data: manager } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("user_role", "Manager")
+        .maybeSingle();
+
+      if (manager) {
+        await createNotification(
+          manager.id,
+          "Kaizen Waiting Approval",
+          `${kaizen?.title} is waiting for your approval.`,
+          "kaizen",
+          `/performance/kaizen/${params.kaizenId}/edit`,
+        );
+      }
 
       toast.success("Sent to Manager successfully.");
 

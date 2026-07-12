@@ -154,7 +154,7 @@ export default function EmployeeDetailPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Current Review</p>
+              <p className="text-sm text-slate-500">Open Current Review</p>
 
               <h2 className="text-3xl font-bold mt-2">
                 {currentReview
@@ -206,30 +206,36 @@ export default function EmployeeDetailPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold">Review History</h2>
 
-          <div className="mt-5 space-y-3">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className="flex items-center justify-between border rounded-lg p-4"
-              >
-                <div>
-                  <p className="font-medium">
-                    {new Date(review.review_month).toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
+          <div className="mt-5 flex items-center justify-between">
+            <div className="space-y-2">
+              <p>
+                <strong>Total Reviews:</strong> {reviews.length}
+              </p>
 
-                  <p className="text-sm text-slate-500">{review.status}</p>
-                </div>
+              <p>
+                <strong>Latest Review:</strong>{" "}
+                {reviews.length > 0
+                  ? new Date(reviews[0].review_month).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        year: "numeric",
+                      },
+                    )
+                  : "-"}
+              </p>
 
-                <Button asChild variant="outline">
-                  <Link href={`/employees/${employee.id}/reviews/${review.id}`}>
-                    Open
-                  </Link>
-                </Button>
-              </div>
-            ))}
+              <p>
+                <strong>Status:</strong>{" "}
+                {reviews.length > 0 ? reviews[0].status : "-"}
+              </p>
+            </div>
+
+            <Button asChild>
+              <Link href={`/employees/${employee.id}/reviews`}>
+                View All Reviews
+              </Link>
+            </Button>
           </div>
         </Card>
       </div>

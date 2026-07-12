@@ -32,12 +32,22 @@ export interface QualityIssue {
   created_at: string;
 }
 
-export async function getQualityIssues(employeeId: string) {
-  const { data, error } = await supabase
+export async function getQualityIssues(
+  employeeId: string,
+  reviewMonth?: string,
+) {
+  let query = supabase
     .from("employee_quality_issues")
     .select("*")
-    .eq("employee_id", employeeId)
-    .order("issue_date", { ascending: false });
+    .eq("employee_id", employeeId);
+
+  if (reviewMonth) {
+    query = query.eq("review_month", reviewMonth);
+  }
+
+  const { data, error } = await query.order("issue_date", {
+    ascending: false,
+  });
 
   if (error) {
     console.log("Supabase Error:", JSON.stringify(error, null, 2));
@@ -50,7 +60,11 @@ export async function getQualityIssues(employeeId: string) {
 export function calculateQualityScore(issues: QualityIssue[]) {
   const startingScore = 5;
 
-  const totalDeduction = issues.reduce(
+  const validIssues = issues.filter((issue) =>
+    ["Waiting Manager", "Approved", "Locked"].includes(issue.status),
+  );
+
+  const totalDeduction = validIssues.reduce(
     (sum, issue) => sum + issue.deduction,
     0,
   );
@@ -73,9 +87,10 @@ export async function createQualityIssue(issue: {
   issue_date: string;
   review_month: string;
 }) {
-  const { error } = await supabase
-    .from("employee_quality_issues")
-    .insert(issue);
+  const { error } = await supabase.from("employee_quality_issues").insert({
+    ...issue,
+    status: "Waiting Employee",
+  });
 
   if (error) throw error;
 }
@@ -118,7 +133,8 @@ export interface QualityWithEmployee extends QualityIssue {
 
 export type QualityStatus =
   | "Waiting Employee"
-  | "Employee Appealed"
+  | "Returned to HR"
+  | "Resolved by HR"
   | "Waiting Manager"
   | "Approved"
   | "Locked";
@@ -182,11 +198,39 @@ export async function getQualityIssuesByStatus(status: QualityStatus) {
   return data as QualityWithEmployee[];
 }
 
+export async function getResolvedQualityIssues() {
+  const { data, error } = await supabase
+    .from("employee_quality_issues")
+    .select(
+      `
+      *,
+      employees!employee_quality_issues_employee_id_fkey(
+        id,
+        full_name,
+        department
+      ),
+      evaluator:employees!employee_quality_issues_evaluator_id_fkey(
+        id,
+        full_name
+      )
+    `,
+    )
+    .in("status", ["Approved", "Locked"])
+    .order("updated_at", {
+      ascending: false,
+    });
+
+  if (error) throw error;
+
+  return data as QualityWithEmployee[];
+}
+
 export async function resolveQualityIssue(id: string) {
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
-      status: "Resolved",
+      status: "Resolved by HR",
+      deduction: 0,
     })
     .eq("id", id);
 
@@ -219,7 +263,7 @@ export async function employeeAppealQuality(id: string, comment: string) {
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
-      status: "Employee Appealed",
+      status: "Returned to HR",
       employee_comment: comment,
     })
     .eq("id", id);
@@ -238,18 +282,12 @@ export async function sendQualityToManager(id: string) {
   if (error) throw error;
 }
 
-export async function approveQuality(
-  id: string,
-  managerId: string,
-  note: string,
-) {
+export async function approveQuality(id: string) {
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
       status: "Approved",
-      approved_by: managerId,
       approved_at: new Date().toISOString(),
-      manager_note: note,
     })
     .eq("id", id);
 
@@ -265,4 +303,74 @@ export async function lockQuality(id: string) {
     .eq("id", id);
 
   if (error) throw error;
+}
+
+export async function getQualityStatistics() {
+  const { data, error } = await supabase
+    .from("employee_quality_issues")
+    .select("status");
+
+  if (error) throw error;
+
+  return {
+    waitingEmployee: data.filter((i) => i.status === "Waiting Employee").length,
+
+    returnedToHR: data.filter((i) => i.status === "Returned to HR").length,
+
+    resolvedByHR: data.filter((i) => i.status === "Resolved by HR").length,
+
+    waitingManager: data.filter((i) => i.status === "Waiting Manager").length,
+
+    approved: data.filter((i) => i.status === "Approved").length,
+
+    locked: data.filter((i) => i.status === "Locked").length,
+  };
+}
+
+export async function getQualityReview(issueId: string) {
+  const { data, error } = await supabase
+    .from("employee_quality_issues")
+    .select(
+      `
+      *,
+      employees!employee_quality_issues_employee_id_fkey(
+        id,
+        full_name,
+        department,
+        role
+      ),
+      evaluator:employees!employee_quality_issues_evaluator_id_fkey(
+        id,
+        full_name
+      )
+    `,
+    )
+    .eq("id", issueId)
+    .single();
+
+  if (error) throw error;
+
+  return data as QualityWithEmployee;
+}
+
+export async function getMyQualityIssues(
+  employeeId: string,
+  reviewMonth?: string,
+) {
+  let query = supabase
+    .from("employee_quality_issues")
+    .select("*")
+    .eq("employee_id", employeeId);
+
+  if (reviewMonth) {
+    query = query.eq("review_month", reviewMonth);
+  }
+
+  const { data, error } = await query.order("issue_date", {
+    ascending: false,
+  });
+
+  if (error) throw error;
+
+  return data;
 }

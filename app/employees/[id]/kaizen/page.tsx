@@ -20,11 +20,12 @@ export default function QualityPage() {
   const searchParams = useSearchParams();
 
   const reviewId = searchParams.get("reviewId");
+  const reviewMonth = searchParams.get("reviewMonth");
 
   useEffect(() => {
     async function loadData() {
       const [kaizenData, employeeData] = await Promise.all([
-        getEmployeeKaizens(params.id as string),
+        getEmployeeKaizens(params.id as string, reviewMonth ?? undefined),
         getEmployee(params.id as string),
       ]);
 

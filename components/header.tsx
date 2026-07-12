@@ -7,19 +7,20 @@
 // Settings -> User Settings
 
 import { ChevronDown, User } from "lucide-react";
-// import { Bell, , Search, } from "lucide-react";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth";
 import { useAuth } from "./auth/auth-provider";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 export function Header() {
   const router = useRouter();
 
   const { employee, loading } = useAuth();
   const [openMenu, setOpenMenu] = useState(false);
+
+  console.log("Current Login Employee:", employee);
 
   // Ensure component is mounted before rendering theme switcher
 
@@ -47,14 +48,9 @@ export function Header() {
         {/* Right Actions */}
         <div className="flex items-center gap-4 ml-6">
           {/* Notifications */}
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="relative text-slate-600 dark:text-slate-400 hover:text-slate-900"
-          >
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-          </Button> */}
+          {/* Notifications */}
+
+          {employee && <NotificationBell employeeId={employee.id} />}
 
           {/* User Profile */}
           <div className="relative">
