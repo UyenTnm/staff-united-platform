@@ -107,6 +107,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           label: "Behavior",
           href: "/behavior",
         },
+        {
+          label: "Returned Reviews",
+          href: "/performance/returned",
+        },
       ],
     },
 
@@ -179,6 +183,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         {
           label: "Behavior",
           href: "/behavior",
+        },
+        {
+          label: "Returned Reviews",
+          href: "/performance/returned",
         },
       ],
     },
@@ -343,7 +351,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         collapsed ? "w-20" : "w-64",
       )}
     >
-      {/* Logo Section */}
       {/* Logo Section */}
       <div
         className={cn(

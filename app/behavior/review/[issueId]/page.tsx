@@ -62,7 +62,7 @@ export default function BehaviorReviewPage() {
     try {
       setSending(true);
 
-      await sendBehaviorToEmployee(issue.id);
+      await sendBehaviorToEmployee(issue.id, issue.employee_id);
 
       alert("Behavior issue has been sent to the employee.");
 
