@@ -57,6 +57,15 @@ export interface ManagerReview extends PerformanceReview {
   };
 }
 
+export interface MonthlyPerformanceReview extends PerformanceReview {
+  employees: {
+    id: string;
+    full_name: string;
+    department: string;
+    role: string;
+  };
+}
+
 export async function getReview(reviewId: string) {
   const { data, error } = await supabase
     .from("performance_reviews")
@@ -217,6 +226,32 @@ export async function getReviewByMonth(
   if (error) throw error;
 
   return data;
+}
+
+export async function getMonthlyReview(
+  employeeId: string,
+  reviewMonth: string,
+) {
+  const { data, error } = await supabase
+    .from("performance_reviews")
+    .select(
+      `
+      *,
+      employees(
+        id,
+        full_name,
+        department,
+        role
+      )
+    `,
+    )
+    .eq("employee_id", employeeId)
+    .eq("review_month", reviewMonth)
+    .single();
+
+  if (error) throw error;
+
+  return data as MonthlyPerformanceReview;
 }
 
 export async function employeeAcceptReview(reviewId: string) {
