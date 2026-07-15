@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { createNotification } from "../notifications";
 
 export interface BehaviorIssue {
   id: string;
@@ -210,7 +211,7 @@ export async function getBehaviorIssuesByStatus(status: BehaviorStatus) {
   return data as BehaviorWithEmployee[];
 }
 
-export async function sendBehaviorToEmployee(id: string) {
+export async function sendBehaviorToEmployee(id: string, employeeId: string) {
   const { error } = await supabase
     .from("employee_behavior_issues")
     .update({
@@ -219,6 +220,14 @@ export async function sendBehaviorToEmployee(id: string) {
     .eq("id", id);
 
   if (error) throw error;
+
+  await createNotification(
+    employeeId,
+    "New Behavior Review",
+    "HR has sent a Behavior issue for your review.",
+    "behavior",
+    `/behavior/review/${id}`,
+  );
 }
 
 export async function getBehaviorHistory() {
@@ -281,16 +290,36 @@ export async function employeeAcceptBehavior(issueId: string) {
   if (error) throw error;
 }
 
-export async function employeeAppealBehavior(issueId: string, comment: string) {
+export async function employeeAppealBehavior(id: string, comment: string) {
+  const issue = await getBehaviorIssue(id);
+
   const { error } = await supabase
     .from("employee_behavior_issues")
     .update({
       status: "Returned to HR",
       employee_comment: comment,
     })
-    .eq("id", issueId);
+    .eq("id", id);
 
   if (error) throw error;
+
+  // tìm tất cả HR
+  const { data: hrUsers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "HR");
+
+  if (hrUsers) {
+    for (const hr of hrUsers) {
+      await createNotification(
+        hr.id,
+        "Quality Appeal Submitted",
+        "An employee has submitted an appeal for a Quality Issue.",
+        "quality",
+        `/quality/review/${id}`,
+      );
+    }
+  }
 }
 
 export async function sendBehaviorToManager(issueId: string) {

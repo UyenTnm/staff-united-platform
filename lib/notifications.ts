@@ -129,3 +129,11 @@ export function getPerformanceActionUrl(employeeId: string) {
 export function getMyKaizenActionUrl(employeeId: string) {
   return `/employees/${employeeId}/kaizen`;
 }
+
+export function getMyQualityActionUrl(issueId: string) {
+  return `/performance/quality/${issueId}`;
+}
+
+export function getMyBehaviorActionUrl(issueId: string) {
+  return `/performance/behavior/${issueId}`;
+}

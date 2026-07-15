@@ -1,3 +1,4 @@
+import { createNotification, getMyQualityActionUrl } from "../notifications";
 import { supabase } from "../supabase";
 
 export interface QualityIssue {
@@ -78,6 +79,23 @@ export function calculateQualityScore(issues: QualityIssue[]) {
   };
 }
 
+// export async function createQualityIssue(issue: {
+//   employee_id: string;
+//   issue_type: string;
+//   description: string;
+//   deduction: number;
+//   evaluator_id: string | null;
+//   issue_date: string;
+//   review_month: string;
+// }) {
+//   const { error } = await supabase.from("employee_quality_issues").insert({
+//     ...issue,
+//     status: "Waiting Employee",
+//   });
+
+//   if (error) throw error;
+// }
+
 export async function createQualityIssue(issue: {
   employee_id: string;
   issue_type: string;
@@ -87,12 +105,18 @@ export async function createQualityIssue(issue: {
   issue_date: string;
   review_month: string;
 }) {
-  const { error } = await supabase.from("employee_quality_issues").insert({
-    ...issue,
-    status: "Waiting Employee",
-  });
+  const { data, error } = await supabase
+    .from("employee_quality_issues")
+    .insert({
+      ...issue,
+      status: "Waiting Employee",
+    })
+    .select()
+    .single();
 
   if (error) throw error;
+
+  return data;
 }
 
 export async function getQualityIssue(id: string) {
@@ -237,7 +261,7 @@ export async function resolveQualityIssue(id: string) {
   if (error) throw error;
 }
 
-export async function sendQualityToEmployee(id: string) {
+export async function sendQualityToEmployee(id: string, employeeId: string) {
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
@@ -246,6 +270,14 @@ export async function sendQualityToEmployee(id: string) {
     .eq("id", id);
 
   if (error) throw error;
+
+  await createNotification(
+    employeeId,
+    "New Quality Review",
+    "HR has sent a Quality issue for your review.",
+    "quality",
+    getMyQualityActionUrl(id),
+  );
 }
 
 export async function employeeAcceptQuality(id: string) {
@@ -260,6 +292,8 @@ export async function employeeAcceptQuality(id: string) {
 }
 
 export async function employeeAppealQuality(id: string, comment: string) {
+  const issue = await getQualityIssue(id);
+
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
@@ -269,9 +303,29 @@ export async function employeeAppealQuality(id: string, comment: string) {
     .eq("id", id);
 
   if (error) throw error;
+
+  // tìm tất cả HR
+  const { data: hrUsers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "HR");
+
+  if (hrUsers) {
+    for (const hr of hrUsers) {
+      await createNotification(
+        hr.id,
+        "Quality Appeal Submitted",
+        `${issue.issue_type} has been appealed by the employee.`,
+        "quality",
+        `/quality/review/${id}`,
+      );
+    }
+  }
 }
 
 export async function sendQualityToManager(id: string) {
+  const issue = await getQualityReview(id);
+
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
@@ -280,9 +334,28 @@ export async function sendQualityToManager(id: string) {
     .eq("id", id);
 
   if (error) throw error;
+
+  const { data: managers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "Manager");
+
+  if (managers) {
+    for (const manager of managers) {
+      await createNotification(
+        manager.id,
+        "Quality Review Waiting",
+        `${issue.employees.full_name}'s Quality Review is waiting for your approval.`,
+        "quality",
+        `/quality/manager/${id}`,
+      );
+    }
+  }
 }
 
 export async function approveQuality(id: string) {
+  const issue = await getQualityReview(id);
+
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
@@ -292,6 +365,33 @@ export async function approveQuality(id: string) {
     .eq("id", id);
 
   if (error) throw error;
+
+  // Employee
+  await createNotification(
+    issue.employee_id,
+    "Quality Review Approved",
+    "Your Quality Review has been approved by the Manager.",
+    "quality",
+    getMyQualityActionUrl(id),
+  );
+
+  // HR
+  const { data: hrUsers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "HR");
+
+  if (hrUsers) {
+    for (const hr of hrUsers) {
+      await createNotification(
+        hr.id,
+        "Quality Review Approved",
+        `${issue.employees.full_name}'s Quality Review has been approved by the Manager.`,
+        "quality",
+        `/quality/history`,
+      );
+    }
+  }
 }
 
 export async function lockQuality(id: string) {

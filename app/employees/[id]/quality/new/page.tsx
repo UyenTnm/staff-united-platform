@@ -11,7 +11,10 @@ import { IssueTypeSelect } from "@/components/employees/issue-type-select";
 import { QUALITY_ISSUES } from "@/lib/employees/issue-types";
 // import { SCORE_SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 import { useState } from "react";
-import { createQualityIssue } from "@/lib/employees/quality";
+import {
+  createQualityIssue,
+  sendQualityToEmployee,
+} from "@/lib/employees/quality";
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 import { toast } from "sonner";
@@ -47,7 +50,8 @@ export default function NewQualityIssuePage() {
         description,
         deduction,
       });
-      await createQualityIssue({
+
+      const issue = await createQualityIssue({
         employee_id: params.id as string,
         issue_type: issueType,
         description,
@@ -56,6 +60,10 @@ export default function NewQualityIssuePage() {
         issue_date: new Date().toISOString(),
         review_month: getReviewMonth(new Date()),
       });
+
+      await sendQualityToEmployee(issue.id, params.id as string);
+
+      toast.success("Quality issue sent to employee.");
 
       router.push(`/employees/${params.id}/quality`);
     } catch (err) {
@@ -66,8 +74,9 @@ export default function NewQualityIssuePage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-3xl">
-        <div className="flex justify-between">
+      {/* <div className="space-y-6 max-w-3xl"> */}
+      <div className="space-y-6 max-w-5xl">
+        <div>
           <div>
             <h1 className="text-3xl font-bold">Add Quality Issue</h1>
 
@@ -75,10 +84,6 @@ export default function NewQualityIssuePage() {
               Record a quality issue for this employee.
             </p>
           </div>
-
-          <Button asChild variant="outline">
-            <Link href={`/employees/${params.id}/quality`}>Cancel</Link>
-          </Button>
         </div>
 
         <Card className="p-6 space-y-6">
@@ -121,9 +126,15 @@ export default function NewQualityIssuePage() {
             </div>
           </div>
 
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Issue"}
-          </Button>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="outline" asChild>
+              <Link href={`/employees/${params.id}/quality`}>Cancel</Link>
+            </Button>
+
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Sending..." : "Send to Employee"}
+            </Button>
+          </div>
         </Card>
       </div>
     </AppLayout>

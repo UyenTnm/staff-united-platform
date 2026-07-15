@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import {
   getQualityReview,
   resolveQualityIssue,
-  sendQualityToEmployee,
   sendQualityToManager,
   type QualityWithEmployee,
 } from "@/lib/employees/quality";
@@ -57,26 +56,26 @@ export default function QualityReviewPage() {
     );
   }
 
-  async function handleSendToEmployee() {
-    if (!issue) return;
+  // async function handleSendToEmployee() {
+  //   if (!issue) return;
 
-    try {
-      setSending(true);
+  //   try {
+  //     setSending(true);
 
-      await sendQualityToEmployee(issue.id);
+  //     await sendQualityToEmployee(issue.id, issue.employee_id);
 
-      toast.success("Quality issue sent to employee.");
+  //     toast.success("Quality issue sent to employee.");
 
-      const updatedIssue = await getQualityReview(issue.id);
+  //     const updatedIssue = await getQualityReview(issue.id);
 
-      setIssue(updatedIssue);
-    } catch (error) {
-      console.error(error);
-      toast.error("Unable to send issue.");
-    } finally {
-      setSending(false);
-    }
-  }
+  //     setIssue(updatedIssue);
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Unable to send issue.");
+  //   } finally {
+  //     setSending(false);
+  //   }
+  // }
 
   async function handleSendToManager() {
     if (!issue) return;
@@ -100,6 +99,11 @@ export default function QualityReviewPage() {
     if (!issue) return;
 
     try {
+      const confirmed = window.confirm(
+        "Accept this appeal?\n\nThe deduction will be removed and this issue will be closed.",
+      );
+
+      if (!confirmed) return;
       await resolveQualityIssue(issue.id);
 
       const updatedIssue = await getQualityReview(issue.id);
@@ -184,13 +188,13 @@ export default function QualityReviewPage() {
             </div>
           )}
 
-          <Card className="p-6">
+          {/* <Card className="p-6">
             <h2 className="text-lg font-semibold">HR Note</h2>
 
             <p className="mt-3 text-slate-600">
               {issue.hr_note || "No HR note."}
             </p>
-          </Card>
+          </Card> */}
 
           <div className="flex justify-end gap-3">
             <Button
@@ -200,16 +204,6 @@ export default function QualityReviewPage() {
             >
               Cancel
             </Button>
-
-            {issue.status === "Waiting Employee" && (
-              <Button
-                className="cursor-pointer"
-                onClick={handleSendToEmployee}
-                disabled={sending}
-              >
-                {sending ? "Sending..." : "Send to Employee"}
-              </Button>
-            )}
 
             {issue.status === "Returned to HR" && (
               <>
@@ -225,7 +219,7 @@ export default function QualityReviewPage() {
                   className="cursor-pointer"
                   onClick={handleSendToManager}
                 >
-                  Send to Manager
+                  Reject Appeal & Send to Manager
                 </Button>
               </>
             )}
