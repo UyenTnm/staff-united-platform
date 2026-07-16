@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { createNotification } from "../notifications";
+import { createNotification, getMyBehaviorActionUrl } from "../notifications";
 
 export interface BehaviorIssue {
   id: string;
@@ -95,14 +95,18 @@ export async function createBehaviorIssue(issue: {
   issue_date: string;
   review_month: string;
 }) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("employee_behavior_issues")
-    .insert({ ...issue, status: "Waiting Employee" });
+    .insert({
+      ...issue,
+      status: "Waiting Employee",
+    })
+    .select()
+    .single();
 
-  if (error) {
-    console.error(error);
-    throw error;
-  }
+  if (error) throw error;
+
+  return data;
 }
 
 export function calculateBehaviorScore(issues: BehaviorIssue[]) {
@@ -226,7 +230,7 @@ export async function sendBehaviorToEmployee(id: string, employeeId: string) {
     "New Behavior Review",
     "HR has sent a Behavior issue for your review.",
     "behavior",
-    `/behavior/review/${id}`,
+    getMyBehaviorActionUrl(id),
   );
 }
 
@@ -280,6 +284,8 @@ export async function getMyBehaviorIssues(
 }
 
 export async function employeeAcceptBehavior(issueId: string) {
+  const issue = await getBehaviorIssue(issueId);
+
   const { error } = await supabase
     .from("employee_behavior_issues")
     .update({
@@ -288,6 +294,23 @@ export async function employeeAcceptBehavior(issueId: string) {
     .eq("id", issueId);
 
   if (error) throw error;
+
+  const { data: managers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "Manager");
+
+  if (managers) {
+    for (const manager of managers) {
+      await createNotification(
+        manager.id,
+        "Behavior Review Waiting",
+        `${issue.issue_type} is waiting for your approval.`,
+        "behavior",
+        `/behavior/manager/${issueId}`,
+      );
+    }
+  }
 }
 
 export async function employeeAppealBehavior(id: string, comment: string) {
@@ -313,24 +336,54 @@ export async function employeeAppealBehavior(id: string, comment: string) {
     for (const hr of hrUsers) {
       await createNotification(
         hr.id,
-        "Quality Appeal Submitted",
-        "An employee has submitted an appeal for a Quality Issue.",
-        "quality",
-        `/quality/review/${id}`,
+        "Behavior Appeal Submitted",
+        "An employee has submitted an appeal for a Behavipr Issue.",
+        "behavior",
+        `/behavior/review/${id}`,
       );
     }
   }
 }
 
-export async function sendBehaviorToManager(issueId: string) {
+// export async function sendBehaviorToManager(issueId: string) {
+//   const { error } = await supabase
+//     .from("employee_behavior_issues")
+//     .update({
+//       status: "Waiting Manager",
+//     })
+//     .eq("id", issueId);
+
+//   if (error) throw error;
+// }
+
+export async function sendBehaviorToManager(id: string) {
+  const issue = await getBehaviorReview(id);
+
   const { error } = await supabase
     .from("employee_behavior_issues")
     .update({
       status: "Waiting Manager",
     })
-    .eq("id", issueId);
+    .eq("id", id);
 
   if (error) throw error;
+
+  const { data: managers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "Manager");
+
+  if (managers) {
+    for (const manager of managers) {
+      await createNotification(
+        manager.id,
+        "Behavior Review Waiting",
+        `${issue.employees.full_name}'s Behavior Review is waiting for your approval.`,
+        "behavior",
+        `/behavior/manager/${id}`,
+      );
+    }
+  }
 }
 
 export async function resolveBehaviorByHR(issueId: string) {
@@ -367,16 +420,45 @@ export async function getBehaviorStatistics() {
   };
 }
 
-export async function approveBehavior(issueId: string) {
+export async function approveBehavior(id: string) {
+  const issue = await getBehaviorReview(id);
+
   const { error } = await supabase
     .from("employee_behavior_issues")
     .update({
       status: "Approved",
       approved_at: new Date().toISOString(),
     })
-    .eq("id", issueId);
+    .eq("id", id);
 
   if (error) throw error;
+
+  // Employee
+  await createNotification(
+    issue.employee_id,
+    "Behavior Review Approved",
+    "Your Behavior Review has been approved by the Manager.",
+    "behavior",
+    getMyBehaviorActionUrl(id),
+  );
+
+  // HR
+  const { data: hrUsers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "HR");
+
+  if (hrUsers) {
+    for (const hr of hrUsers) {
+      await createNotification(
+        hr.id,
+        "Behavior Review Approved",
+        `${issue.employees.full_name}'s Behavior Review has been approved by the Manager.`,
+        "quality",
+        `/behavior/history`,
+      );
+    }
+  }
 }
 
 export async function lockBehavior(issueId: string) {

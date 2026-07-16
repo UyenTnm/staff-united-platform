@@ -121,7 +121,7 @@ export default function EditEmployeePage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6 max-w-5xl">
         <div className="flex justify-between">
           <div>
             <h1 className="text-3xl font-bold">Edit Employee</h1>
