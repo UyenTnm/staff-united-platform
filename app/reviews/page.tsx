@@ -161,7 +161,7 @@ export default function MonthlyReviewsPage() {
         </div>
 
         <Card className="p-6">
-          <h2 className="text-xl font-semibold">Upcoming Review Cycles</h2>
+          <h2 className="text-xl font-semibold">Employee Performance List</h2>
 
           <div className="space-y-4 mt-6">
             {upcomingMonths.map((month) => {

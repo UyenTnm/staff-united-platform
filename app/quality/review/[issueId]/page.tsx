@@ -56,27 +56,6 @@ export default function QualityReviewPage() {
     );
   }
 
-  // async function handleSendToEmployee() {
-  //   if (!issue) return;
-
-  //   try {
-  //     setSending(true);
-
-  //     await sendQualityToEmployee(issue.id, issue.employee_id);
-
-  //     toast.success("Quality issue sent to employee.");
-
-  //     const updatedIssue = await getQualityReview(issue.id);
-
-  //     setIssue(updatedIssue);
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error("Unable to send issue.");
-  //   } finally {
-  //     setSending(false);
-  //   }
-  // }
-
   async function handleSendToManager() {
     if (!issue) return;
 

@@ -100,13 +100,20 @@ export default function BehaviorReviewPage() {
     if (!issue) return;
 
     try {
-      await resolveBehaviorByHR(issue.id);
+      const confirmed = window.confirm(
+        "Accept this appeal?\n\nThe deduction will be removed and this issue will be closed.",
+      );
+      if (!confirmed) return;
 
-      setIssue({
-        ...issue,
-        status: "Resolved by HR",
-        deduction: 0,
-      });
+      await resolveBehaviorByHR(issue.id);
+      const updatedIssue = await getBehaviorReview(issue.id);
+      setIssue(updatedIssue);
+
+      // setIssue({
+      //   ...issue,
+      //   status: "Resolved by HR",
+      //   deduction: 0,
+      // });
 
       toast.success("Appeal accepted successfully.");
     } catch (error) {
@@ -195,20 +202,16 @@ export default function BehaviorReviewPage() {
               Cancel
             </Button>
 
-            {issue.status === "Waiting Employee" && (
-              <Button
-                className="cursor-pointer"
-                onClick={handleSendToEmployee}
-                disabled={sending}
-              >
-                {sending ? "Sending..." : "Send to Employee"}
-              </Button>
-            )}
-
             {issue.status === "Returned to HR" && (
-              <Button className="cursor-pointer" onClick={handleSendToManager}>
-                Send to Manager
-              </Button>
+              <>
+                <Button variant="outline" onClick={handleAcceptAppeal}>
+                  Accept Appeal
+                </Button>
+
+                <Button onClick={handleSendToManager}>
+                  Reject Appeal & Send to Manager
+                </Button>
+              </>
             )}
           </div>
         </Card>

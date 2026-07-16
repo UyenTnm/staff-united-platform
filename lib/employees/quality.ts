@@ -280,15 +280,45 @@ export async function sendQualityToEmployee(id: string, employeeId: string) {
   );
 }
 
-export async function employeeAcceptQuality(id: string) {
+// export async function employeeAcceptQuality(id: string) {
+//   const { error } = await supabase
+//     .from("employee_quality_issues")
+//     .update({
+//       status: "Waiting Manager",
+//     })
+//     .eq("id", id);
+
+//   if (error) throw error;
+// }
+
+export async function employeeAcceptQuality(issueId: string) {
+  const issue = await getQualityIssue(issueId);
+
   const { error } = await supabase
     .from("employee_quality_issues")
     .update({
       status: "Waiting Manager",
     })
-    .eq("id", id);
+    .eq("id", issueId);
 
   if (error) throw error;
+
+  const { data: managers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "Manager");
+
+  if (managers) {
+    for (const manager of managers) {
+      await createNotification(
+        manager.id,
+        "Quality Review Waiting",
+        `${issue.issue_type} is waiting for your approval.`,
+        "quality",
+        `/quality/manager/${issueId}`,
+      );
+    }
+  }
 }
 
 export async function employeeAppealQuality(id: string, comment: string) {

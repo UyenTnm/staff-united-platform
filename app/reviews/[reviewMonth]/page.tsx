@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
+import { calculateReviewScores } from "@/lib/performance/engine";
 
 interface MonthlyEmployeeReview {
   id: string;
@@ -19,6 +20,14 @@ interface MonthlyEmployeeReview {
   review_month: string;
 
   status: string;
+
+  quality?: number;
+
+  behavior?: number;
+
+  kaizen?: number;
+
+  total?: number;
 
   employees: {
     id: string;
@@ -74,7 +83,28 @@ export default function MonthlyReviewDetailPage() {
       if (error) {
         console.error(error);
       } else {
-        setReviews(data as MonthlyEmployeeReview[]);
+        const reviewsWithScores = await Promise.all(
+          (data as MonthlyEmployeeReview[]).map(async (review) => {
+            const scores = await calculateReviewScores(
+              review.employee_id,
+              review.review_month,
+            );
+
+            return {
+              ...review,
+
+              quality: scores.quality,
+
+              behavior: scores.behavior,
+
+              kaizen: scores.kaizen,
+
+              total: scores.total,
+            };
+          }),
+        );
+
+        setReviews(reviewsWithScores);
       }
 
       setLoading(false);
@@ -143,13 +173,14 @@ export default function MonthlyReviewDetailPage() {
               <tr className="border-b">
                 <th className="text-left py-3">Employee</th>
 
-                <th className="text-left">Department</th>
+                <th className="text-left">Quality</th>
 
-                <th className="text-left">Position</th>
+                <th className="text-left">Behavior</th>
+                <th className="text-right">Kaizen</th>
+                <th className="text-right">Total</th>
 
                 <th className="text-left">Status</th>
-
-                <th className="text-right">Action</th>
+                <th className="text-left">Action</th>
               </tr>
             </thead>
 
@@ -158,9 +189,13 @@ export default function MonthlyReviewDetailPage() {
                 <tr key={review.id} className="border-b">
                   <td className="py-4">{review.employees.full_name}</td>
 
-                  <td>{review.employees.department}</td>
+                  <td>{review.quality}/5</td>
 
-                  <td>{review.employees.role}</td>
+                  <td>{review.behavior}/5</td>
+
+                  <td>{review.kaizen}/5</td>
+
+                  <td className="font-semibold">{review.total}/15</td>
 
                   <td>
                     <Badge
@@ -175,9 +210,9 @@ export default function MonthlyReviewDetailPage() {
                   <td className="text-right">
                     <Button asChild variant="outline">
                       <Link
-                        href={`/employees/${review.employee_id}/reviews/${review.id}`}
+                        href={`/reviews/${review.review_month}/${review.employee_id}`}
                       >
-                        {review.status === "Draft" ? "Continue" : "View"}
+                        Review
                       </Link>
                     </Button>
                   </td>

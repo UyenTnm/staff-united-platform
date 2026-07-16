@@ -10,7 +10,10 @@ import { Card } from "@/components/ui/card";
 import { IssueTypeSelect } from "@/components/employees/issue-type-select";
 import { BEHAVIOR_ISSUES } from "@/lib/employees/issue-types";
 import { useState } from "react";
-import { createBehaviorIssue } from "@/lib/employees/behavior";
+import {
+  createBehaviorIssue,
+  sendBehaviorToEmployee,
+} from "@/lib/employees/behavior";
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 import { toast } from "sonner";
@@ -46,7 +49,7 @@ export default function NewBehaviorIssuePage() {
         description,
         deduction,
       });
-      await createBehaviorIssue({
+      const issue = await createBehaviorIssue({
         employee_id: params.id as string,
         issue_type: issueType,
         description,
@@ -55,6 +58,10 @@ export default function NewBehaviorIssuePage() {
         issue_date: new Date().toISOString(),
         review_month: getReviewMonth(new Date()),
       });
+
+      await sendBehaviorToEmployee(issue.id, params.id as string);
+
+      toast.success("Behavior issue sent to employee.");
 
       router.push(`/employees/${params.id}/behavior`);
     } catch (err) {
@@ -65,7 +72,8 @@ export default function NewBehaviorIssuePage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-3xl">
+      {/* <div className="space-y-6 max-w-3xl"> */}
+      <div className="space-y-6 max-w-5xl">
         <div className="flex justify-between">
           <div>
             <h1 className="text-3xl font-bold">Add Behavior Issue</h1>
@@ -120,9 +128,19 @@ export default function NewBehaviorIssuePage() {
             </div>
           </div>
 
-          <Button onClick={handleSave} disabled={saving}>
+          {/* <Button onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Issue"}
-          </Button>
+          </Button> */}
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="outline" asChild>
+              <Link href={`/employees/${params.id}/quality`}>Cancel</Link>
+            </Button>
+
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Sending..." : "Send to Employee"}
+            </Button>
+          </div>
         </Card>
       </div>
     </AppLayout>
