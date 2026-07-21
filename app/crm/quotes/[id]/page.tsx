@@ -8,6 +8,14 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
 import { Quote, getQuote } from "@/lib/crm/quotes";
+import ClientInformation from "@/components/crm/quote-detail/ClientInformation";
+import QuoteOverview from "@/components/crm/quote-detail/QuoteOverview";
+import QuoteNotes from "@/components/crm/quote-detail/QuoteNotes";
+import ContractCard from "@/components/crm/quote-detail/ContractCard";
+import InvoiceCard from "@/components/crm/quote-detail/InvoiceCard";
+import PaymentCard from "@/components/crm/quote-detail/PaymentCard";
+import QuoteHeader from "@/components/crm/quote-detail/QuoteHeader";
+import QuoteSummaryCard from "@/components/crm/quote-detail/QuoteSummaryCard";
 
 export default function QuoteDetailPage() {
   const params = useParams();
@@ -51,78 +59,28 @@ export default function QuoteDetailPage() {
         </Button>
 
         <div>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">{quote.quote_number}</h1>
+          <QuoteHeader quote={quote} />
 
-              <p className="text-slate-500 mt-2">{quote.company_name}</p>
+          <div className="xl:col-span-3 space-y-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ClientInformation quote={quote} />
+
+              <QuoteOverview quote={quote} />
             </div>
 
-            <Button asChild variant="outline">
-              <Link href={`/crm/quotes/${quote.id}/edit`}>Edit Quote</Link>
-            </Button>
+            <QuoteNotes quote={quote} />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <ContractCard />
+
+              <InvoiceCard />
+
+              <PaymentCard />
+            </div>
           </div>
 
-          <div className="space-y-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Client Information */}
-
-              <div className="border rounded-xl p-6">
-                <h2 className="font-semibold mb-4">Client Information</h2>
-
-                <div className="space-y-3">
-                  <p>
-                    <strong>Company:</strong> {quote.company_name}
-                  </p>
-
-                  <p>
-                    <strong>Contact:</strong> {quote.contact_name}
-                  </p>
-
-                  <p>
-                    <strong>Department:</strong> {quote.department}
-                  </p>
-                </div>
-              </div>
-
-              {/* Quote Overview */}
-
-              <div className="border rounded-xl p-6">
-                <h2 className="font-semibold mb-4">Quote Overview</h2>
-
-                <div className="space-y-3">
-                  <p>
-                    <strong>Quote #:</strong> {quote.quote_number}
-                  </p>
-
-                  <p>
-                    <strong>Title:</strong> {quote.title}
-                  </p>
-
-                  <p>
-                    <strong>Amount:</strong> ${quote.amount.toLocaleString()}{" "}
-                    AUD
-                  </p>
-
-                  <p>
-                    <strong>Status:</strong> {quote.status}
-                  </p>
-
-                  <p>
-                    <strong>Created:</strong>{" "}
-                    {new Date(quote.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="border rounded-xl p-6 mt-10">
-              <h2 className="font-semibold mb-4">Notes</h2>
-
-              <p className="text-slate-600 dark:text-slate-400">
-                {quote.notes || "No notes"}
-              </p>
-            </div>
+          <div className="space-y-6">
+            <QuoteSummaryCard quote={quote} />
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 // lib/quotes.ts
 
+import { QuoteStatus } from "@/type/quote";
 import { supabase } from "../supabase";
 
 export interface Quote {
@@ -7,10 +8,15 @@ export interface Quote {
 
   quote_number: string;
 
+  // Tạm thời giữ lead_id để không phá code cũ
   lead_id: string;
 
-  company_name: string;
+  // Sẽ dùng trong CRM V2
+  project_id?: string | null;
+  version?: number;
+  is_current?: boolean;
 
+  company_name: string;
   contact_name: string;
 
   department: string;
@@ -21,13 +27,27 @@ export interface Quote {
 
   notes: string;
 
-  status: string;
+  status: QuoteStatus;
 
   created_at: string;
 }
 
+function generateQuoteNumber() {
+  const year = new Date().getFullYear();
+  const random = Math.floor(1000 + Math.random() * 9000);
+
+  return `SU-Q-${year}-${random}`;
+}
+
+export function canCreateNewVersion(status: Quote["status"]) {
+  return ["Sent", "Viewed", "Rejected", "Expired"].includes(status);
+}
+
 export async function createQuote(data: {
   lead_id: string;
+
+  version: 1;
+  is_current: true;
 
   company_name: string;
   contact_name: string;
@@ -38,7 +58,7 @@ export async function createQuote(data: {
   notes: string;
 }) {
   const { error } = await supabase.from("quotes").insert({
-    quote_number: `Q-${Date.now()}`,
+    quote_number: generateQuoteNumber(),
     lead_id: data.lead_id,
 
     company_name: data.company_name,
@@ -126,4 +146,29 @@ export async function getQuoteByLeadId(leadId: string) {
   }
 
   return data;
+}
+
+export function getQuoteStatusColor(status: Quote["status"]) {
+  switch (status) {
+    case "Draft":
+      return "gray";
+
+    case "Sent":
+      return "blue";
+
+    case "Viewed":
+      return "orange";
+
+    case "Accepted":
+      return "green";
+
+    case "Rejected":
+      return "red";
+
+    case "Expired":
+      return "zinc";
+
+    default:
+      return "gray";
+  }
 }
