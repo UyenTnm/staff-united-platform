@@ -1,6 +1,6 @@
 // import { QuoteStatus } from "@/types/quote";
 
-import { QuoteStatus } from "@/type/quote";
+import { QuoteStatus } from "@/types/quote";
 
 interface Props {
   status: QuoteStatus;

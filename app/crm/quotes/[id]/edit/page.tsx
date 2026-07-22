@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Quote, getQuote, updateQuote } from "@/lib/crm/quotes";
 import { syncLeadStatusFromQuote, updateLeadStatus } from "@/lib/crm/lead";
 import { toast } from "sonner";
+import { QuoteStatus } from "@/types/quote";
 
 export default function EditQuotePage() {
   const params = useParams();
@@ -19,7 +20,7 @@ export default function EditQuotePage() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<QuoteStatus>("Draft");
 
   useEffect(() => {
     async function loadQuote() {
@@ -52,10 +53,9 @@ export default function EditQuotePage() {
     const oldStatus = quote.status;
 
     await updateQuote(quote.id, {
-      title,
-      amount: Number(amount),
-      notes,
-      status,
+      status:"Sent",
+
+        sent_at:new Date().toISOString(),
     });
 
     // const leadStatus = await syncLeadStatusFromQuote(status);
@@ -125,7 +125,7 @@ export default function EditQuotePage() {
             <select
               className="w-full border rounded-lg p-2 mt-1"
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => setStatus(e.target.value as QuoteStatus)}
             >
               <option>Draft</option>
               <option>Sent</option>

@@ -16,6 +16,7 @@ import InvoiceCard from "@/components/crm/quote-detail/InvoiceCard";
 import PaymentCard from "@/components/crm/quote-detail/PaymentCard";
 import QuoteHeader from "@/components/crm/quote-detail/QuoteHeader";
 import QuoteSummaryCard from "@/components/crm/quote-detail/QuoteSummaryCard";
+import QuoteActions from "@/components/crm/quote-detail/QuoteActions";
 
 export default function QuoteDetailPage() {
   const params = useParams();
@@ -60,6 +61,10 @@ export default function QuoteDetailPage() {
 
         <div>
           <QuoteHeader quote={quote} />
+
+          <div className="mt-6">
+            <QuoteActions quoteId={quote.id} />
+          </div>
 
           <div className="xl:col-span-3 space-y-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -65,6 +65,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   // const [collapsed, setCollapsed] = useState(false);
 
   const ADMIN_MENU: SidebarSection[] = [
+    // Dashboard
     {
       title: "Dashboard",
       icon: LayoutDashboard,
@@ -76,6 +77,31 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
+    // CRM
+    {
+      title: "CRM",
+      icon: Users,
+      items: [
+        {
+          label: "CRM Dashboard",
+          href: "/crm",
+        },
+        {
+          label: "Leads",
+          href: "/crm/leads",
+        },
+        {
+          label: "Quotes",
+          href: "/crm/quotes",
+        },
+        {
+          label: "Clients",
+          href: "/clients",
+        },
+      ],
+    },
+
+    // Employee Management
     {
       title: "Employee Management",
       icon: UsersRound,
@@ -87,6 +113,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
+    // Performance Management
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -114,6 +141,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
+    // Kaizen Management
     {
       title: "Kaizen Management",
       icon: Lightbulb,
@@ -139,6 +167,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   ];
 
   const HR_MENU: SidebarSection[] = [
+    // My Workspace
     {
       title: "My Workspace",
       icon: UsersRound,
@@ -153,6 +182,32 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         },
       ],
     },
+
+    // CRM
+    {
+      title: "CRM",
+      icon: Users,
+      items: [
+        {
+          label: "CRM Dashboard",
+          href: "/crm/dashboard",
+        },
+        {
+          label: "Leads",
+          href: "/crm/leads",
+        },
+        {
+          label: "Quotes",
+          href: "/crm/quotes",
+        },
+        {
+          label: "Clients",
+          href: "/clients",
+        },
+      ],
+    },
+
+    // Employee Management
     {
       title: "Employee Management",
       icon: UsersRound,
@@ -164,6 +219,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
+    // Performance Management
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -191,6 +247,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
+    // Kaizen Management
     {
       title: "Kaizen Management",
       icon: Lightbulb,
@@ -217,6 +274,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   ];
 
   const MANAGER_MENU: SidebarSection[] = [
+    // Employee Management
     {
       title: "Employee Management",
       icon: UsersRound,
@@ -227,6 +285,32 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         },
       ],
     },
+
+    // CRM
+    {
+      title: "CRM",
+      icon: Users,
+      items: [
+        {
+          label: "CRM Dashboard",
+          href: "/crm/dashboard",
+        },
+        {
+          label: "Leads",
+          href: "/crm/leads",
+        },
+        {
+          label: "Quotes",
+          href: "/crm/quotes",
+        },
+        {
+          label: "Clients",
+          href: "/clients",
+        },
+      ],
+    },
+
+    // Performance Management
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -246,6 +330,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
+    // Kaizen Management
     {
       title: "Kaizen Management",
       icon: Lightbulb,

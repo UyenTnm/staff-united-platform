@@ -32,3 +32,18 @@ export async function getLeads() {
     };
   });
 }
+
+export async function getRecentLeads(limit = 5) {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return data;
+}
