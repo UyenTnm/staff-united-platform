@@ -6,6 +6,7 @@ import { LeadsTable } from "@/components/crm/leads-table";
 import { StatCard } from "@/components/crm/stat-card";
 import { getLeads } from "@/lib/crm/leads";
 
+export const dynamic = "force-dynamic";
 export default async function CRMPage() {
   const leads = await getLeads();
 

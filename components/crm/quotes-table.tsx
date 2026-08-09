@@ -129,7 +129,7 @@ export function QuotesTable() {
                   </TableCell>
 
                   <TableCell className="font-medium">
-                    ${quote.amount.toLocaleString()} AUD
+                    ${quote.amount.toLocaleString()}
                   </TableCell>
 
                   <TableCell>

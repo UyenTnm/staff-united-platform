@@ -6,6 +6,7 @@ import { QuotesTable } from "@/components/crm/quotes-table";
 import { StatCard } from "@/components/crm/stat-card";
 import { getQuotes } from "@/lib/crm/quotes";
 
+export const dynamic = "force-dynamic";
 export default async function QuotesPage() {
   const quotes = await getQuotes();
 
