@@ -28,7 +28,7 @@ import {
 import { toast } from "sonner";
 
 function getStatusColor(status: string) {
-  switch (status.toLowerCase()) {
+  switch ((status ?? "").toLowerCase()) {
     case "active":
       return "bg-emerald-100 text-emerald-700";
 
@@ -150,8 +150,10 @@ export function EmployeesTable() {
                 </TableCell>
                 <TableCell>
                   <Badge className={getStatusColor(employee.status)}>
-                    {employee.status.charAt(0).toUpperCase() +
-                      employee.status.slice(1)}
+                    {employee.status
+                      ? employee.status.charAt(0).toUpperCase() +
+                        employee.status.slice(1)
+                      : "Unknown"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-slate-600 dark:text-slate-400">

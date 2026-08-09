@@ -22,7 +22,12 @@ export async function getLead(id: string) {
     .single();
 
   if (error) {
-    console.error(error);
+    console.error("getLead error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     return null;
   }
 
@@ -69,4 +74,42 @@ export async function syncLeadStatusFromQuote(quoteStatus: string) {
     default:
       return "New";
   }
+}
+
+// ============================================================
+// MỚI — tạo lead mới (dùng chung cho mọi khách hàng, không riêng ai)
+// ============================================================
+export async function createLead(data: {
+  company_name: string;
+  contact_name: string;
+  email: string;
+  phone: string;
+  department: string;
+  source: string;
+  priority: string;
+}) {
+  const { data: created, error } = await supabase
+    .from("leads")
+    .insert({
+      lead_number: `L-${Date.now()}`,
+
+      company_name: data.company_name,
+      contact_name: data.contact_name,
+      email: data.email,
+      phone: data.phone,
+      department: data.department,
+      source: data.source,
+      priority: data.priority,
+
+      status: "New",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return created as Lead;
 }

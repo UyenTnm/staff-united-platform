@@ -9,16 +9,17 @@ import {
   Activity,
   Settings,
   LogOut,
-  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   UsersRound,
   ClipboardCheck,
   Lightbulb,
   LayoutDashboard,
+  Briefcase,
   LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./auth/auth-provider";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
@@ -35,16 +36,11 @@ interface SidebarProps {
   setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
-  // type MenuSection = {
-  //   title: string;
-  //   icon: LucideIcon;
-  //   items: {
-  //     label: string;
-  //     href: string;
-  //   }[];
-  // };
+// Vị trí nút collapse được lưu lại giữa các lần load, giống cơ chế của Staff Academy
+const TOGGLE_BUTTON_HEIGHT = 28;
+const TOGGLE_STORAGE_KEY = "staff_platform_sidebar_toggle_position_y";
 
+export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   type SidebarItem = {
     label: string;
     href: string;
@@ -62,7 +58,88 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const from = searchParams.get("from");
   const router = useRouter();
   const { employee } = useAuth();
-  // const [collapsed, setCollapsed] = useState(false);
+
+  // ============================================================
+  // Logic nút collapse kéo-thả (mượn từ Staff Academy) — di chuyển
+  // tự do theo chiều dọc trên viền phải sidebar, vị trí được nhớ lại
+  // qua localStorage.
+  // ============================================================
+  const asideRef = useRef<HTMLElement>(null);
+  const draggingRef = useRef(false);
+  const movedRef = useRef(false);
+
+  const [buttonY, setButtonY] = useState<number>(32);
+
+  const clampY = (y: number) => {
+    const asideHeight = asideRef.current?.offsetHeight ?? 800;
+    const min = 8;
+    const max = asideHeight - TOGGLE_BUTTON_HEIGHT - 8;
+    return Math.min(Math.max(y, min), max);
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem(TOGGLE_STORAGE_KEY);
+    if (!saved) return;
+
+    const parsed = Number(saved);
+    if (Number.isNaN(parsed)) return;
+
+    setButtonY((prev) => {
+      const clamped = clampY(parsed);
+      return clamped === prev ? prev : clamped;
+    });
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    draggingRef.current = true;
+    movedRef.current = false;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current || !asideRef.current) return;
+
+    movedRef.current = true;
+
+    const rect = asideRef.current.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top - TOGGLE_BUTTON_HEIGHT / 2;
+
+    setButtonY(clampY(relativeY));
+  };
+
+  const handlePointerUp = () => {
+    if (!draggingRef.current) return;
+
+    draggingRef.current = false;
+    localStorage.setItem(TOGGLE_STORAGE_KEY, String(buttonY));
+  };
+
+  const handleToggleClick = () => {
+    if (movedRef.current) {
+      movedRef.current = false;
+      return;
+    }
+    setCollapsed((prev) => !prev);
+  };
+
+  // ============================================================
+  // Menu — giữ nguyên cấu trúc theo role như trước, chỉ thêm CRM
+  // ============================================================
+
+  const CRM_SECTION: SidebarSection = {
+    title: "CRM",
+    icon: Briefcase,
+    items: [
+      {
+        label: "Leads",
+        href: "/crm",
+      },
+      {
+        label: "Quotes",
+        href: "/crm/quotes",
+      },
+    ],
+  };
 
   const ADMIN_MENU: SidebarSection[] = [
     {
@@ -86,6 +163,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         },
       ],
     },
+
+    CRM_SECTION,
 
     {
       title: "Performance Management",
@@ -164,6 +243,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
+    CRM_SECTION,
+
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -227,6 +308,9 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         },
       ],
     },
+
+    CRM_SECTION,
+
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -324,6 +408,9 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       case "My Workspace":
         return "Workspace";
 
+      case "CRM":
+        return "CRM";
+
       default:
         return title;
     }
@@ -346,61 +433,76 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
   return (
     <aside
+      ref={asideRef}
       className={cn(
         "fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-slate-800 bg-slate-950 transition-all duration-300 md:flex",
         collapsed ? "w-20" : "w-64",
       )}
     >
-      {/* Logo Section */}
+      {/* Nút collapse - kéo thả tự do dọc theo viền phải sidebar (giống Staff Academy) */}
+      <button
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onClick={handleToggleClick}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        style={{ top: buttonY }}
+        className="absolute -right-3 z-20 flex h-7 w-7 cursor-ns-resize touch-none items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-300 shadow-md transition-colors hover:bg-emerald-600 hover:text-white"
+      >
+        {collapsed ? (
+          <ChevronRight className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronLeft className="h-3.5 w-3.5" />
+        )}
+      </button>
+
+      {/* Logo Section — kích thước theo tỷ lệ giống Staff Academy (logo to, rõ hơn) */}
       <div
         className={cn(
-          "relative h-40 border-b border-slate-800 transition-all duration-300",
+          "relative border-b border-slate-800 py-6 transition-all duration-300",
           collapsed
             ? "flex items-center justify-center"
             : "flex flex-col items-center justify-center",
         )}
       >
         {/* Logo */}
-        <Image
-          src="/logo.png"
-          alt="STAFF United"
-          width={collapsed ? 44 : 100}
-          height={collapsed ? 44 : 42}
-          priority
-          className="transition-all duration-300 object-contain"
-        />
+        {!collapsed ? (
+          <div className="flex flex-col items-center" style={{ width: 160 }}>
+            <Image
+              src="/logo.png"
+              alt="STAFF United"
+              width={160}
+              height={64}
+              style={{ width: "auto", height: "auto" }}
+              className="h-auto w-full object-contain"
+              priority
+            />
+          </div>
+        ) : (
+          <Image
+            src="/logo.png"
+            alt="STAFF United"
+            width={40}
+            height={40}
+            style={{ width: "auto", height: "auto" }}
+            className="h-10 w-10 object-contain"
+            priority
+          />
+        )}
 
         {!collapsed && (
           <div className="mt-3 text-center">
-            <p className="text-[11px] font-semibold tracking-wide uppercase text-slate-300">
+            <p className="text-[15px] font-semibold tracking-wide uppercase text-slate-300">
               Performance Platform
             </p>
 
-            <p className="text-[10px] text-slate-500">
+            <p className="text-[14px] text-slate-500">
               {employee?.user_role === "Admin"
                 ? "Administrator"
                 : `${employee?.user_role} Portal`}
             </p>
           </div>
         )}
-
-        {/* Collapse Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed((prev) => !prev)}
-          className={cn(
-            "absolute text-slate-400 hover:text-white hover:bg-slate-800",
-            collapsed ? "bottom-0" : "right-3 top-1/2 -translate-y-1/2",
-          )}
-        >
-          <ChevronDown
-            className={cn(
-              "w-4 h-4 transition-transform duration-300",
-              collapsed && "rotate-270",
-            )}
-          />
-        </Button>
       </div>
 
       {/* Navigation Menu */}
@@ -480,6 +582,12 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       isActive = pathname === "/performance";
                     } else if (item.href === "/reviews") {
                       isActive = pathname === "/reviews";
+                    } else if (item.href === "/crm") {
+                      isActive =
+                        pathname === "/crm" ||
+                        pathname.startsWith("/crm/leads");
+                    } else if (item.href === "/crm/quotes") {
+                      isActive = pathname.startsWith("/crm/quotes");
                     } else {
                       isActive = pathname.startsWith(item.href);
                     }
