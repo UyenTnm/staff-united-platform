@@ -123,3 +123,45 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================================
+   Thêm đoạn này vào CUỐI file app/globals.css (không thay thế file,
+   chỉ nối thêm) — dùng cho background động ở trang login.
+   ============================================================ */
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -40px) scale(1.08);
+  }
+}
+
+@keyframes float-slower {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-40px, 30px) scale(1.05);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 10s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float-slower 14s ease-in-out infinite;
+}
+
+/* Tôn trọng người dùng bật "Reduce Motion" trong hệ điều hành —
+   tắt animation nếu họ yêu cầu giảm chuyển động. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-slow,
+  .animate-float-slower {
+    animation: none;
+  }
+}

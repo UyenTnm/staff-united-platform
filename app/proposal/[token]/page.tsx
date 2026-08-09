@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { ProposalFlipbook } from "@/components/proposal-flipbook";
 
 import {
   Quote,
@@ -94,7 +95,7 @@ export default function PublicProposalPage() {
   const isPaid = quote.proposal_status === "paid";
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4">
+    <div className="min-h-screen bg-slate-100 py-10 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">{quote.title}</h1>
@@ -103,27 +104,10 @@ export default function PublicProposalPage() {
           </p>
         </div>
 
-        {/* PDF proposal (designed in Canva), if available */}
+        {/* Flipbook proposal (Canva PDF converted to page-flip), or fallback */}
         {quote.proposal_pdf_url ? (
-          <div className="bg-white border rounded-xl overflow-hidden">
-            <iframe
-              src={quote.proposal_pdf_url}
-              className="w-full h-[600px]"
-              title="Proposal PDF"
-            />
-            <div className="p-4 text-center border-t">
-              <a
-                href={quote.proposal_pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm underline text-blue-600"
-              >
-                Open full screen / Download PDF
-              </a>
-            </div>
-          </div>
+          <ProposalFlipbook pdfUrl={quote.proposal_pdf_url} />
         ) : (
-          // Fallback: no PDF yet, show basic details instead
           <div className="bg-white border rounded-xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-4">
               <span className="text-slate-500">Quote Number</span>
