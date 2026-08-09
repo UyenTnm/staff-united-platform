@@ -137,7 +137,7 @@ export default function QuoteDetailPage() {
               <div className="flex justify-between">
                 <dt className="text-slate-500">Amount</dt>
                 <dd className="text-lg font-bold text-slate-900 dark:text-white">
-                  ${quote.amount.toLocaleString()} AUD
+                  ${quote.amount.toLocaleString()}
                 </dd>
               </div>
               <div className="flex justify-between">

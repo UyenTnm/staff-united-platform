@@ -117,7 +117,7 @@ export default function PublicProposalPage() {
             <div className="flex items-center justify-between border-b pb-4">
               <span className="text-slate-500">Total Amount</span>
               <span className="text-2xl font-bold">
-                ${quote.amount.toLocaleString()} AUD
+                ${quote.amount.toLocaleString()}
               </span>
             </div>
 
