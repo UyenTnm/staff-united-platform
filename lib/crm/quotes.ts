@@ -11,27 +11,19 @@ export type ProposalStatus =
   | "paid"
   | "rejected";
 
+export type CustomerMarket = "vietnam" | "international";
+
 export interface Quote {
   id: string;
-
   quote_number: string;
-
   lead_id: string;
-
   company_name: string;
-
   contact_name: string;
-
   department: string;
-
   title: string;
-
   amount: number;
-
   notes: string;
-
   status: string;
-
   created_at: string;
 
   public_token: string;
@@ -44,39 +36,91 @@ export interface Quote {
   client_notes: string | null;
 
   proposal_pdf_url: string | null;
+
+  customer_market: CustomerMarket | null;
+  currency: string | null;
+  currency_code: string | null;
 }
 
+// Item truyền vào lúc tạo quote — khớp đúng với QuoteItem trong
+// CreateQuoteContent.tsx (form tạo quote có sẵn, cho thêm nhiều dịch vụ
+// + chọn market ngay lúc tạo).
+interface NewQuoteItemInput {
+  service_name: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  is_optional: boolean;
+  sort_order: number;
+}
+
+// ============================================================
+// createQuote — ĐÃ SỬA: nhận đúng customer_market + items[], lưu
+// items vào bảng quote_items ngay khi tạo quote, và tự tính amount
+// tổng (dùng cho các nơi cũ còn đọc quote.amount làm fallback).
+// ============================================================
 export async function createQuote(data: {
   lead_id: string;
-
   company_name: string;
   contact_name: string;
   department: string;
-
   title: string;
-  amount: number;
   notes: string;
+  customer_market: CustomerMarket;
+  items: NewQuoteItemInput[];
 }) {
-  const { error } = await supabase.from("quotes").insert({
-    quote_number: `Q-${Date.now()}`,
-    lead_id: data.lead_id,
+  const totalAmount = data.items.reduce(
+    (sum, item) => sum + item.quantity * item.unit_price,
+    0,
+  );
 
-    company_name: data.company_name,
-    contact_name: data.contact_name,
-    department: data.department,
-
-    title: data.title,
-    amount: data.amount,
-    notes: data.notes,
-
-    status: "Draft",
-    proposal_status: "draft",
-  });
+  const { data: created, error } = await supabase
+    .from("quotes")
+    .insert({
+      quote_number: `Q-${Date.now()}`,
+      lead_id: data.lead_id,
+      company_name: data.company_name,
+      contact_name: data.contact_name,
+      department: data.department,
+      title: data.title,
+      notes: data.notes,
+      amount: totalAmount,
+      customer_market: data.customer_market,
+      status: "Draft",
+      proposal_status: "draft",
+    })
+    .select()
+    .single();
 
   if (error) {
     console.error(error);
     throw error;
   }
+
+  // Lưu từng service item vào bảng quote_items, gắn đúng quote_id vừa tạo
+  if (data.items.length > 0) {
+    const itemsToInsert = data.items.map((item, index) => ({
+      quote_id: created.id,
+      service_name: item.service_name,
+      description: item.description || null,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      is_optional: item.is_optional,
+      sort_order: item.sort_order ?? index,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("quote_items")
+      .insert(itemsToInsert);
+
+    if (itemsError) {
+      console.error("Failed to insert quote items:", itemsError);
+      // Không throw — quote đã tạo thành công, chỉ log lỗi items để
+      // nhân viên có thể vào thêm tay qua khối "Add Service Options".
+    }
+  }
+
+  return created as Quote;
 }
 
 export async function getQuotes() {
@@ -109,12 +153,7 @@ export async function getQuote(id: string) {
 
 export async function updateQuote(
   id: string,
-  data: {
-    title: string;
-    amount: number;
-    notes: string;
-    status: string;
-  },
+  data: { title: string; amount: number; notes: string; status: string },
 ) {
   const { data: updated, error } = await supabase
     .from("quotes")
@@ -151,11 +190,21 @@ export async function getQuoteByLeadId(leadId: string) {
   return data;
 }
 
-// ============================================================
-// Helper nội bộ — map proposal_status (chữ thường, dùng cho logic)
-// sang status hiển thị (viết hoa chữ đầu, dùng cho bảng Quotes list
-// và trang Edit Quote) — để 2 cột luôn khớp nhau, không cần sửa tay.
-// ============================================================
+export async function updateCustomerMarket(
+  quoteId: string,
+  market: CustomerMarket,
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({ customer_market: market })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 function statusLabelFromProposalStatus(proposalStatus: string): string {
   switch (proposalStatus) {
     case "draft":
@@ -175,14 +224,12 @@ function statusLabelFromProposalStatus(proposalStatus: string): string {
   }
 }
 
-// Đồng bộ cả lead.status VÀ quote.status theo proposal_status mới nhất.
 async function syncStatusesFromProposal(
   quoteId: string,
   leadId: string,
   proposalStatus: string,
   leadSyncKey: string,
 ) {
-  // 1. Đồng bộ cột "status" của chính quote này
   const { error: statusError } = await supabase
     .from("quotes")
     .update({ status: statusLabelFromProposalStatus(proposalStatus) })
@@ -192,7 +239,6 @@ async function syncStatusesFromProposal(
     console.error("Failed to sync quote.status:", statusError);
   }
 
-  // 2. Đồng bộ lead.status (như đã làm trước đó)
   try {
     const newLeadStatus = await syncLeadStatusFromQuote(leadSyncKey);
     await updateLeadStatus(leadId, newLeadStatus);
@@ -200,10 +246,6 @@ async function syncStatusesFromProposal(
     console.error("Failed to sync lead status:", err);
   }
 }
-
-// ============================================================
-// Proposal / QR / Payment — dùng chung cho mọi client
-// ============================================================
 
 export async function markQuoteAsSent(id: string) {
   const { data: quote, error: fetchError } = await supabase
@@ -219,10 +261,7 @@ export async function markQuoteAsSent(id: string) {
 
   const { error } = await supabase
     .from("quotes")
-    .update({
-      proposal_status: "sent",
-      sent_at: new Date().toISOString(),
-    })
+    .update({ proposal_status: "sent", sent_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) {
@@ -312,10 +351,7 @@ export async function markQuoteAsPaid(id: string) {
 
   const { error } = await supabase
     .from("quotes")
-    .update({
-      proposal_status: "paid",
-      paid_at: new Date().toISOString(),
-    })
+    .update({ proposal_status: "paid", paid_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) {
@@ -323,19 +359,13 @@ export async function markQuoteAsPaid(id: string) {
     throw error;
   }
 
-  // Lead status chưa có case riêng cho "paid" trong syncLeadStatusFromQuote,
-  // dùng chung "Accepted" (→ "Won") — quote.status vẫn hiện đúng "Paid" riêng.
-  await syncStatusesFromProposal(id, quote.lead_id, "paid", "Accepted");
+  await syncStatusesFromProposal(id, quote.lead_id, "paid", "Paid");
 }
 
 export function getProposalUrl(publicToken: string): string {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   return `${baseUrl}/proposal/${publicToken}`;
 }
-
-// ============================================================
-// Upload PDF proposal (thiết kế từ Canva) lên Supabase Storage
-// ============================================================
 
 export async function uploadProposalPdf(
   quoteId: string,
@@ -346,10 +376,7 @@ export async function uploadProposalPdf(
 
   const { error: uploadError } = await supabase.storage
     .from("proposals")
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
+    .upload(filePath, file, { cacheControl: "3600", upsert: false });
 
   if (uploadError) {
     console.error("Upload PDF error:", uploadError);

@@ -128,8 +128,10 @@ export function QuotesTable() {
                     {quote.department}
                   </TableCell>
 
+                  {/* Null-safe: quote.amount có thể là null nếu quote
+                      dùng Service Options thay vì field amount cũ. */}
                   <TableCell className="font-medium">
-                    ${quote.amount.toLocaleString()}
+                    ${Number(quote.amount ?? 0).toLocaleString()}
                   </TableCell>
 
                   <TableCell>

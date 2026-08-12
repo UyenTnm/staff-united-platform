@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProposalQrCard } from "@/components/proposal-qr-card";
 import { ProposalPdfUpload } from "@/components/proposal-pdf-upload";
+import { QuoteItemsEditor } from "@/components/quote-items-editor";
+import { CustomerMarketSelector } from "@/components/customer-market-selector";
+import { MarkPaidCard } from "@/components/mark-paid-card";
 
 import { Quote, getQuote } from "@/lib/crm/quotes";
 
@@ -74,7 +77,6 @@ export default function QuoteDetailPage() {
           </Link>
         </Button>
 
-        {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -93,13 +95,11 @@ export default function QuoteDetailPage() {
           </Button>
         </div>
 
-        {/* Overview cards */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
               Client Information
             </h2>
-
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <dt className="text-slate-500">Company</dt>
@@ -126,7 +126,6 @@ export default function QuoteDetailPage() {
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
               Quote Overview
             </h2>
-
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <dt className="text-slate-500">Title</dt>
@@ -137,7 +136,7 @@ export default function QuoteDetailPage() {
               <div className="flex justify-between">
                 <dt className="text-slate-500">Amount</dt>
                 <dd className="text-lg font-bold text-slate-900 dark:text-white">
-                  ${quote.amount.toLocaleString()}
+                  ${Number(quote.amount ?? 0).toLocaleString()}
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -149,6 +148,23 @@ export default function QuoteDetailPage() {
             </dl>
           </div>
         </div>
+
+        {/* Mark as Paid — chỉ hiện khi khách đã Accept, chờ xác nhận tiền */}
+        <MarkPaidCard
+          quoteId={quote.id}
+          proposalStatus={quote.proposal_status}
+          onMarked={loadQuote}
+        />
+
+        {/* Customer Market — chọn VN (VietQR) hay Quốc tế (Wire USD) */}
+        <CustomerMarketSelector
+          quoteId={quote.id}
+          currentMarket={quote.customer_market}
+          onUpdated={loadQuote}
+        />
+
+        {/* Service Options */}
+        <QuoteItemsEditor quoteId={quote.id} />
 
         {/* Proposal PDF upload */}
         <ProposalPdfUpload
@@ -165,7 +181,6 @@ export default function QuoteDetailPage() {
           onSent={loadQuote}
         />
 
-        {/* Notes */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
             Notes

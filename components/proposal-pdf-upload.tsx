@@ -77,7 +77,7 @@ export function ProposalPdfUpload({
           accept="application/pdf"
           onChange={handleFileChange}
           disabled={uploading}
-          className="text-sm"
+          className="text-sm cursor-pointer"
         />
       </div>
 
