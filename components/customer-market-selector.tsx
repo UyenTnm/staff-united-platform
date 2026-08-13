@@ -42,15 +42,15 @@ export function CustomerMarketSelector({
       </h2>
       <p className="mb-3 text-sm text-slate-500">
         This determines which payment method the client sees: VietQR bank
-        transfer for Vietnam, or international wire transfer (USD) for
-        clients abroad.
+        transfer for Vietnam, or international wire transfer (USD) for clients
+        abroad.
       </p>
 
       <div className="flex gap-2">
         <button
           onClick={() => handleChange("vietnam")}
           disabled={saving}
-          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition ${
+          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition cursor-pointer ${
             currentMarket === "vietnam"
               ? "border-emerald-500 bg-emerald-50 text-emerald-700"
               : "border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -61,7 +61,7 @@ export function CustomerMarketSelector({
         <button
           onClick={() => handleChange("international")}
           disabled={saving}
-          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition ${
+          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition cursor-pointer ${
             currentMarket === "international"
               ? "border-emerald-500 bg-emerald-50 text-emerald-700"
               : "border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -73,8 +73,7 @@ export function CustomerMarketSelector({
 
       {!currentMarket && (
         <p className="mt-2 text-xs text-amber-600">
-          Not set yet — defaults to International (USD Wire) until you
-          choose.
+          Not set yet — defaults to International (USD Wire) until you choose.
         </p>
       )}
     </div>

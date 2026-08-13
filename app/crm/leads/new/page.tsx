@@ -1,13 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
 import { createLead } from "@/lib/crm/lead";
+import { COUNTRY_CODES } from "@/lib/country-codes";
 import { toast } from "sonner";
+
+// Ô chọn quốc gia có tìm kiếm — gõ vài chữ để lọc thay vì cuộn qua
+// gần 200 dòng trong dropdown mặc định của trình duyệt.
+function CountryCodePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (code: string, label: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const selected = COUNTRY_CODES.find((c) => c.code === value);
+
+  const filtered = COUNTRY_CODES.filter((c) =>
+    c.label.toLowerCase().includes(query.toLowerCase()),
+  );
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+        setQuery("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="relative w-52 flex-shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between rounded-lg border p-2 text-sm"
+      >
+        <span className="truncate">{selected?.label || "Select country"}</span>
+        <ChevronDown className="h-4 w-4 flex-shrink-0 text-slate-400" />
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 w-72 rounded-lg border bg-white shadow-lg">
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search country..."
+            className="w-full border-b p-2 text-sm outline-none"
+          />
+          <div className="max-h-64 overflow-y-auto">
+            {filtered.length === 0 && (
+              <p className="p-3 text-sm text-slate-400">No country found.</p>
+            )}
+            {filtered.map((c) => (
+              <button
+                key={c.label}
+                type="button"
+                onClick={() => {
+                  onChange(c.code, c.label);
+                  setOpen(false);
+                  setQuery("");
+                }}
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function NewLeadPage() {
   const router = useRouter();
@@ -15,7 +95,8 @@ export default function NewLeadPage() {
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+84");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [department, setDepartment] = useState("");
   const [source, setSource] = useState("Referral");
   const [priority, setPriority] = useState("Medium");
@@ -30,11 +111,15 @@ export default function NewLeadPage() {
 
     setSaving(true);
     try {
+      const fullPhone = phoneNumber.trim()
+        ? `${countryCode} ${phoneNumber.trim()}`
+        : "";
+
       const lead = await createLead({
         company_name: companyName.trim(),
         contact_name: contactName.trim(),
         email: email.trim(),
-        phone: phone.trim(),
+        phone: fullPhone,
         department: department.trim(),
         source,
         priority,
@@ -98,12 +183,18 @@ export default function NewLeadPage() {
 
           <div>
             <label className="text-sm font-medium">Phone</label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full border rounded-lg p-2 mt-1"
-              placeholder="0900 000 000"
-            />
+            <div className="mt-1 flex gap-2">
+              <CountryCodePicker
+                value={countryCode}
+                onChange={(code) => setCountryCode(code)}
+              />
+              <input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="flex-1 rounded-lg border p-2"
+                placeholder="900 000 000"
+              />
+            </div>
           </div>
 
           <div>
@@ -145,9 +236,9 @@ export default function NewLeadPage() {
           </div>
 
           <Button
+            className="cursor-pointer"
             onClick={handleCreateLead}
             disabled={saving}
-            className="cursor-pointer"
           >
             {saving ? "Creating..." : "Create Lead"}
           </Button>

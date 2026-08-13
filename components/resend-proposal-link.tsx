@@ -67,7 +67,7 @@ export function ResendProposalLink({ token }: ResendProposalLinkProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mx-auto flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700"
+        className="mx-auto flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700"
       >
         <Mail className="h-4 w-4" />
         Email me this link
@@ -93,7 +93,12 @@ export function ResendProposalLink({ token }: ResendProposalLinkProps) {
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           className="flex-1 rounded-lg border border-slate-200 p-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
         />
-        <Button size="sm" onClick={handleSend} disabled={sending}>
+        <Button
+          size="sm"
+          onClick={handleSend}
+          disabled={sending}
+          className="cursor-pointer"
+        >
           {sending ? "Sending..." : "Send"}
         </Button>
       </div>

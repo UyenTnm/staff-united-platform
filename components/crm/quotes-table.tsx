@@ -49,9 +49,16 @@ function CompanyAvatar({ name }: { name: string }) {
   );
 }
 
+// Ký hiệu tiền tệ đúng theo market của TỪNG quote (không cố định "$"
+// cho tất cả — mỗi dòng trong bảng có thể khác market nhau).
+function currencySymbolFor(quote: Quote): string {
+  return quote.customer_market === "vietnam" ? "₫" : "$";
+}
+
 export function QuotesTable() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marketFilter, setMarketFilter] = useState<string>("All");
 
   useEffect(() => {
     async function loadQuotes() {
@@ -69,18 +76,42 @@ export function QuotesTable() {
     );
   }
 
+  const filteredQuotes = quotes.filter((q) => {
+    if (marketFilter === "All") return true;
+    if (marketFilter === "Vietnam") return q.customer_market === "vietnam";
+    if (marketFilter === "International")
+      return q.customer_market === "international" || !q.customer_market;
+    return true;
+  });
+
   return (
     <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/5">
       <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-          Quotes Management
-        </h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Track and manage all sales quotations.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Quotes Management
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Track and manage all sales quotations.
+            </p>
+          </div>
+
+          {/* Bộ lọc theo Market — chuẩn bị sẵn để mở rộng thêm bộ lọc
+              khác sau này (status, ngày tạo...) */}
+          <select
+            value={marketFilter}
+            onChange={(e) => setMarketFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+          >
+            <option value="All">All Markets</option>
+            <option value="Vietnam">🇻🇳 Vietnam</option>
+            <option value="International">🌍 International</option>
+          </select>
+        </div>
       </div>
 
-      {quotes.length === 0 ? (
+      {filteredQuotes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FileText className="h-10 w-10 text-slate-300" />
           <p className="mt-3 font-medium text-slate-700 dark:text-slate-300">
@@ -98,6 +129,7 @@ export function QuotesTable() {
                 <TableHead>Quote #</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Department</TableHead>
+                <TableHead>Market</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
@@ -106,7 +138,7 @@ export function QuotesTable() {
             </TableHeader>
 
             <TableBody>
-              {quotes.map((quote) => (
+              {filteredQuotes.map((quote) => (
                 <TableRow
                   key={quote.id}
                   className="hover:bg-slate-50 dark:hover:bg-slate-900/50"
@@ -128,10 +160,17 @@ export function QuotesTable() {
                     {quote.department}
                   </TableCell>
 
-                  {/* Null-safe: quote.amount có thể là null nếu quote
-                      dùng Service Options thay vì field amount cũ. */}
+                  <TableCell className="text-slate-500">
+                    {quote.customer_market === "vietnam"
+                      ? "🇻🇳 Vietnam"
+                      : quote.customer_market === "international"
+                        ? "🌍 International"
+                        : "—"}
+                  </TableCell>
+
                   <TableCell className="font-medium">
-                    ${Number(quote.amount ?? 0).toLocaleString()}
+                    {currencySymbolFor(quote)}
+                    {Number(quote.amount ?? 0).toLocaleString()}
                   </TableCell>
 
                   <TableCell>
