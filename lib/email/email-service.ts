@@ -1,5 +1,6 @@
 import { resend } from "./resend";
 import { welcomeEmailTemplate } from "../templates/welcome-email";
+import { proposalLinkEmailTemplate } from "../templates/proposal-link-email";
 
 interface WelcomeEmailInput {
   fullName: string;
@@ -29,6 +30,37 @@ export async function sendWelcomeEmail({
 
   console.log("Resend Result:");
   console.log(result);
+
+  return result;
+}
+
+// ============================================================
+// MỚI — gửi lại link proposal cho khách hàng (khách tự nhập email
+// trên trang public, phòng khi làm mất link/xoá email cũ).
+// ============================================================
+interface ProposalLinkEmailInput {
+  toEmail: string;
+  companyName: string;
+  proposalTitle: string;
+  proposalUrl: string;
+}
+
+export async function sendProposalLinkEmail({
+  toEmail,
+  companyName,
+  proposalTitle,
+  proposalUrl,
+}: ProposalLinkEmailInput) {
+  const result = await resend.emails.send({
+    from: "STAFF United <no-reply@staffunitedgroup.com>",
+    to: toEmail,
+    subject: `Your proposal: ${proposalTitle}`,
+    html: proposalLinkEmailTemplate({
+      companyName,
+      proposalTitle,
+      proposalUrl,
+    }),
+  });
 
   return result;
 }

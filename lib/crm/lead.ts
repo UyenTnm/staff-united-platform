@@ -48,6 +48,9 @@ export async function updateLeadStatus(id: string, status: string) {
   }
 }
 
+// ĐÃ SỬA — tách riêng "đã Accept" (chờ thanh toán) và "đã Paid" (mới
+// tính là Won). Trước đây cả 2 đều map thành "Won", khiến lead bị đánh
+// dấu thắng deal ngay khi khách accept, dù chưa hề chuyển tiền.
 export async function syncLeadStatusFromQuote(quoteStatus: string) {
   switch (quoteStatus) {
     case "Draft":
@@ -63,6 +66,12 @@ export async function syncLeadStatusFromQuote(quoteStatus: string) {
       return "Negotiation";
 
     case "Accepted":
+      // Khách đã đồng ý báo giá, nhưng CHƯA chuyển tiền — không tính
+      // là Won ở bước này.
+      return "Awaiting Payment";
+
+    case "Paid":
+      // Chỉ khi thực sự nhận được tiền mới tính là thắng deal.
       return "Won";
 
     case "Rejected":
@@ -76,9 +85,6 @@ export async function syncLeadStatusFromQuote(quoteStatus: string) {
   }
 }
 
-// ============================================================
-// MỚI — tạo lead mới (dùng chung cho mọi khách hàng, không riêng ai)
-// ============================================================
 export async function createLead(data: {
   company_name: string;
   contact_name: string;

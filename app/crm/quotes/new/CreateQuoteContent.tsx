@@ -7,10 +7,14 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 
 import { createQuote } from "@/lib/crm/quotes";
-// import { getLead } from "@/lib/lead";
 import { getLead, updateLeadStatus, type Lead } from "@/lib/crm/lead";
 import { toast } from "sonner";
 
+// ĐÃ ĐƠN GIẢN HÓA — bỏ hẳn phần nhập Service Options ở đây (bị trùng
+// với khối "Add Service Options" trên trang chi tiết quote). Trang
+// này giờ chỉ hỏi thông tin cơ bản để tạo quote, rồi CHUYỂN THẲNG
+// sang trang chi tiết — nơi duy nhất để thêm dịch vụ, upload PDF, tạo
+// QR... tránh 2 nơi làm cùng 1 việc gây nhầm lẫn.
 export default function CreateQuotePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -19,14 +23,17 @@ export default function CreateQuotePage() {
   const [lead, setLead] = useState<Lead | null>(null);
 
   const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
+  const [customerMarket, setCustomerMarket] = useState<
+    "vietnam" | "international"
+  >("vietnam");
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function loadLead() {
       if (!leadId) return;
       const data = await getLead(leadId);
-
       setLead(data);
     }
     loadLead();
@@ -38,29 +45,39 @@ export default function CreateQuotePage() {
       return;
     }
 
-    try {
-      await createQuote({
-        lead_id: lead.id,
+    if (!title.trim()) {
+      toast.warning("Please enter a proposal title.");
+      return;
+    }
 
+    setSaving(true);
+    try {
+      const quote = await createQuote({
+        lead_id: lead.id,
         company_name: lead.company_name,
         contact_name: lead.contact_name,
         department: lead.department,
-
-        title,
-        amount: Number(amount),
+        title: title.trim(),
         notes,
+        customer_market: customerMarket,
+        items: [], // Chưa có dịch vụ nào — sẽ thêm ở trang chi tiết
       });
-      // Update Lead Status
-      await updateLeadStatus(lead.id, "Proposal Sent");
 
-      toast.success("Quote created successfully!");
+      await updateLeadStatus(lead.id, "Preparing Proposal");
 
-      router.push("/crm/quotes");
+      toast.success("Quote created — now add your services.");
+
+      // Chuyển thẳng vào trang chi tiết — nơi duy nhất để thêm Service
+      // Options, upload PDF, tạo QR/link.
+      router.push(`/crm/quotes/${quote.id}`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to create quote.");
+    } finally {
+      setSaving(false);
     }
   }
+
   if (!lead) {
     return (
       <AppLayout>
@@ -68,36 +85,64 @@ export default function CreateQuotePage() {
       </AppLayout>
     );
   }
+
   return (
     <AppLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Create Quote</h1>
-          <p className="text-slate-500">Create a proposal for this lead.</p>
+          <p className="text-slate-500">
+            Start a new quote for this lead — you&apos;ll add services on the
+            next screen.
+          </p>
         </div>
 
         <div className="border rounded-xl p-6">
           <h2 className="font-semibold mb-4">Lead Information</h2>
-
           <div className="space-y-2">
             <p>
               <strong>Company:</strong> {lead.company_name}
             </p>
-
             <p>
               <strong>Contact:</strong> {lead.contact_name}
             </p>
-
             <p>
               <strong>Department:</strong> {lead.department}
             </p>
           </div>
         </div>
 
-        <div className="border rounded-xl p-6 space-y-4">
+        <div className="border rounded-xl p-6 space-y-5">
           <div>
-            <label className="text-sm font-medium">Quote Title</label>
+            <label className="text-sm font-medium">Customer Market</label>
+            <div className="flex gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setCustomerMarket("vietnam")}
+                className={`border rounded-lg px-4 py-2 cursor-pointer ${
+                  customerMarket === "vietnam"
+                    ? "border-black bg-black text-white"
+                    : "border-slate-300"
+                }`}
+              >
+                🇻🇳 Vietnam — VND
+              </button>
+              <button
+                type="button"
+                onClick={() => setCustomerMarket("international")}
+                className={`border rounded-lg px-4 py-2 cursor-pointer ${
+                  customerMarket === "international"
+                    ? "border-black bg-black text-white"
+                    : "border-slate-300"
+                }`}
+              >
+                🌍 International — USD
+              </button>
+            </div>
+          </div>
 
+          <div>
+            <label className="text-sm font-medium">Proposal Title</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -107,29 +152,23 @@ export default function CreateQuotePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Amount</label>
-
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full border rounded-lg p-2 mt-1"
-              placeholder="2500"
-            />
-          </div>
-
-          <div>
             <label className="text-sm font-medium">Notes</label>
-
             <textarea
-              rows={5}
+              rows={4}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full border rounded-lg p-2 mt-1"
+              placeholder="Additional notes..."
             />
           </div>
 
-          <Button onClick={handleCreateQuote}>Create Quote</Button>
+          <Button
+            className="cursor-pointer"
+            onClick={handleCreateQuote}
+            disabled={saving}
+          >
+            {saving ? "Creating..." : "Create Quote & Add Services →"}
+          </Button>
         </div>
       </div>
     </AppLayout>

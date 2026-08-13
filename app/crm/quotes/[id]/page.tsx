@@ -10,6 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProposalQrCard } from "@/components/proposal-qr-card";
 import { ProposalPdfUpload } from "@/components/proposal-pdf-upload";
+import { QuoteItemsEditor } from "@/components/quote-items-editor";
+import { CustomerMarketSelector } from "@/components/customer-market-selector";
+import { MarkPaidCard } from "@/components/mark-paid-card";
+import { ClientLogoUpload } from "@/components/client-logo-upload";
+import { QuotePagesEditor } from "@/components/quote-pages-editor";
 
 import { Quote, getQuote } from "@/lib/crm/quotes";
 
@@ -74,7 +79,6 @@ export default function QuoteDetailPage() {
           </Link>
         </Button>
 
-        {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -86,20 +90,33 @@ export default function QuoteDetailPage() {
               </Badge>
             </div>
             <p className="text-slate-500 mt-1">{quote.company_name}</p>
+
+            {/* Hiện rõ khách đã chọn đúng dịch vụ nào — dữ liệu lưu
+                sẵn trong client_notes lúc Accept, trước đây chưa hiện
+                ra cho nhân viên xem. */}
+            {quote.client_notes && (
+              <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                📋 {quote.client_notes}
+              </p>
+            )}
           </div>
 
-          <Button asChild variant="outline">
-            <Link href={`/crm/quotes/${quote.id}/edit`}>Edit Quote</Link>
-          </Button>
+          {quote.status === "Paid" ? (
+            <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-400">
+              Edit locked (Paid)
+            </div>
+          ) : (
+            <Button asChild variant="outline">
+              <Link href={`/crm/quotes/${quote.id}/edit`}>Edit Quote</Link>
+            </Button>
+          )}
         </div>
 
-        {/* Overview cards */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
               Client Information
             </h2>
-
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <dt className="text-slate-500">Company</dt>
@@ -126,7 +143,6 @@ export default function QuoteDetailPage() {
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
               Quote Overview
             </h2>
-
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <dt className="text-slate-500">Title</dt>
@@ -137,7 +153,8 @@ export default function QuoteDetailPage() {
               <div className="flex justify-between">
                 <dt className="text-slate-500">Amount</dt>
                 <dd className="text-lg font-bold text-slate-900 dark:text-white">
-                  ${quote.amount.toLocaleString()}
+                  {quote.customer_market === "vietnam" ? "₫" : "$"}
+                  {Number(quote.amount ?? 0).toLocaleString()}
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -150,12 +167,63 @@ export default function QuoteDetailPage() {
           </div>
         </div>
 
-        {/* Proposal PDF upload */}
-        <ProposalPdfUpload
+        {/* Mark as Paid — chỉ hiện khi khách đã Accept, chờ xác nhận tiền */}
+        <MarkPaidCard
           quoteId={quote.id}
-          currentPdfUrl={quote.proposal_pdf_url}
-          onUploaded={loadQuote}
+          proposalStatus={quote.proposal_status}
+          onMarked={loadQuote}
         />
+
+        {/* Customer Market — chọn VN (VietQR) hay Quốc tế (Wire USD) */}
+        <CustomerMarketSelector
+          quoteId={quote.id}
+          currentMarket={quote.customer_market}
+          onUpdated={loadQuote}
+        />
+
+        {/* Service Options */}
+        <QuoteItemsEditor
+          quoteId={quote.id}
+          customerMarket={quote.customer_market}
+          proposalStatus={quote.proposal_status}
+        />
+
+        {/* Create Proposal — 2 lựa chọn rõ ràng, tách biệt hoàn toàn */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Create Proposal
+          </h2>
+          <p className="mb-4 text-sm text-slate-500">
+            Choose how you want to build this proposal for the client.
+          </p>
+
+          <div className="space-y-4">
+            {/* Option A — Upload PDF */}
+            <ProposalPdfUpload
+              quoteId={quote.id}
+              currentPdfUrl={quote.proposal_pdf_url}
+              onUploaded={loadQuote}
+            />
+
+            {/* Option B — trang riêng, dùng template STAFF United */}
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 p-6 dark:border-slate-800">
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">
+                  Option B — Use STAFF United Template
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  No design skills needed — just fill in the client logo and
+                  content, we handle the layout.
+                </p>
+              </div>
+              <Button asChild variant="outline">
+                <Link href={`/crm/quotes/${quote.id}/template`}>
+                  Create with Template →
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* QR / link */}
         <ProposalQrCard
@@ -165,7 +233,6 @@ export default function QuoteDetailPage() {
           onSent={loadQuote}
         />
 
-        {/* Notes */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
             Notes
