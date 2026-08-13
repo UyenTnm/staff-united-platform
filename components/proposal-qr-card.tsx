@@ -57,14 +57,18 @@ export function ProposalQrCard({
       </div>
 
       <div className="flex gap-2">
-        <Button variant="outline" onClick={handleCopyLink} className="flex-1">
+        <Button
+          variant="outline"
+          onClick={handleCopyLink}
+          className="flex-1 cursor-pointer"
+        >
           Copy Link
         </Button>
 
         <Button
           onClick={handleMarkSent}
           disabled={marking || proposalStatus !== "draft"}
-          className="flex-1"
+          className="flex-1 cursor-pointer"
         >
           {proposalStatus === "draft"
             ? marking

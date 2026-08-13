@@ -22,7 +22,10 @@ export function StatCard({ label, value, accent = "slate" }: StatCardProps) {
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+      {/* ĐÃ SỬA — cho phép xuống dòng (break-words) thay vì tràn ra
+          ngoài khung khi số quá lớn (VD: ₫600,000,000). Giảm cỡ chữ
+          một chút để vừa khung hơn. */}
+      <p className="mt-1 break-words text-xl font-bold leading-tight text-slate-900 dark:text-white sm:text-2xl">
         {value}
       </p>
     </div>

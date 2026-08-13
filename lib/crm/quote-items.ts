@@ -39,6 +39,9 @@ export async function createQuoteItem(data: {
   unit_price: number;
   is_optional?: boolean;
   sort_order?: number;
+  // MỚI — truyền đúng đơn vị tiền tệ (VND/USD) khi tạo item, phòng
+  // trường hợp cột currency_code trong DB yêu cầu bắt buộc (NOT NULL).
+  currency_code?: string;
 }) {
   const { error } = await supabase.from("quote_items").insert({
     quote_id: data.quote_id,
@@ -48,10 +51,17 @@ export async function createQuoteItem(data: {
     unit_price: data.unit_price,
     is_optional: data.is_optional ?? true,
     sort_order: data.sort_order ?? 0,
+    currency_code: data.currency_code ?? "VND",
   });
 
   if (error) {
-    console.error(error);
+    // ĐÃ SỬA — log rõ message/code/details/hint thay vì {} mơ hồ.
+    console.error("createQuoteItem error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     throw error;
   }
 }
@@ -78,7 +88,12 @@ export async function updateQuoteItem(
     .eq("id", id);
 
   if (error) {
-    console.error(error);
+    console.error("updateQuoteItem error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     throw error;
   }
 }
@@ -87,12 +102,16 @@ export async function deleteQuoteItem(id: string) {
   const { error } = await supabase.from("quote_items").delete().eq("id", id);
 
   if (error) {
-    console.error(error);
+    console.error("deleteQuoteItem error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     throw error;
   }
 }
 
-// Helper — giá thực tế của 1 hạng mục = số lượng × đơn giá
 export function getItemTotal(item: QuoteItem): number {
   return Number(item.quantity) * Number(item.unit_price);
 }

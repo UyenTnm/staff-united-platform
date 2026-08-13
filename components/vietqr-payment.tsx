@@ -6,12 +6,12 @@ interface VietQRPaymentProps {
 }
 
 // VietQR chuẩn — không cần API key, chỉ cần đúng thông tin tài khoản.
-// Ảnh QR được VietQR.io tự sinh theo URL, hoạt động với mọi app ngân
-// hàng Việt Nam hỗ trợ chuẩn VietQR (hầu hết ngân hàng lớn đều có).
+// Component này CHỈ dùng cho market Vietnam (VNĐ) — nên cố định ký
+// hiệu ₫, không cần truyền currencySymbol từ ngoài vào.
 //
 // Tài khoản VNĐ chính thức của CÔNG TY TNHH STAFF UNITED tại
 // Techcombank, chi nhánh Saigon.
-const BANK_BIN = "970407"; // Mã BIN của Techcombank
+const BANK_BIN = "970407";
 const ACCOUNT_NO = "937718";
 const ACCOUNT_NAME = "VND-TGTT-CONG TY TNHH STAFF UNITED";
 
@@ -34,7 +34,9 @@ export function VietQRPayment({ amount, addInfo }: VietQRPaymentProps) {
       <div className="w-full space-y-1 text-sm">
         <div className="flex justify-between border-b pb-1">
           <span className="text-slate-500">Amount</span>
-          <span className="font-semibold">${amount.toLocaleString()}</span>
+          {/* ĐÃ SỬA — dùng ₫ thay vì $ cố định, đúng vì component này
+              chỉ render cho market Vietnam. */}
+          <span className="font-semibold">₫{amount.toLocaleString()}</span>
         </div>
         <div className="flex justify-between border-b pb-1">
           <span className="text-slate-500">Transfer content</span>

@@ -36,15 +36,13 @@ export interface Quote {
   client_notes: string | null;
 
   proposal_pdf_url: string | null;
+  client_logo_url: string | null;
 
   customer_market: CustomerMarket | null;
   currency: string | null;
   currency_code: string | null;
 }
 
-// Item truyền vào lúc tạo quote — khớp đúng với QuoteItem trong
-// CreateQuoteContent.tsx (form tạo quote có sẵn, cho thêm nhiều dịch vụ
-// + chọn market ngay lúc tạo).
 interface NewQuoteItemInput {
   service_name: string;
   description: string;
@@ -54,11 +52,6 @@ interface NewQuoteItemInput {
   sort_order: number;
 }
 
-// ============================================================
-// createQuote — ĐÃ SỬA: nhận đúng customer_market + items[], lưu
-// items vào bảng quote_items ngay khi tạo quote, và tự tính amount
-// tổng (dùng cho các nơi cũ còn đọc quote.amount làm fallback).
-// ============================================================
 export async function createQuote(data: {
   lead_id: string;
   company_name: string;
@@ -97,7 +90,6 @@ export async function createQuote(data: {
     throw error;
   }
 
-  // Lưu từng service item vào bảng quote_items, gắn đúng quote_id vừa tạo
   if (data.items.length > 0) {
     const itemsToInsert = data.items.map((item, index) => ({
       quote_id: created.id,
@@ -115,8 +107,6 @@ export async function createQuote(data: {
 
     if (itemsError) {
       console.error("Failed to insert quote items:", itemsError);
-      // Không throw — quote đã tạo thành công, chỉ log lỗi items để
-      // nhân viên có thể vào thêm tay qua khối "Add Service Options".
     }
   }
 
@@ -203,6 +193,50 @@ export async function updateCustomerMarket(
     console.error(error);
     throw error;
   }
+}
+
+// ============================================================
+// MỚI — upload logo công ty khách, dùng cho trang bìa template
+// proposal thống nhất (thay thế việc upload PDF tự thiết kế).
+// ============================================================
+export async function uploadClientLogo(
+  quoteId: string,
+  file: File,
+): Promise<string> {
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${quoteId}/logo-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("proposals")
+    .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+  if (uploadError) {
+    console.error("Upload logo error:", uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("proposals")
+    .getPublicUrl(filePath);
+
+  const publicUrl = publicUrlData.publicUrl;
+
+  const { error: updateError } = await supabase
+    .from("quotes")
+    .update({ client_logo_url: publicUrl })
+    .eq("id", quoteId);
+
+  if (updateError) {
+    console.error("Save logo url error:", {
+      message: updateError.message,
+      code: updateError.code,
+      details: updateError.details,
+      hint: updateError.hint,
+    });
+    throw updateError;
+  }
+
+  return publicUrl;
 }
 
 function statusLabelFromProposalStatus(proposalStatus: string): string {
@@ -308,20 +342,32 @@ export async function acceptQuoteByToken(
   token: string,
   acceptedByName: string,
   clientNotes?: string,
+  finalAmount?: number,
 ) {
   const quote = await getQuoteByToken(token);
   if (!quote) {
     throw new Error("Quote not found for token");
   }
 
+  const updatePayload: Record<string, unknown> = {
+    proposal_status: "accepted",
+    accepted_at: new Date().toISOString(),
+    accepted_by_name: acceptedByName,
+    client_notes: clientNotes || null,
+  };
+
+  // QUAN TRỌNG — ghi đè amount bằng đúng số tiền thật khách đã chọn
+  // (mandatory + optional đã tick), KHÔNG giữ số tổng ước tính lúc
+  // tạo quote (vốn giả định chọn hết optional). Nếu không có
+  // finalAmount truyền vào (proposal cũ, không có items), giữ nguyên
+  // amount cũ.
+  if (typeof finalAmount === "number") {
+    updatePayload.amount = finalAmount;
+  }
+
   const { error } = await supabase
     .from("quotes")
-    .update({
-      proposal_status: "accepted",
-      accepted_at: new Date().toISOString(),
-      accepted_by_name: acceptedByName,
-      client_notes: clientNotes || null,
-    })
+    .update(updatePayload)
     .eq("public_token", token);
 
   if (error) {
