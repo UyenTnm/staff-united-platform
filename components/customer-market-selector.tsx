@@ -1,25 +1,33 @@
 "use client";
 
 import { useState } from "react";
+import { Lock } from "lucide-react";
 import { updateCustomerMarket, CustomerMarket } from "@/lib/crm/quotes";
 import { toast } from "sonner";
 
 interface CustomerMarketSelectorProps {
   quoteId: string;
   currentMarket: CustomerMarket | null;
+  proposalStatus: string;
   onUpdated: () => void;
 }
 
 // Chọn thị trường khách hàng — quyết định trang public hiện VietQR
-// (Vietnam) hay Wire Transfer USD (International).
+// (Vietnam) hay Wire Transfer USD (International). Khóa hẳn khi quote
+// đã ở trạng thái "paid" — đổi market sau khi đã nhận tiền sẽ làm
+// lệch thông tin thanh toán đã xác nhận.
 export function CustomerMarketSelector({
   quoteId,
   currentMarket,
+  proposalStatus,
   onUpdated,
 }: CustomerMarketSelectorProps) {
+  const isLocked = proposalStatus === "paid";
   const [saving, setSaving] = useState(false);
 
   async function handleChange(market: CustomerMarket) {
+    if (isLocked) return;
+
     setSaving(true);
     try {
       await updateCustomerMarket(quoteId, market);
@@ -46,11 +54,21 @@ export function CustomerMarketSelector({
         abroad.
       </p>
 
+      {isLocked && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+          <Lock className="h-4 w-4 flex-shrink-0" />
+          Payment has been confirmed — market is locked to keep records
+          consistent with the completed payment.
+        </div>
+      )}
+
       <div className="flex gap-2">
         <button
           onClick={() => handleChange("vietnam")}
-          disabled={saving}
-          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition cursor-pointer ${
+          disabled={saving || isLocked}
+          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition ${
+            isLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+          } ${
             currentMarket === "vietnam"
               ? "border-emerald-500 bg-emerald-50 text-emerald-700"
               : "border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -60,8 +78,10 @@ export function CustomerMarketSelector({
         </button>
         <button
           onClick={() => handleChange("international")}
-          disabled={saving}
-          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition cursor-pointer ${
+          disabled={saving || isLocked}
+          className={`flex-1 rounded-lg border p-3 text-sm font-medium transition ${
+            isLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+          } ${
             currentMarket === "international"
               ? "border-emerald-500 bg-emerald-50 text-emerald-700"
               : "border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -71,7 +91,7 @@ export function CustomerMarketSelector({
         </button>
       </div>
 
-      {!currentMarket && (
+      {!currentMarket && !isLocked && (
         <p className="mt-2 text-xs text-amber-600">
           Not set yet — defaults to International (USD Wire) until you choose.
         </p>

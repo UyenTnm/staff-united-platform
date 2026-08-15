@@ -1,6 +1,7 @@
 import { resend } from "./resend";
 import { welcomeEmailTemplate } from "../templates/welcome-email";
 import { proposalLinkEmailTemplate } from "../templates/proposal-link-email";
+import { paymentConfirmedEmailTemplate } from "../templates/payment-confirmed-email";
 
 interface WelcomeEmailInput {
   fullName: string;
@@ -60,6 +61,60 @@ export async function sendProposalLinkEmail({
       proposalTitle,
       proposalUrl,
     }),
+  });
+
+  return result;
+}
+
+// ============================================================
+// MỚI — gửi email xác nhận đã nhận thanh toán, kèm báo trước về
+// hóa đơn nếu khách đã điền billing info.
+// ============================================================
+interface PaymentConfirmedEmailInput {
+  toEmail: string;
+  companyName: string;
+  proposalTitle: string;
+  amount: string;
+  quoteNumber: string;
+  paidDate: string;
+  paymentMethod: string;
+  hasBillingInfo: boolean;
+  // PDF biên lai đính kèm — base64, KHÔNG kèm tiền tố "data:...;base64,"
+  pdfBase64?: string;
+}
+
+export async function sendPaymentConfirmedEmail({
+  toEmail,
+  companyName,
+  proposalTitle,
+  amount,
+  quoteNumber,
+  paidDate,
+  paymentMethod,
+  hasBillingInfo,
+  pdfBase64,
+}: PaymentConfirmedEmailInput) {
+  const result = await resend.emails.send({
+    from: "STAFF United <no-reply@staffunitedgroup.com>",
+    to: toEmail,
+    subject: `Payment received — ${quoteNumber}`,
+    html: paymentConfirmedEmailTemplate({
+      companyName,
+      proposalTitle,
+      amount,
+      quoteNumber,
+      paidDate,
+      paymentMethod,
+      hasBillingInfo,
+    }),
+    attachments: pdfBase64
+      ? [
+          {
+            filename: `Receipt-${quoteNumber}.pdf`,
+            content: pdfBase64,
+          },
+        ]
+      : undefined,
   });
 
   return result;

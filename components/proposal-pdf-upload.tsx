@@ -8,6 +8,7 @@ import { toast } from "sonner";
 interface ProposalPdfUploadProps {
   quoteId: string;
   currentPdfUrl: string | null;
+  proposalStatus?: string;
   onUploaded?: () => void;
 }
 
@@ -16,8 +17,10 @@ interface ProposalPdfUploadProps {
 export function ProposalPdfUpload({
   quoteId,
   currentPdfUrl,
+  proposalStatus,
   onUploaded,
 }: ProposalPdfUploadProps) {
+  const isLocked = proposalStatus === "accepted" || proposalStatus === "paid";
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -71,14 +74,21 @@ export function ProposalPdfUpload({
               </a>
             </div>
           </div>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50 cursor-pointer"
-          >
-            Replace
-          </button>
+          {!isLocked && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="cursor-pointer rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+            >
+              Replace
+            </button>
+          )}
         </div>
+      ) : isLocked ? (
+        <p className="mt-4 text-sm text-slate-400">
+          🔒 Locked — client has already accepted this proposal, so a PDF can no
+          longer be added here.
+        </p>
       ) : (
         // Vùng click/kéo-thả — rõ ràng đây là 1 vùng có thể bấm được,
         // không chỉ là input file mờ nhạt như trước.
@@ -96,7 +106,7 @@ export function ProposalPdfUpload({
             handleFile(e.dataTransfer.files?.[0]);
           }}
           disabled={uploading}
-          className={`mt-4 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition cursor-pointer ${
+          className={`mt-4 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition ${
             dragOver
               ? "border-emerald-500 bg-emerald-50"
               : "border-slate-300 hover:border-emerald-400 hover:bg-slate-50"

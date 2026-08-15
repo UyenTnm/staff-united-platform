@@ -42,6 +42,27 @@ export function MarkPaidCard({
     try {
       await markQuoteAsPaid(quoteId);
       toast.success("Marked as paid. Lead status updated to Won.");
+
+      // Gửi email xác nhận thanh toán cho khách — không chặn luồng
+      // chính nếu gửi thất bại (VD: khách chưa để lại email nào).
+      try {
+        const res = await fetch("/api/proposal/payment-confirmed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quoteId }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast.success("Confirmation email sent to client.");
+        } else if (data.reason === "no_email") {
+          toast.warning(
+            "No client email on file — confirmation email not sent.",
+          );
+        }
+      } catch (emailErr) {
+        console.error("Failed to send confirmation email:", emailErr);
+      }
+
       onMarked();
     } catch (err) {
       console.error(err);
@@ -61,7 +82,7 @@ export function MarkPaidCard({
       <Button
         onClick={handleMarkPaid}
         disabled={saving}
-        className="w-full bg-amber-600 hover:bg-amber-700"
+        className="w-full bg-amber-600 hover:bg-amber-700 cursor-pointer"
       >
         {saving ? "Confirming..." : "✓ Confirm Payment Received"}
       </Button>

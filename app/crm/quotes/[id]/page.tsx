@@ -15,6 +15,10 @@ import { CustomerMarketSelector } from "@/components/customer-market-selector";
 import { MarkPaidCard } from "@/components/mark-paid-card";
 import { ClientLogoUpload } from "@/components/client-logo-upload";
 import { QuotePagesEditor } from "@/components/quote-pages-editor";
+import { ClientInfoEditor } from "@/components/client-info-editor";
+import { BillingInfoEditor } from "@/components/billing-info-editor-staff";
+import { SelectionHistory } from "@/components/selection-history";
+import { UnlockSelectionCard } from "@/components/unlock-selection-card";
 
 import { Quote, getQuote } from "@/lib/crm/quotes";
 
@@ -113,31 +117,18 @@ export default function QuoteDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Client Information
-            </h2>
-            <dl className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Company</dt>
-                <dd className="font-medium text-slate-900 dark:text-white">
-                  {quote.company_name}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Contact</dt>
-                <dd className="font-medium text-slate-900 dark:text-white">
-                  {quote.contact_name}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Department</dt>
-                <dd className="font-medium text-slate-900 dark:text-white">
-                  {quote.department || "—"}
-                </dd>
-              </div>
-            </dl>
-          </div>
+          <ClientInfoEditor
+            quoteId={quote.id}
+            proposalStatus={quote.proposal_status}
+            existing={{
+              company_name: quote.company_name,
+              contact_name: quote.contact_name,
+              department: quote.department,
+              contact_email: quote.contact_email,
+              contact_phone: quote.contact_phone,
+            }}
+            onSaved={loadQuote}
+          />
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -167,6 +158,36 @@ export default function QuoteDetailPage() {
           </div>
         </div>
 
+        {/* Billing Info — sale/kế toán tự sửa được, khóa khi Paid */}
+        <BillingInfoEditor
+          quoteId={quote.id}
+          proposalStatus={quote.proposal_status}
+          existing={{
+            billing_company_name: quote.billing_company_name,
+            billing_address: quote.billing_address,
+            billing_tax_code: quote.billing_tax_code,
+            billing_email: quote.billing_email,
+            billing_contact_person: quote.billing_contact_person,
+          }}
+          updatedByClient={quote.billing_updated_by === "client"}
+          billingUpdatedAt={quote.billing_updated_at}
+          onSaved={loadQuote}
+        />
+
+        {/* Sale mở/khóa quyền khách tự sửa lại lựa chọn dịch vụ */}
+        <UnlockSelectionCard
+          quoteId={quote.id}
+          proposalStatus={quote.proposal_status}
+          selectionUnlocked={quote.selection_unlocked}
+          onChanged={loadQuote}
+        />
+
+        {/* Lịch sử khách đổi ý chọn dịch vụ — dùng phân tích hành vi */}
+        <SelectionHistory
+          quoteId={quote.id}
+          currencySymbol={quote.customer_market === "vietnam" ? "₫" : "$"}
+        />
+
         {/* Mark as Paid — chỉ hiện khi khách đã Accept, chờ xác nhận tiền */}
         <MarkPaidCard
           quoteId={quote.id}
@@ -178,6 +199,7 @@ export default function QuoteDetailPage() {
         <CustomerMarketSelector
           quoteId={quote.id}
           currentMarket={quote.customer_market}
+          proposalStatus={quote.proposal_status}
           onUpdated={loadQuote}
         />
 
@@ -202,6 +224,7 @@ export default function QuoteDetailPage() {
             <ProposalPdfUpload
               quoteId={quote.id}
               currentPdfUrl={quote.proposal_pdf_url}
+              proposalStatus={quote.proposal_status}
               onUploaded={loadQuote}
             />
 
@@ -216,11 +239,18 @@ export default function QuoteDetailPage() {
                   content, we handle the layout.
                 </p>
               </div>
-              <Button asChild variant="outline">
-                <Link href={`/crm/quotes/${quote.id}/template`}>
-                  Create with Template →
-                </Link>
-              </Button>
+              {quote.proposal_status === "accepted" ||
+              quote.proposal_status === "paid" ? (
+                <span className="flex-shrink-0 rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-400">
+                  🔒 Locked
+                </span>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href={`/crm/quotes/${quote.id}/template`}>
+                    Create with Template →
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>
