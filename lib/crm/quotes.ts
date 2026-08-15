@@ -20,6 +20,8 @@ export interface Quote {
   company_name: string;
   contact_name: string;
   department: string;
+  contact_email: string | null;
+  contact_phone: string | null;
   title: string;
   amount: number;
   notes: string;
@@ -41,6 +43,18 @@ export interface Quote {
   customer_market: CustomerMarket | null;
   currency: string | null;
   currency_code: string | null;
+
+  // Thông tin xuất hóa đơn — dùng để kế toán nhập tay vào MISA
+  // meInvoice, không cần tích hợp API.
+  billing_company_name: string | null;
+  billing_address: string | null;
+  billing_tax_code: string | null;
+  billing_email: string | null;
+  billing_contact_person: string | null;
+  billing_updated_by: string | null;
+  billing_updated_at: string | null;
+
+  selection_unlocked: boolean;
 }
 
 interface NewQuoteItemInput {
@@ -57,6 +71,8 @@ export async function createQuote(data: {
   company_name: string;
   contact_name: string;
   department: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
   title: string;
   notes: string;
   customer_market: CustomerMarket;
@@ -75,6 +91,8 @@ export async function createQuote(data: {
       company_name: data.company_name,
       contact_name: data.contact_name,
       department: data.department,
+      contact_email: data.contact_email ?? null,
+      contact_phone: data.contact_phone ?? null,
       title: data.title,
       notes: data.notes,
       amount: totalAmount,
@@ -180,6 +198,34 @@ export async function getQuoteByLeadId(leadId: string) {
   return data;
 }
 
+// MỚI — sửa thông tin khách hàng gốc (Company/Contact/Department/
+// Email/Phone) ngay trên quote — dùng khi sale nhập sai hoặc khách
+// cung cấp lại thông tin đúng, trước hoặc sau khi gửi proposal.
+export async function updateClientInfo(
+  quoteId: string,
+  data: {
+    company_name: string;
+    contact_name: string;
+    department?: string;
+    contact_email?: string;
+    contact_phone?: string;
+  },
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update(data)
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("updateClientInfo error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    });
+    throw error;
+  }
+}
+
 export async function updateCustomerMarket(
   quoteId: string,
   market: CustomerMarket,
@@ -199,6 +245,76 @@ export async function updateCustomerMarket(
 // MỚI — upload logo công ty khách, dùng cho trang bìa template
 // proposal thống nhất (thay thế việc upload PDF tự thiết kế).
 // ============================================================
+export async function updateBillingInfo(
+  quoteId: string,
+  data: {
+    billing_company_name?: string;
+    billing_address?: string;
+    billing_tax_code?: string;
+    billing_email?: string;
+    billing_contact_person?: string;
+  },
+  updatedBy: "staff" | "client" = "staff",
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({
+      ...data,
+      billing_updated_by: updatedBy,
+      billing_updated_at: new Date().toISOString(),
+    })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("updateBillingInfo error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    throw error;
+  }
+}
+
+// Sale bấm "đã xem" để tắt cảnh báo billing do khách tự sửa
+export async function markBillingReviewed(quoteId: string) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({ billing_updated_by: "staff" })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+// Sale mở khóa tạm thời cho khách sửa lại lựa chọn dịch vụ
+export async function unlockSelectionForClient(quoteId: string) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({ selection_unlocked: true })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+// Sale tự khóa lại (hoặc hệ thống tự khóa sau khi khách đã sửa xong)
+export async function lockSelectionFromClient(quoteId: string) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({ selection_unlocked: false })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export async function uploadClientLogo(
   quoteId: string,
   file: File,
@@ -381,6 +497,37 @@ export async function acceptQuoteByToken(
     "accepted",
     "Accepted",
   );
+}
+
+// MỚI — khách đổi lại lựa chọn dịch vụ SAU KHI đã Accept lần đầu
+// (nhưng CHƯA thanh toán). Khác acceptQuoteByToken (chỉ dùng cho lần
+// Accept đầu), hàm này không đổi accepted_at/accepted_by_name, chỉ
+// cập nhật amount + client_notes theo lựa chọn mới nhất. Việc ghi log
+// (quote_selection_log) do phía gọi hàm tự xử lý riêng.
+export async function updateAcceptedSelection(
+  quoteId: string,
+  selectedTitles: string,
+  finalAmount: number,
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({
+      amount: finalAmount,
+      client_notes: selectedTitles ? `Selected: ${selectedTitles}` : null,
+      // Tự động khóa lại ngay sau khi khách lưu xong — sale phải mở
+      // khóa lại nếu muốn khách sửa tiếp lần nữa.
+      selection_unlocked: false,
+    })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("updateAcceptedSelection error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    });
+    throw error;
+  }
 }
 
 export async function markQuoteAsPaid(id: string) {

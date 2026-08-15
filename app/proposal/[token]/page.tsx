@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { VietQRPayment } from "@/components/vietqr-payment";
 import { WireTransferUSD } from "@/components/wire-transfer-usd";
 import { ResendProposalLink } from "@/components/resend-proposal-link";
+import { BillingInfoForm } from "@/components/billing-info-form";
 import { ProposalTemplateFlipbook } from "@/components/proposal-template-flipbook";
 import { ProposalFlipbook } from "@/components/proposal-flipbook";
 
@@ -15,7 +16,9 @@ import {
   getQuoteByToken,
   markQuoteAsViewed,
   acceptQuoteByToken,
+  updateAcceptedSelection,
 } from "@/lib/crm/quotes";
+import { logSelectionChange } from "@/lib/crm/quote-selection-log";
 import { QuoteItem, getQuoteItems, getItemTotal } from "@/lib/crm/quote-items";
 import { QuotePage, getQuotePages } from "@/lib/crm/quote-pages";
 import { toast } from "sonner";
@@ -32,6 +35,7 @@ export default function PublicProposalPage() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [accepting, setAccepting] = useState(false);
+  const [updatingSelection, setUpdatingSelection] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -117,6 +121,37 @@ export default function PublicProposalPage() {
     }
   }
 
+  async function handleUpdateSelection() {
+    if (!quote) return;
+
+    setUpdatingSelection(true);
+    try {
+      const selectedTitles = items
+        .filter((i) => selectedIds.has(i.id))
+        .map((i) => i.service_name)
+        .join(", ");
+
+      await updateAcceptedSelection(quote.id, selectedTitles, finalAmount);
+
+      // Ghi log thay đổi — dùng để admin sau này phân tích hành vi
+      await logSelectionChange({
+        quote_id: quote.id,
+        selected_items: selectedTitles || "(none selected)",
+        total_amount: finalAmount,
+      });
+
+      toast.success("Your selection has been updated.");
+
+      const updated = await getQuoteByToken(token);
+      setQuote(updated);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update selection. Please try again.");
+    } finally {
+      setUpdatingSelection(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -142,6 +177,8 @@ export default function PublicProposalPage() {
   const isAccepted =
     quote.proposal_status === "accepted" || quote.proposal_status === "paid";
   const isPaid = quote.proposal_status === "paid";
+  // Khóa checkbox khi: đã Paid, HOẶC đã Accepted mà sale CHƯA mở khóa
+  const isSelectionLocked = isPaid || (isAccepted && !quote.selection_unlocked);
 
   return (
     <div className="min-h-screen bg-slate-100 py-10 px-4">
@@ -179,13 +216,13 @@ export default function PublicProposalPage() {
                     selectedIds.has(item.id)
                       ? "border-emerald-500 bg-emerald-50"
                       : "border-slate-200"
-                  } ${isAccepted ? "pointer-events-none opacity-70" : ""}`}
+                  } ${isSelectionLocked ? "pointer-events-none opacity-70" : ""}`}
                 >
                   <input
                     type="checkbox"
                     checked={selectedIds.has(item.id)}
                     onChange={() => toggleItem(item.id)}
-                    disabled={isAccepted}
+                    disabled={isSelectionLocked}
                     className="mt-1 h-4 w-4 rounded accent-emerald-600"
                   />
                   <div className="flex-1">
@@ -217,6 +254,33 @@ export default function PublicProposalPage() {
                 ? "✓ Payment received — thank you!"
                 : `✓ Accepted by ${quote.accepted_by_name}`}
             </p>
+            {!isPaid && !quote.selection_unlocked && (
+              <p className="mt-2 text-sm text-emerald-700">
+                Need to change your selection? Please contact us and we&apos;ll
+                re-open it for you.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Đã Accept nhưng CHƯA Paid — khách vẫn đổi được lựa chọn,
+            bấm nút này để lưu lại thay đổi (khác nút Accept ban đầu). */}
+        {isAccepted && !isPaid && quote.selection_unlocked && (
+          <div className="rounded-xl bg-white p-6 shadow-sm">
+            <p className="mb-3 text-sm text-slate-500">
+              Changed your mind? You can still adjust your selection above
+              before completing payment.
+            </p>
+            <Button
+              onClick={handleUpdateSelection}
+              disabled={updatingSelection}
+              variant="outline"
+              className="w-full cursor-pointer"
+            >
+              {updatingSelection
+                ? "Saving..."
+                : `Update Selection — ${currencySymbol}${finalAmount.toLocaleString()}`}
+            </Button>
           </div>
         )}
 
@@ -251,6 +315,20 @@ export default function PublicProposalPage() {
                 addInfo={`${quote.quote_number} ${quote.company_name}`}
               />
             )}
+
+            {/* Thông tin xuất hóa đơn — khách điền nếu cần, kế toán
+                dùng để nhập tay vào MISA meInvoice sau khi xác nhận
+                thanh toán. */}
+            <BillingInfoForm
+              quoteId={quote.id}
+              existing={{
+                billing_company_name: quote.billing_company_name,
+                billing_address: quote.billing_address,
+                billing_tax_code: quote.billing_tax_code,
+                billing_email: quote.billing_email,
+                billing_contact_person: quote.billing_contact_person,
+              }}
+            />
           </>
         )}
 
