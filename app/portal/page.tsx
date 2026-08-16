@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Download, ExternalLink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { PortalLayout } from "@/components/portal-layout";
 
 interface PortalQuote {
   id: string;
@@ -15,6 +17,7 @@ interface PortalQuote {
   customer_market: string | null;
   public_token: string;
   created_at: string;
+  paid_at: string | null;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -31,6 +34,7 @@ export default function PortalDashboardPage() {
   const [quotes, setQuotes] = useState<PortalQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -45,11 +49,10 @@ export default function PortalDashboardPage() {
 
       setUserEmail(session.user.email || "");
 
-      // RLS đã tự lọc đúng quote của khách này (xem migration 009)
       const { data, error } = await supabase
         .from("quotes")
         .select(
-          "id, quote_number, title, amount, status, proposal_status, customer_market, public_token, created_at",
+          "id, quote_number, title, amount, status, proposal_status, customer_market, public_token, created_at, paid_at",
         )
         .order("created_at", { ascending: false });
 
@@ -63,84 +66,160 @@ export default function PortalDashboardPage() {
     load();
   }, [router]);
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push("/portal/login");
+  async function handleDownloadReceipt(quoteId: string) {
+    setDownloadingId(quoteId);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const res = await fetch(`/api/portal/receipt?quoteId=${quoteId}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (!res.ok) throw new Error("Failed");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Receipt.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDownloadingId(null);
+    }
   }
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-slate-500">Loading...</p>
-      </div>
+      <PortalLayout userEmail={userEmail}>
+        <p className="text-sm text-slate-500">Loading...</p>
+      </PortalLayout>
     );
   }
 
+  const paidCount = quotes.filter((q) => q.status === "Paid").length;
+  const totalVND = quotes
+    .filter((q) => q.status === "Paid" && q.customer_market === "vietnam")
+    .reduce((sum, q) => sum + Number(q.amount), 0);
+  const totalUSD = quotes
+    .filter((q) => q.status === "Paid" && q.customer_market !== "vietnam")
+    .reduce((sum, q) => sum + Number(q.amount), 0);
+
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600">
-              STAFF United
+    <PortalLayout userEmail={userEmail}>
+      <div className="mx-auto max-w-4xl">
+        <h1 className="text-2xl font-bold text-slate-900">
+          Transaction History
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          All your proposals and payments with STAFF United.
+        </p>
+
+        {/* Summary stats */}
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <p className="text-xs font-medium uppercase text-slate-500">
+              Completed Deals
             </p>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Your Transaction History
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">{userEmail}</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">
+              {paidCount}
+            </p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-          >
-            Log out
-          </button>
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <p className="text-xs font-medium uppercase text-slate-500">
+              Total Paid (VND)
+            </p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">
+              ₫{totalVND.toLocaleString()}
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <p className="text-xs font-medium uppercase text-slate-500">
+              Total Paid (USD)
+            </p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">
+              ${totalUSD.toLocaleString()}
+            </p>
+          </div>
         </div>
 
-        {quotes.length === 0 ? (
-          <div className="rounded-xl bg-white p-10 text-center text-sm text-slate-500 shadow-sm">
-            No proposals found for your account yet.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {quotes.map((quote) => {
-              const currencySymbol =
-                quote.customer_market === "vietnam" ? "₫" : "$";
-              return (
-                <Link
-                  key={quote.id}
-                  href={`/proposal/${quote.public_token}`}
-                  className="block rounded-xl bg-white p-5 shadow-sm transition hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-slate-900">
-                        {quote.title}
-                      </p>
-                      <p className="mt-0.5 text-xs text-slate-400">
-                        {quote.quote_number} —{" "}
-                        {new Date(quote.created_at).toLocaleDateString()}
-                      </p>
+        {/* Transaction list */}
+        <div className="mt-8">
+          {quotes.length === 0 ? (
+            <div className="rounded-xl bg-white p-10 text-center text-sm text-slate-500 shadow-sm">
+              No proposals found for your account yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {quotes.map((quote) => {
+                const currencySymbol =
+                  quote.customer_market === "vietnam" ? "₫" : "$";
+                return (
+                  <div
+                    key={quote.id}
+                    className="rounded-xl bg-white p-5 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">
+                          {quote.title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-400">
+                          {quote.quote_number} —{" "}
+                          {new Date(quote.created_at).toLocaleDateString()}
+                          {quote.paid_at &&
+                            ` · Paid ${new Date(quote.paid_at).toLocaleDateString()}`}
+                        </p>
+                      </div>
+                      <span
+                        className={`flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+                          STATUS_COLOR[quote.status] ||
+                          "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {quote.status}
+                      </span>
                     </div>
-                    <span
-                      className={`flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
-                        STATUS_COLOR[quote.status] ||
-                        "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {quote.status}
-                    </span>
+
+                    <div className="mt-4 flex items-center justify-between">
+                      <p className="text-lg font-bold text-slate-900">
+                        {currencySymbol}
+                        {Number(quote.amount).toLocaleString()}
+                      </p>
+
+                      <div className="flex gap-2">
+                        {quote.status === "Paid" && (
+                          <button
+                            onClick={() => handleDownloadReceipt(quote.id)}
+                            disabled={downloadingId === quote.id}
+                            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {downloadingId === quote.id ? "..." : "Receipt"}
+                          </button>
+                        )}
+                        <Link
+                          href={`/proposal/${quote.public_token}`}
+                          className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          View
+                        </Link>
+                      </div>
+                    </div>
                   </div>
-                  <p className="mt-3 text-lg font-bold text-slate-900">
-                    {currencySymbol}
-                    {Number(quote.amount).toLocaleString()}
-                  </p>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </PortalLayout>
   );
 }
