@@ -27,6 +27,7 @@ export default function CreateQuotePage() {
   const [customerMarket, setCustomerMarket] = useState<
     "vietnam" | "international"
   >("vietnam");
+  const [paymentType, setPaymentType] = useState<"full" | "deposit">("full");
 
   const [saving, setSaving] = useState(false);
 
@@ -60,6 +61,7 @@ export default function CreateQuotePage() {
         title: title.trim(),
         notes,
         customer_market: customerMarket,
+        payment_type: paymentType,
         items: [], // Chưa có dịch vụ nào — sẽ thêm ở trang chi tiết
       });
 
@@ -142,6 +144,34 @@ export default function CreateQuotePage() {
           </div>
 
           <div>
+            <label className="text-sm font-medium">Payment Terms</label>
+            <div className="flex gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setPaymentType("full")}
+                className={`border rounded-lg px-4 py-2 cursor-pointer ${
+                  paymentType === "full"
+                    ? "border-black bg-black text-white"
+                    : "border-slate-300"
+                }`}
+              >
+                Full payment (100%)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentType("deposit")}
+                className={`border rounded-lg px-4 py-2 cursor-pointer ${
+                  paymentType === "deposit"
+                    ? "border-black bg-black text-white"
+                    : "border-slate-300"
+                }`}
+              >
+                50% Deposit + 50% on Completion
+              </button>
+            </div>
+          </div>
+
+          <div>
             <label className="text-sm font-medium">Proposal Title</label>
             <input
               value={title}
@@ -162,11 +192,7 @@ export default function CreateQuotePage() {
             />
           </div>
 
-          <Button
-            className="cursor-pointer"
-            onClick={handleCreateQuote}
-            disabled={saving}
-          >
+          <Button onClick={handleCreateQuote} disabled={saving}>
             {saving ? "Creating..." : "Create Quote & Add Services →"}
           </Button>
         </div>

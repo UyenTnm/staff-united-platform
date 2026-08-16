@@ -14,6 +14,7 @@ interface BillingInfoEditorProps {
     billing_address: string | null;
     billing_tax_code: string | null;
     billing_email: string | null;
+    billing_cc_email: string | null;
     billing_contact_person: string | null;
   };
   // Nếu khách vừa tự sửa (chưa được sale xem), hiện cảnh báo rõ.
@@ -54,6 +55,7 @@ export function BillingInfoEditor({
   const [address, setAddress] = useState(existing.billing_address || "");
   const [taxCode, setTaxCode] = useState(existing.billing_tax_code || "");
   const [email, setEmail] = useState(existing.billing_email || "");
+  const [ccEmail, setCcEmail] = useState(existing.billing_cc_email || "");
   const [contactPerson, setContactPerson] = useState(
     existing.billing_contact_person || "",
   );
@@ -69,6 +71,7 @@ export function BillingInfoEditor({
         billing_address: address.trim(),
         billing_tax_code: taxCode.trim(),
         billing_email: email.trim(),
+        billing_cc_email: ccEmail.trim(),
         billing_contact_person: contactPerson.trim(),
       });
       toast.success("Billing information updated.");
@@ -88,8 +91,7 @@ export function BillingInfoEditor({
       </h2>
       <p className="mb-4 text-sm text-slate-500">
         Fill this in yourself if you already have the client&apos;s billing
-        details, or correct it here if the client submitted something
-        wrong.
+        details, or correct it here if the client submitted something wrong.
       </p>
 
       {updatedByClient && !isLocked && (
@@ -114,8 +116,8 @@ export function BillingInfoEditor({
         <div className="mb-4 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
           <Lock className="mt-0.5 h-4 w-4 flex-shrink-0" />
           <p>
-            Payment has been confirmed — billing info is locked to keep
-            records consistent with the issued invoice.
+            Payment has been confirmed — billing info is locked to keep records
+            consistent with the issued invoice.
           </p>
         </div>
       )}
@@ -148,6 +150,14 @@ export function BillingInfoEditor({
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLocked}
           placeholder="Invoice email"
+          className="w-full rounded-lg border border-slate-200 p-2 text-sm disabled:bg-slate-50 disabled:text-slate-400"
+        />
+        <input
+          type="email"
+          value={ccEmail}
+          onChange={(e) => setCcEmail(e.target.value)}
+          disabled={isLocked}
+          placeholder="CC email (optional)"
           className="w-full rounded-lg border border-slate-200 p-2 text-sm disabled:bg-slate-50 disabled:text-slate-400"
         />
         <input

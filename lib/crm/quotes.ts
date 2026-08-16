@@ -8,8 +8,11 @@ export type ProposalStatus =
   | "sent"
   | "viewed"
   | "accepted"
+  | "deposit_paid"
   | "paid"
   | "rejected";
+
+export type PaymentType = "full" | "deposit";
 
 export type CustomerMarket = "vietnam" | "international";
 
@@ -17,6 +20,7 @@ export interface Quote {
   id: string;
   quote_number: string;
   lead_id: string;
+  created_by: string | null;
   company_name: string;
   contact_name: string;
   department: string;
@@ -49,12 +53,19 @@ export interface Quote {
   billing_company_name: string | null;
   billing_address: string | null;
   billing_tax_code: string | null;
+
   billing_email: string | null;
+  billing_cc_email: string | null;
   billing_contact_person: string | null;
   billing_updated_by: string | null;
   billing_updated_at: string | null;
 
   selection_unlocked: boolean;
+
+  // Thanh toán 50/50 (Deposit + Final) — sale chọn lúc tạo quote
+  payment_type: PaymentType;
+  deposit_paid_at: string | null;
+  final_payment_unlocked: boolean;
 }
 
 interface NewQuoteItemInput {
@@ -76,12 +87,19 @@ export async function createQuote(data: {
   title: string;
   notes: string;
   customer_market: CustomerMarket;
+  payment_type?: PaymentType;
   items: NewQuoteItemInput[];
 }) {
   const totalAmount = data.items.reduce(
     (sum, item) => sum + item.quantity * item.unit_price,
     0,
   );
+
+  // Ghi lại đúng nhân viên đang đăng nhập tạo quote này — dùng để
+  // gửi thông báo đúng người khi khách xác nhận Billing Info sau này.
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
 
   const { data: created, error } = await supabase
     .from("quotes")
@@ -97,6 +115,8 @@ export async function createQuote(data: {
       notes: data.notes,
       amount: totalAmount,
       customer_market: data.customer_market,
+      payment_type: data.payment_type ?? "full",
+      created_by: currentUser?.id ?? null,
       status: "Draft",
       proposal_status: "draft",
     })
@@ -252,6 +272,7 @@ export async function updateBillingInfo(
     billing_address?: string;
     billing_tax_code?: string;
     billing_email?: string;
+    billing_cc_email?: string;
     billing_contact_person?: string;
   },
   updatedBy: "staff" | "client" = "staff",
@@ -530,6 +551,10 @@ export async function updateAcceptedSelection(
   }
 }
 
+// Xác nhận đã nhận tiền — dùng cho CẢ 2 luồng:
+// - payment_type = "full": xác nhận toàn bộ 100%, chuyển thẳng Paid.
+// - payment_type = "deposit": dùng để xác nhận ĐỢT CUỐI (50% còn lại),
+//   sau khi đã confirmDepositReceived() cho đợt đầu.
 export async function markQuoteAsPaid(id: string) {
   const { data: quote, error: fetchError } = await supabase
     .from("quotes")
@@ -553,6 +578,56 @@ export async function markQuoteAsPaid(id: string) {
   }
 
   await syncStatusesFromProposal(id, quote.lead_id, "paid", "Paid");
+}
+
+// MỚI — xác nhận đã nhận ĐỢT CỌC (50% đầu), chỉ dùng khi
+// payment_type = "deposit". Sau bước này, lead chuyển "In Progress"
+// (đang triển khai) — CHƯA tính là Won.
+export async function confirmDepositReceived(id: string) {
+  const { data: quote, error: fetchError } = await supabase
+    .from("quotes")
+    .select("lead_id")
+    .eq("id", id)
+    .single();
+
+  if (fetchError) {
+    console.error(fetchError);
+    throw fetchError;
+  }
+
+  const { error } = await supabase
+    .from("quotes")
+    .update({
+      proposal_status: "deposit_paid",
+      deposit_paid_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  await syncStatusesFromProposal(
+    id,
+    quote.lead_id,
+    "deposit_paid",
+    "In Progress",
+  );
+}
+
+// MỚI — sale bấm sau khi đã giao việc xong, mở khóa cho khách thấy
+// và thanh toán đợt cuối (50% còn lại).
+export async function unlockFinalPayment(id: string) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({ final_payment_unlocked: true })
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
 export function getProposalUrl(publicToken: string): string {

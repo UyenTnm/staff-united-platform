@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2, Plus, Lock } from "lucide-react";
+import { Trash2, Plus, Lock, ListPlus } from "lucide-react";
+import { ServiceCatalogPicker } from "@/components/service-catalog-picker";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { amountToWords } from "@/lib/number-to-words";
 
 import {
   QuoteItem,
@@ -41,6 +43,21 @@ export function QuoteItemsEditor({
   const [unitPrice, setUnitPrice] = useState("");
   const [isOptional, setIsOptional] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(false);
+  const [showManualForm, setShowManualForm] = useState(false);
+
+  // Danh sách nhóm dịch vụ vừa chọn từ Catalog, đang chờ sale đặt giá
+  // riêng cho từng nhóm trước khi thêm hàng loạt vào proposal.
+  const [pendingGroups, setPendingGroups] = useState<
+    {
+      departmentName: string;
+      description: string;
+      unitPrice: string;
+      quantity: string;
+      isOptional: boolean;
+    }[]
+  >([]);
+  const [addingAll, setAddingAll] = useState(false);
 
   async function loadItems() {
     const data = await getQuoteItems(quoteId);
@@ -58,6 +75,18 @@ export function QuoteItemsEditor({
     if (!serviceName.trim() || !unitPrice) {
       toast.warning("Please enter a service name and price.");
       return;
+    }
+
+    // Cảnh báo nếu giá quá thấp bất thường — thường là dấu hiệu gõ
+    // thiếu số 0 (VD: gõ 5000 thay vì 5000000). Ngưỡng: dưới
+    // 100,000 VNĐ hoặc dưới $5 USD cho 1 dịch vụ.
+    const priceNum = Number(unitPrice);
+    const suspiciouslyLow = isVietnam ? priceNum < 100000 : priceNum < 5;
+    if (suspiciouslyLow) {
+      const confirmed = window.confirm(
+        `This price (${amountToWords(priceNum, isVietnam)}) looks unusually low for a service. Did you mean to enter more zeros? Click OK to add anyway, or Cancel to fix it.`,
+      );
+      if (!confirmed) return;
     }
 
     setSaving(true);
@@ -86,6 +115,71 @@ export function QuoteItemsEditor({
     } finally {
       setSaving(false);
     }
+  }
+
+  // Thêm hàng loạt các nhóm dịch vụ đã chọn từ Catalog vào proposal —
+  // mỗi nhóm đã có giá riêng sale vừa nhập.
+  async function handleAddAllPending() {
+    if (isLocked) return;
+
+    const invalidGroup = pendingGroups.find((g) => !g.unitPrice);
+    if (invalidGroup) {
+      toast.warning(
+        `Please enter a price for "${invalidGroup.departmentName}".`,
+      );
+      return;
+    }
+
+    const lowPriceGroups = pendingGroups.filter((g) => {
+      const p = Number(g.unitPrice);
+      return isVietnam ? p < 100000 : p < 5;
+    });
+    if (lowPriceGroups.length > 0) {
+      const names = lowPriceGroups.map((g) => g.departmentName).join(", ");
+      const confirmed = window.confirm(
+        `These prices look unusually low: ${names}. Did you mean to enter more zeros? Click OK to add anyway, or Cancel to fix it.`,
+      );
+      if (!confirmed) return;
+    }
+
+    setAddingAll(true);
+    try {
+      for (let i = 0; i < pendingGroups.length; i++) {
+        const g = pendingGroups[i];
+        await createQuoteItem({
+          quote_id: quoteId,
+          service_name: g.departmentName,
+          description: g.description,
+          quantity: Number(g.quantity) || 1,
+          unit_price: Number(g.unitPrice),
+          is_optional: g.isOptional,
+          sort_order: items.length + i,
+          currency_code: isVietnam ? "VND" : "USD",
+        });
+      }
+      setPendingGroups([]);
+      await loadItems();
+      toast.success(`${pendingGroups.length} service(s) added.`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add some services.");
+    } finally {
+      setAddingAll(false);
+    }
+  }
+
+  function updatePendingGroup(
+    index: number,
+    field: "unitPrice" | "quantity" | "isOptional",
+    value: string | boolean,
+  ) {
+    setPendingGroups((prev) =>
+      prev.map((g, i) => (i === index ? { ...g, [field]: value } : g)),
+    );
+  }
+
+  function removePendingGroup(index: number) {
+    setPendingGroups((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleDelete(id: string) {
@@ -165,9 +259,14 @@ export function QuoteItemsEditor({
                       </span>
                     </div>
                     {item.description && (
-                      <p className="mt-0.5 text-sm text-slate-500">
-                        {item.description}
-                      </p>
+                      <details className="mt-0.5">
+                        <summary className="cursor-pointer text-xs font-medium text-slate-500">
+                          View included services
+                        </summary>
+                        <p className="mt-1 whitespace-pre-line text-sm text-slate-500">
+                          {item.description}
+                        </p>
+                      </details>
                     )}
                     <p className="mt-1 text-sm text-slate-500">
                       {item.quantity} × {currencySymbol}
@@ -210,88 +309,228 @@ export function QuoteItemsEditor({
 
           {!isLocked && (
             <div className="space-y-3 rounded-lg border border-dashed border-slate-300 p-4 dark:border-slate-700">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-slate-500">
-                  Service name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Website Digital Presence"
-                  value={serviceName}
-                  onChange={(e) => setServiceName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">
-                    Quantity
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    placeholder="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  />
-                  <p className="mt-1 text-xs text-slate-400">
-                    How many units. Leave as 1 for a flat-price service.
+              {pendingGroups.length > 0 && (
+                <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                  <p className="text-xs font-semibold uppercase text-emerald-700">
+                    Selected from Catalog — set price for each
                   </p>
+                  {pendingGroups.map((g, index) => (
+                    <div
+                      key={g.departmentName}
+                      className="rounded-lg border border-emerald-200 bg-white p-3"
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-sm font-medium text-slate-900">
+                          {g.departmentName}
+                        </p>
+                        <button
+                          onClick={() => removePendingGroup(index)}
+                          className="cursor-pointer text-slate-400 hover:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <details className="mb-2">
+                        <summary className="cursor-pointer text-xs font-medium text-emerald-700">
+                          View included services
+                        </summary>
+                        <p className="mt-1 whitespace-pre-line text-xs text-slate-500">
+                          {g.description}
+                        </p>
+                      </details>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          placeholder="Qty"
+                          value={g.quantity}
+                          onChange={(e) =>
+                            updatePendingGroup(
+                              index,
+                              "quantity",
+                              e.target.value,
+                            )
+                          }
+                          className="rounded-lg border border-slate-200 p-2 text-sm"
+                        />
+                        <input
+                          type="number"
+                          placeholder={`Unit Price (${currencyLabel})`}
+                          value={g.unitPrice}
+                          onChange={(e) =>
+                            updatePendingGroup(
+                              index,
+                              "unitPrice",
+                              e.target.value,
+                            )
+                          }
+                          className="rounded-lg border border-slate-200 p-2 text-sm"
+                        />
+                      </div>
+                      {g.unitPrice && Number(g.unitPrice) > 0 && (
+                        <p className="mt-1 text-xs italic text-emerald-700">
+                          = {amountToWords(Number(g.unitPrice), isVietnam)}
+                        </p>
+                      )}
+                      <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={g.isOptional}
+                          onChange={(e) =>
+                            updatePendingGroup(
+                              index,
+                              "isOptional",
+                              e.target.checked,
+                            )
+                          }
+                          className="h-3.5 w-3.5 rounded accent-emerald-600"
+                        />
+                        Optional — client can select/deselect
+                      </label>
+                    </div>
+                  ))}
+
+                  <Button
+                    onClick={handleAddAllPending}
+                    disabled={addingAll}
+                    className="w-full cursor-pointer"
+                  >
+                    {addingAll
+                      ? "Adding..."
+                      : `Add ${pendingGroups.length} Service(s) to Proposal`}
+                  </Button>
                 </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">
-                    Unit Price ({currencyLabel})
-                  </label>
-                  <input
-                    type="number"
-                    placeholder={isVietnam ? "e.g. 5000000" : "e.g. 5000"}
-                    value={unitPrice}
-                    onChange={(e) => setUnitPrice(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  />
-                  <p className="mt-1 text-xs text-slate-400">
-                    Price for ONE unit, in <strong>{currencyLabel}</strong>.
-                  </p>
-                </div>
-              </div>
+              )}
 
-              <div>
-                <label className="mb-1 block text-xs font-medium text-slate-500">
-                  Description (optional)
-                </label>
-                <textarea
-                  placeholder="e.g. bullet points of what's included"
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                />
-              </div>
-
-              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <input
-                  type="checkbox"
-                  checked={isOptional}
-                  onChange={(e) => setIsOptional(e.target.checked)}
-                  className="h-4 w-4 rounded accent-emerald-600"
-                />
-                Optional — client can select/deselect this on the proposal
-              </label>
-
-              <Button
-                onClick={handleAdd}
-                disabled={saving}
-                variant="outline"
-                className="w-full cursor-pointer"
+              <button
+                type="button"
+                onClick={() => setShowCatalog(true)}
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
               >
-                <Plus className="mr-1 h-4 w-4" />
-                {saving ? "Adding..." : "Add Service Option"}
-              </Button>
+                <ListPlus className="h-4 w-4" />
+                Choose from Service Catalog
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowManualForm((v) => !v)}
+                className="w-full cursor-pointer text-center text-xs text-slate-400 hover:text-slate-600"
+              >
+                {showManualForm
+                  ? "− Hide manual entry"
+                  : "+ Add a custom service manually"}
+              </button>
+
+              {showManualForm && (
+                <>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-500">
+                      Service name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Website Digital Presence"
+                      value={serviceName}
+                      onChange={(e) => setServiceName(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-slate-500">
+                        Quantity
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        placeholder="1"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      />
+                      <p className="mt-1 text-xs text-slate-400">
+                        How many units. Leave as 1 for a flat-price service.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-slate-500">
+                        Unit Price ({currencyLabel})
+                      </label>
+                      <input
+                        type="number"
+                        placeholder={isVietnam ? "e.g. 5000000" : "e.g. 5000"}
+                        value={unitPrice}
+                        onChange={(e) => setUnitPrice(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      />
+                      <p className="mt-1 text-xs text-slate-400">
+                        Price for ONE unit, in <strong>{currencyLabel}</strong>.
+                      </p>
+                      {unitPrice && Number(unitPrice) > 0 && (
+                        <p className="mt-1 text-xs italic text-emerald-700">
+                          = {amountToWords(Number(unitPrice), isVietnam)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-500">
+                      Description (optional)
+                    </label>
+                    <textarea
+                      placeholder="e.g. bullet points of what's included"
+                      rows={2}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <input
+                      type="checkbox"
+                      checked={isOptional}
+                      onChange={(e) => setIsOptional(e.target.checked)}
+                      className="h-4 w-4 rounded accent-emerald-600"
+                    />
+                    Optional — client can select/deselect this on the proposal
+                  </label>
+
+                  <Button
+                    onClick={handleAdd}
+                    disabled={saving}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    {saving ? "Adding..." : "Add Service Option"}
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </>
+      )}
+
+      {showCatalog && (
+        <ServiceCatalogPicker
+          onConfirm={(groups) => {
+            setPendingGroups(
+              groups.map((g) => ({
+                departmentName: g.departmentName,
+                description: g.description,
+                unitPrice: "",
+                quantity: "1",
+                isOptional: true,
+              })),
+            );
+            setShowCatalog(false);
+          }}
+          onClose={() => setShowCatalog(false)}
+          existingServiceNames={items.map((i) => i.service_name)}
+        />
       )}
     </div>
   );

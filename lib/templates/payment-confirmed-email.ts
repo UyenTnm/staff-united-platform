@@ -8,6 +8,7 @@ interface PaymentConfirmedEmailInput {
   paidDate: string;
   paymentMethod: string;
   hasBillingInfo: boolean;
+  paymentLabel?: string;
 }
 
 export function paymentConfirmedEmailTemplate({
@@ -18,7 +19,9 @@ export function paymentConfirmedEmailTemplate({
   paidDate,
   paymentMethod,
   hasBillingInfo,
+  paymentLabel,
 }: PaymentConfirmedEmailInput) {
+  const heading = paymentLabel || "Payment Received";
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://platform.staffunitedgroup.com";
   const logoUrl = `${baseUrl}/logo.png`;
