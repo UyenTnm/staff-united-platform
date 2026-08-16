@@ -19,6 +19,7 @@ import { ClientInfoEditor } from "@/components/client-info-editor";
 import { BillingInfoEditor } from "@/components/billing-info-editor-staff";
 import { SelectionHistory } from "@/components/selection-history";
 import { UnlockSelectionCard } from "@/components/unlock-selection-card";
+import { InvitePortalCard } from "@/components/invite-portal-card";
 
 import { Quote, getQuote } from "@/lib/crm/quotes";
 
@@ -180,6 +181,12 @@ export default function QuoteDetailPage() {
           proposalStatus={quote.proposal_status}
           selectionUnlocked={quote.selection_unlocked}
           onChanged={loadQuote}
+        />
+
+        {/* Mời khách vào Client Portal — chỉ hiện khi đã Paid */}
+        <InvitePortalCard
+          proposalStatus={quote.proposal_status}
+          clientEmail={quote.billing_email || quote.contact_email}
         />
 
         {/* Lịch sử khách đổi ý chọn dịch vụ — dùng phân tích hành vi */}
