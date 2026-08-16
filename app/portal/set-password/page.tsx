@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { PortalAuthLayout } from "@/components/portal-auth-layout";
+import { PasswordInput } from "@/components/portal-password-input";
 
 export default function SetPasswordPage() {
   const router = useRouter();
@@ -11,15 +13,11 @@ export default function SetPasswordPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Trạng thái chờ Supabase xử lý token từ URL và tạo session — bấm
-  // "Set password" quá sớm (trước khi session sẵn sàng) sẽ báo lỗi
-  // "Auth session missing!".
   const [checking, setChecking] = useState(true);
   const [userEmail, setUserEmail] = useState("");
   const [linkInvalid, setLinkInvalid] = useState(false);
 
   useEffect(() => {
-    // Lắng nghe sự kiện session được thiết lập từ link mời/reset
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user?.email) {
@@ -29,8 +27,6 @@ export default function SetPasswordPage() {
       },
     );
 
-    // Đồng thời kiểm tra ngay — phòng trường hợp session đã có sẵn
-    // trước khi listener kịp gắn.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
         setUserEmail(session.user.email);
@@ -38,7 +34,6 @@ export default function SetPasswordPage() {
       }
     });
 
-    // Nếu sau 5 giây vẫn chưa có session — link đã hết hạn/không hợp lệ
     const timeout = setTimeout(() => {
       setChecking((prev) => {
         if (prev) setLinkInvalid(true);
@@ -79,70 +74,74 @@ export default function SetPasswordPage() {
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <p className="text-sm text-slate-500">Verifying your link...</p>
-      </div>
+      <PortalAuthLayout>
+        <p className="text-sm text-slate-300">Verifying your link...</p>
+      </PortalAuthLayout>
     );
   }
 
   if (linkInvalid) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-        <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-sm">
-          <h1 className="text-lg font-bold text-slate-900">
+      <PortalAuthLayout>
+        <div className="text-center">
+          <h1 className="text-lg font-bold text-white">
             Link expired or invalid
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-300">
             Please contact us to request a new invite link.
           </p>
         </div>
-      </div>
+      </PortalAuthLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm">
-        <p className="text-center text-xs font-semibold uppercase tracking-widest text-emerald-600">
-          STAFF United
-        </p>
-        <h1 className="mt-2 text-center text-xl font-bold text-slate-900">
-          Welcome! Set your password
-        </h1>
+    <PortalAuthLayout>
+      <h1 className="text-2xl font-bold text-white">
+        Welcome! Set your password
+      </h1>
 
-        {/* Hiện rõ email đang đặt mật khẩu — tránh khách bối rối
-            không biết tài khoản nào */}
-        <div className="mt-3 rounded-lg bg-slate-50 p-3 text-center text-sm">
-          <span className="text-slate-500">Setting password for </span>
-          <span className="font-semibold text-slate-900">{userEmail}</span>
-        </div>
-
-        <div className="mt-6 space-y-3">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="New password (min. 8 characters)"
-            className="w-full rounded-lg border border-slate-200 p-3 text-sm"
-          />
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSetPassword()}
-            placeholder="Confirm password"
-            className="w-full rounded-lg border border-slate-200 p-3 text-sm"
-          />
-          {error && <p className="text-xs text-red-600">{error}</p>}
-          <button
-            onClick={handleSetPassword}
-            disabled={saving}
-            className="w-full cursor-pointer rounded-lg bg-slate-900 p-3 text-sm font-medium text-white hover:bg-slate-800"
-          >
-            {saving ? "Saving..." : "Set password & continue"}
-          </button>
-        </div>
+      <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-center text-sm">
+        <span className="text-slate-300">Setting password for </span>
+        <span className="font-semibold text-white">{userEmail}</span>
       </div>
-    </div>
+
+      <div className="mt-6 space-y-4">
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-slate-300">
+            New password
+          </label>
+          <PasswordInput
+            value={password}
+            onChange={setPassword}
+            placeholder="Min. 8 characters"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-slate-300">
+            Confirm password
+          </label>
+          <PasswordInput
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            onKeyDown={(e) => e.key === "Enter" && handleSetPassword()}
+          />
+        </div>
+
+        {error && (
+          <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            {error}
+          </p>
+        )}
+
+        <button
+          onClick={handleSetPassword}
+          disabled={saving}
+          className="w-full cursor-pointer rounded-xl bg-emerald-500 p-3.5 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+        >
+          {saving ? "Saving..." : "Set password & continue"}
+        </button>
+      </div>
+    </PortalAuthLayout>
   );
 }

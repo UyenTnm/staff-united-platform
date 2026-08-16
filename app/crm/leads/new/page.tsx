@@ -109,6 +109,21 @@ export default function NewLeadPage() {
       return;
     }
 
+    // Bắt buộc Email — dùng để gửi Proposal, Payment Receipt, và mời
+    // vào Client Portal sau này. Thiếu email khiến các tính năng đó
+    // không hoạt động được.
+    if (!email.trim()) {
+      toast.warning(
+        "Email is required — it's needed to send proposals, receipts, and portal access later.",
+      );
+      return;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+      toast.warning("Please enter a valid email address.");
+      return;
+    }
+
     setSaving(true);
     try {
       const fullPhone = phoneNumber.trim()
@@ -171,7 +186,9 @@ export default function NewLeadPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Email</label>
+            <label className="text-sm font-medium">
+              Email <span className="text-red-500">*</span>
+            </label>
             <input
               type="email"
               value={email}
@@ -235,11 +252,7 @@ export default function NewLeadPage() {
             </select>
           </div>
 
-          <Button
-            className="cursor-pointer"
-            onClick={handleCreateLead}
-            disabled={saving}
-          >
+          <Button onClick={handleCreateLead} disabled={saving}>
             {saving ? "Creating..." : "Create Lead"}
           </Button>
         </div>

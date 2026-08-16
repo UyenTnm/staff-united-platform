@@ -81,6 +81,8 @@ interface PaymentConfirmedEmailInput {
   hasBillingInfo: boolean;
   // PDF biên lai đính kèm — base64, KHÔNG kèm tiền tố "data:...;base64,"
   pdfBase64?: string;
+  // Nhãn hiển thị theo giai đoạn — VD: "Deposit Payment Received (50%)"
+  paymentLabel?: string;
 }
 
 export async function sendPaymentConfirmedEmail({
@@ -93,11 +95,12 @@ export async function sendPaymentConfirmedEmail({
   paymentMethod,
   hasBillingInfo,
   pdfBase64,
+  paymentLabel,
 }: PaymentConfirmedEmailInput) {
   const result = await resend.emails.send({
     from: "STAFF United <no-reply@staffunitedgroup.com>",
     to: toEmail,
-    subject: `Payment received — ${quoteNumber}`,
+    subject: `${paymentLabel || "Payment received"} — ${quoteNumber}`,
     html: paymentConfirmedEmailTemplate({
       companyName,
       proposalTitle,
@@ -106,6 +109,7 @@ export async function sendPaymentConfirmedEmail({
       paidDate,
       paymentMethod,
       hasBillingInfo,
+      paymentLabel,
     }),
     attachments: pdfBase64
       ? [

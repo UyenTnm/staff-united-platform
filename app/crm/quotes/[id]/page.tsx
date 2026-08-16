@@ -12,14 +12,13 @@ import { ProposalQrCard } from "@/components/proposal-qr-card";
 import { ProposalPdfUpload } from "@/components/proposal-pdf-upload";
 import { QuoteItemsEditor } from "@/components/quote-items-editor";
 import { CustomerMarketSelector } from "@/components/customer-market-selector";
-import { MarkPaidCard } from "@/components/mark-paid-card";
+import { AdminPaymentCard } from "@/components/admin-payment-card";
 import { ClientLogoUpload } from "@/components/client-logo-upload";
 import { QuotePagesEditor } from "@/components/quote-pages-editor";
 import { ClientInfoEditor } from "@/components/client-info-editor";
 import { BillingInfoEditor } from "@/components/billing-info-editor-staff";
 import { SelectionHistory } from "@/components/selection-history";
 import { UnlockSelectionCard } from "@/components/unlock-selection-card";
-import { InvitePortalCard } from "@/components/invite-portal-card";
 
 import { Quote, getQuote } from "@/lib/crm/quotes";
 
@@ -169,6 +168,7 @@ export default function QuoteDetailPage() {
             billing_tax_code: quote.billing_tax_code,
             billing_email: quote.billing_email,
             billing_contact_person: quote.billing_contact_person,
+            billing_cc_email: quote.billing_cc_email,
           }}
           updatedByClient={quote.billing_updated_by === "client"}
           billingUpdatedAt={quote.billing_updated_at}
@@ -183,23 +183,20 @@ export default function QuoteDetailPage() {
           onChanged={loadQuote}
         />
 
-        {/* Mời khách vào Client Portal — chỉ hiện khi đã Paid */}
-        <InvitePortalCard
-          proposalStatus={quote.proposal_status}
-          clientEmail={quote.billing_email || quote.contact_email}
-        />
-
         {/* Lịch sử khách đổi ý chọn dịch vụ — dùng phân tích hành vi */}
         <SelectionHistory
           quoteId={quote.id}
           currencySymbol={quote.customer_market === "vietnam" ? "₫" : "$"}
         />
 
-        {/* Mark as Paid — chỉ hiện khi khách đã Accept, chờ xác nhận tiền */}
-        <MarkPaidCard
+        {/* Payment — tự động hiện đúng nút theo từng giai đoạn, hỗ
+            trợ cả thanh toán Full (100%) và Deposit (50/50). */}
+        <AdminPaymentCard
           quoteId={quote.id}
           proposalStatus={quote.proposal_status}
-          onMarked={loadQuote}
+          paymentType={quote.payment_type}
+          finalPaymentUnlocked={quote.final_payment_unlocked}
+          onChanged={loadQuote}
         />
 
         {/* Customer Market — chọn VN (VietQR) hay Quốc tế (Wire USD) */}

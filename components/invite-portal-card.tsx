@@ -10,8 +10,9 @@ interface InvitePortalCardProps {
   clientEmail: string | null;
 }
 
-// Chỉ hiện khi quote đã Paid — sale bấm mời khách vào Client Portal
-// để họ tự xem lịch sử giao dịch, các proposal đã dùng.
+// Hiện ngay khi khách đã thanh toán ÍT NHẤT 1 lần (Deposit Paid hoặc
+// Paid) — để khách theo dõi tiến độ + số tiền còn lại ngay từ giữa
+// dự án, không cần đợi thanh toán xong 100%.
 export function InvitePortalCard({
   proposalStatus,
   clientEmail,
@@ -19,7 +20,10 @@ export function InvitePortalCard({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  if (proposalStatus !== "paid") return null;
+  const eligible =
+    proposalStatus === "paid" || proposalStatus === "deposit_paid";
+
+  if (!eligible) return null;
 
   if (!clientEmail) {
     return (
@@ -45,7 +49,7 @@ export function InvitePortalCard({
       toast.success(
         data.alreadyInvited
           ? "Client already has portal access."
-          : `Invite sent to ${clientEmail}`,
+          : `Invite sent to ${clientEmail}.`,
       );
       setSent(true);
     } catch (err) {
@@ -60,7 +64,7 @@ export function InvitePortalCard({
     return (
       <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-        Portal invite sent to {clientEmail}
+        Portal invite sent to {clientEmail}.
       </div>
     );
   }
@@ -70,7 +74,7 @@ export function InvitePortalCard({
       <div className="flex items-center gap-2 text-sm text-slate-600">
         <UserPlus className="h-4 w-4 flex-shrink-0" />
         Give the client access to view their transaction history at{" "}
-        <strong>{clientEmail}</strong>
+        <strong>{clientEmail}</strong>.
       </div>
       <Button
         onClick={handleInvite}

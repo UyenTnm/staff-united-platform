@@ -10,6 +10,7 @@ import { ResendProposalLink } from "@/components/resend-proposal-link";
 import { BillingInfoForm } from "@/components/billing-info-form";
 import { ProposalTemplateFlipbook } from "@/components/proposal-template-flipbook";
 import { ProposalFlipbook } from "@/components/proposal-flipbook";
+// import { formatCurrency } from "@/lib/format-currency";
 
 import {
   Quote,
@@ -22,6 +23,7 @@ import { logSelectionChange } from "@/lib/crm/quote-selection-log";
 import { QuoteItem, getQuoteItems, getItemTotal } from "@/lib/crm/quote-items";
 import { QuotePage, getQuotePages } from "@/lib/crm/quote-pages";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/format-currency";
 
 export default function PublicProposalPage() {
   const params = useParams();
@@ -87,6 +89,12 @@ export default function PublicProposalPage() {
 
   const isVietnamMarket = quote?.customer_market === "vietnam";
   const currencySymbol = isVietnamMarket ? "₫" : "$";
+
+  // Thanh toán 50/50 — tính đúng số tiền từng đợt. Đợt cuối = tổng -
+  // đợt đầu (tránh lỗi làm tròn khi tổng là số lẻ).
+  const isDeposit = quote?.payment_type === "deposit";
+  const depositAmount = Math.round(finalAmount / 2);
+  const finalPaymentAmount = finalAmount - depositAmount;
 
   async function handleAccept() {
     if (!quote) return;
@@ -175,10 +183,17 @@ export default function PublicProposalPage() {
   }
 
   const isAccepted =
-    quote.proposal_status === "accepted" || quote.proposal_status === "paid";
+    quote.proposal_status === "accepted" ||
+    quote.proposal_status === "deposit_paid" ||
+    quote.proposal_status === "paid";
+  const isDepositPaid = quote.proposal_status === "deposit_paid";
   const isPaid = quote.proposal_status === "paid";
-  // Khóa checkbox khi: đã Paid, HOẶC đã Accepted mà sale CHƯA mở khóa
-  const isSelectionLocked = isPaid || (isAccepted && !quote.selection_unlocked);
+  // Khóa checkbox khi: đã Paid, đã Deposit Paid, HOẶC đã Accepted mà
+  // sale CHƯA mở khóa
+  const isSelectionLocked =
+    isPaid ||
+    isDepositPaid ||
+    (quote.proposal_status === "accepted" && !quote.selection_unlocked);
 
   return (
     <div className="min-h-screen bg-slate-100 py-10 px-4">
@@ -231,14 +246,21 @@ export default function PublicProposalPage() {
                         {item.service_name}
                       </p>
                       <p className="font-semibold text-emerald-700">
-                        {currencySymbol}
-                        {getItemTotal(item).toLocaleString()}
+                        {formatCurrency(getItemTotal(item), isVietnamMarket)}
                       </p>
                     </div>
                     {item.description && (
-                      <p className="mt-1 text-sm text-slate-500">
-                        {item.description}
-                      </p>
+                      <details
+                        className="mt-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <summary className="cursor-pointer text-xs font-medium text-slate-500">
+                          View included services
+                        </summary>
+                        <p className="mt-1 whitespace-pre-line text-sm text-slate-500">
+                          {item.description}
+                        </p>
+                      </details>
                     )}
                   </div>
                 </label>
@@ -248,16 +270,74 @@ export default function PublicProposalPage() {
         )}
 
         {isAccepted && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-            <p className="font-medium text-emerald-800">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
+            <p className="text-center font-medium text-emerald-800">
               {isPaid
-                ? "✓ Payment received — thank you!"
-                : `✓ Accepted by ${quote.accepted_by_name}`}
+                ? "✓ Fully Paid — thank you!"
+                : isDepositPaid
+                  ? "✓ Deposit Received — Project In Progress"
+                  : `✓ Accepted by ${quote.accepted_by_name}`}
             </p>
-            {!isPaid && !quote.selection_unlocked && (
-              <p className="mt-2 text-sm text-emerald-700">
+
+            {/* Bảng chi tiết — luôn hiện rõ tổng tiền + đã trả bao
+                nhiêu + còn lại bao nhiêu, kèm danh sách dịch vụ đã
+                chọn, để khách không phải đoán. */}
+            {isDeposit && (isDepositPaid || isPaid) && (
+              <div className="mt-4 space-y-1 border-t border-emerald-200 pt-4 text-sm">
+                <div className="flex justify-between text-emerald-900">
+                  <span>Total Amount</span>
+                  <span className="font-semibold">
+                    {formatCurrency(finalAmount, isVietnamMarket)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-emerald-700">
+                  <span>Deposit (50%)</span>
+                  <span className="font-medium">
+                    ✓ Paid — {formatCurrency(depositAmount, isVietnamMarket)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-emerald-700">
+                  <span>Final Payment (50%)</span>
+                  <span className="font-medium">
+                    {isPaid
+                      ? `✓ Paid — ${formatCurrency(finalPaymentAmount, isVietnamMarket)}`
+                      : `Pending — ${formatCurrency(finalPaymentAmount, isVietnamMarket)}`}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {items.length > 0 && (isDepositPaid || isPaid) && (
+              <div className="mt-4 border-t border-emerald-200 pt-4">
+                <p className="mb-2 text-xs font-medium uppercase text-emerald-700">
+                  Services Included
+                </p>
+                <ul className="space-y-1 text-sm text-emerald-900">
+                  {items
+                    .filter((i) => selectedIds.has(i.id))
+                    .map((i) => (
+                      <li key={i.id} className="flex justify-between">
+                        <span>{i.service_name}</span>
+                        <span>
+                          {formatCurrency(getItemTotal(i), isVietnamMarket)}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {!isPaid && !isDepositPaid && !quote.selection_unlocked && (
+              <p className="mt-2 text-center text-sm text-emerald-700">
                 Need to change your selection? Please contact us and we&apos;ll
                 re-open it for you.
+              </p>
+            )}
+
+            {isDepositPaid && !quote.final_payment_unlocked && (
+              <p className="mt-4 rounded-lg bg-amber-50 p-3 text-center text-sm text-amber-800">
+                We&apos;re working on your project. You&apos;ll be notified here
+                once it&apos;s ready for final payment.
               </p>
             )}
           </div>
@@ -279,7 +359,7 @@ export default function PublicProposalPage() {
             >
               {updatingSelection
                 ? "Saving..."
-                : `Update Selection — ${currencySymbol}${finalAmount.toLocaleString()}`}
+                : `Update Selection — ${formatCurrency(finalAmount, isVietnamMarket)}`}
             </Button>
           </div>
         )}
@@ -290,6 +370,39 @@ export default function PublicProposalPage() {
               Accept this proposal
             </h2>
 
+            {/* Bảng tóm tắt điều khoản thanh toán — hiện RÕ trước khi
+                khách bấm Accept, tránh hiểu nhầm. */}
+            <div className="rounded-lg bg-slate-50 p-4 text-sm">
+              <div className="flex justify-between font-medium text-slate-900">
+                <span>Total Amount</span>
+                <span>{formatCurrency(finalAmount, isVietnamMarket)}</span>
+              </div>
+              <div className="mt-2 flex justify-between text-slate-500">
+                <span>Payment Terms</span>
+                <span className="font-medium text-slate-700">
+                  {isDeposit
+                    ? "50% Deposit + 50% on Completion"
+                    : "Full payment (100%)"}
+                </span>
+              </div>
+              {isDeposit && (
+                <div className="mt-2 space-y-1 border-t border-slate-200 pt-2 text-xs text-slate-500">
+                  <div className="flex justify-between">
+                    <span>Deposit (50%) — due now</span>
+                    <span>
+                      {formatCurrency(depositAmount, isVietnamMarket)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Final Payment (50%) — due on completion</span>
+                    <span>
+                      {formatCurrency(finalPaymentAmount, isVietnamMarket)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Button
               onClick={handleAccept}
               disabled={accepting}
@@ -297,39 +410,79 @@ export default function PublicProposalPage() {
             >
               {accepting
                 ? "Processing..."
-                : `Accept & Pay ${currencySymbol}${finalAmount.toLocaleString()}`}
+                : isDeposit
+                  ? `Accept & Pay Deposit ${formatCurrency(depositAmount, isVietnamMarket)}`
+                  : `Accept & Pay ${formatCurrency(finalAmount, isVietnamMarket)}`}
             </Button>
           </div>
         )}
 
-        {isAccepted && !isPaid && (
-          <>
-            {isVietnamMarket ? (
-              <VietQRPayment
-                amount={finalAmount}
-                addInfo={`${quote.quote_number} ${quote.company_name}`}
-              />
-            ) : (
-              <WireTransferUSD
-                amount={finalAmount}
-                addInfo={`${quote.quote_number} ${quote.company_name}`}
-              />
-            )}
+        {/* QR/Wire — chỉ hiện ĐÚNG lúc cần thanh toán:
+            - payment_type=full: sau Accept, chưa Paid
+            - payment_type=deposit, đợt 1: sau Accept, chưa deposit_paid
+            - payment_type=deposit, đợt 2: đã deposit_paid + đã unlock,
+              chưa Paid */}
+        {(() => {
+          const showFullPayment = !isDeposit && isAccepted && !isPaid;
+          const showDepositPayment =
+            isDeposit && quote.proposal_status === "accepted" && !isDepositPaid;
+          const showFinalPayment =
+            isDeposit &&
+            isDepositPaid &&
+            quote.final_payment_unlocked &&
+            !isPaid;
 
-            {/* Thông tin xuất hóa đơn — khách điền nếu cần, kế toán
-                dùng để nhập tay vào MISA meInvoice sau khi xác nhận
-                thanh toán. */}
-            <BillingInfoForm
-              quoteId={quote.id}
-              existing={{
-                billing_company_name: quote.billing_company_name,
-                billing_address: quote.billing_address,
-                billing_tax_code: quote.billing_tax_code,
-                billing_email: quote.billing_email,
-                billing_contact_person: quote.billing_contact_person,
-              }}
-            />
-          </>
+          const amountToShow = showDepositPayment
+            ? depositAmount
+            : showFinalPayment
+              ? finalPaymentAmount
+              : finalAmount;
+
+          const paymentLabel = showDepositPayment
+            ? `Deposit Payment (50% of ${formatCurrency(finalAmount, isVietnamMarket)})`
+            : showFinalPayment
+              ? `Final Payment (50% of ${formatCurrency(finalAmount, isVietnamMarket)})`
+              : null;
+
+          if (!showFullPayment && !showDepositPayment && !showFinalPayment) {
+            return null;
+          }
+
+          return (
+            <>
+              {paymentLabel && (
+                <p className="text-center text-sm font-medium text-slate-600">
+                  {paymentLabel}
+                </p>
+              )}
+              {isVietnamMarket ? (
+                <VietQRPayment
+                  amount={amountToShow}
+                  addInfo={`${quote.quote_number} ${quote.company_name}`}
+                />
+              ) : (
+                <WireTransferUSD
+                  amount={amountToShow}
+                  addInfo={`${quote.quote_number} ${quote.company_name}`}
+                />
+              )}
+            </>
+          );
+        })()}
+
+        {isAccepted && !isPaid && (
+          <BillingInfoForm
+            quoteId={quote.id}
+            quoteNumber={quote.quote_number}
+            existing={{
+              billing_company_name: quote.billing_company_name,
+              billing_address: quote.billing_address,
+              billing_tax_code: quote.billing_tax_code,
+              billing_email: quote.billing_email,
+              billing_contact_person: quote.billing_contact_person,
+              billing_cc_email: quote.billing_cc_email,
+            }}
+          />
         )}
 
         <div className="pt-2 text-center">

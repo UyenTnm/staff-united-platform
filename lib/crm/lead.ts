@@ -70,6 +70,11 @@ export async function syncLeadStatusFromQuote(quoteStatus: string) {
       // là Won ở bước này.
       return "Awaiting Payment";
 
+    case "deposit_paid":
+      // Đã nhận cọc 50% (payment_type = deposit) — đang triển khai
+      // dự án, chưa tính Won.
+      return "In Progress";
+
     case "Paid":
       // Chỉ khi thực sự nhận được tiền mới tính là thắng deal.
       return "Won";

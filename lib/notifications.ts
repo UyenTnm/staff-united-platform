@@ -6,7 +6,8 @@ export type NotificationType =
   | "review"
   | "kaizen"
   | "quality"
-  | "behavior";
+  | "behavior"
+  | "quote";
 
 export interface Notification {
   id: string;
