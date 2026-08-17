@@ -128,7 +128,11 @@ export default function QuoteDetailPage() {
 
   useEffect(() => {
     loadQuote();
-  }, [params.id]);
+    // Tải lại MỖI KHI URL đổi (kể cả chỉ đổi ?tab=, không đổi ID) —
+    // tránh hiện dữ liệu cũ khi bấm thông báo dẫn tới đúng quote
+    // đang mở sẵn (VD: quote vừa được khách thanh toán, nhưng trang
+    // đang mở lại đang giữ dữ liệu cũ trong bộ nhớ, chưa tự cập nhật).
+  }, [params.id, searchParams.get("tab")]);
 
   if (loading) {
     return (
