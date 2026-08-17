@@ -54,6 +54,7 @@ export interface Quote {
   billing_address: string | null;
   billing_tax_code: string | null;
   billing_email: string | null;
+  billing_cc_email: string | null;
   billing_contact_person: string | null;
   billing_updated_by: string | null;
   billing_updated_at: string | null;
@@ -282,6 +283,7 @@ export async function updateBillingInfo(
     billing_address?: string;
     billing_tax_code?: string;
     billing_email?: string;
+    billing_cc_email?: string;
     billing_contact_person?: string;
   },
   updatedBy: "staff" | "client" = "staff",
