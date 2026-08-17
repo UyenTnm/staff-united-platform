@@ -23,6 +23,8 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./auth/auth-provider";
 import { signOut } from "@/lib/auth";
 import { toast } from "sonner";
+import { getTotalUnreadForStaff } from "@/lib/crm/support";
+import { playNotifySound, setupAudioUnlock } from "@/lib/notify-sound";
 
 import Image from "next/image";
 import {
@@ -58,6 +60,30 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const from = searchParams.get("from");
   const router = useRouter();
   const { employee } = useAuth();
+
+  // Số tin nhắn Support chưa đọc — hiện badge đỏ + phát âm thanh khi
+  // có tin mới.
+  const [unreadSupport, setUnreadSupport] = useState(0);
+  const prevUnreadRef = useRef(0);
+
+  async function checkUnreadSupport() {
+    const count = await getTotalUnreadForStaff();
+    if (count > prevUnreadRef.current && !pathname.startsWith("/crm/support")) {
+      playNotifySound();
+    }
+    prevUnreadRef.current = count;
+    setUnreadSupport(count);
+  }
+
+  useEffect(() => {
+    setupAudioUnlock();
+  }, []);
+
+  useEffect(() => {
+    checkUnreadSupport();
+    const interval = setInterval(checkUnreadSupport, 10000);
+    return () => clearInterval(interval);
+  }, [pathname]);
 
   // ============================================================
   // Logic nút collapse kéo-thả (mượn từ Staff Academy) — di chuyển
@@ -137,6 +163,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       {
         label: "Quotes",
         href: "/crm/quotes",
+      },
+      {
+        label: "Support",
+        href: "/crm/support",
       },
     ],
   };
@@ -512,6 +542,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           <div className="flex flex-col items-center gap-4 px-0">
             {menuItems.map((section) => {
               const active = pathname.startsWith(getSectionHref(section));
+              const showBadge = section.title === "CRM" && unreadSupport > 0;
 
               return (
                 <Tooltip key={section.title}>
@@ -519,7 +550,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                     <Link href={getSectionHref(section)}>
                       <div
                         className={cn(
-                          "flex h-20 w-16 items-center justify-center flex-col rounded-2xl border transition-all duration-300",
+                          "relative flex h-20 w-16 items-center justify-center flex-col rounded-2xl border transition-all duration-300",
                           active
                             ? "border-emerald-500 bg-emerald-600 shadow-xl shadow-emerald-600/30 text-white "
                             : "border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900 hover:shadow-lg",
@@ -530,6 +561,12 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                         <span className="px-1 text-center text-[10px] leading-tight">
                           {getSectionLabel(section.title)}
                         </span>
+
+                        {showBadge && (
+                          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                            {unreadSupport > 9 ? "9+" : unreadSupport}
+                          </span>
+                        )}
                       </div>
                     </Link>
                   </TooltipTrigger>
@@ -588,21 +625,31 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                         pathname.startsWith("/crm/leads");
                     } else if (item.href === "/crm/quotes") {
                       isActive = pathname.startsWith("/crm/quotes");
+                    } else if (item.href === "/crm/support") {
+                      isActive = pathname.startsWith("/crm/support");
                     } else {
                       isActive = pathname.startsWith(item.href);
                     }
+
+                    const itemUnread =
+                      item.href === "/crm/support" ? unreadSupport : 0;
 
                     return (
                       <Link key={item.href} href={item.href}>
                         <div
                           className={cn(
-                            "rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200",
+                            "flex items-center justify-between rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200",
                             isActive
                               ? "bg-emerald-600 shadow-xl shadow-emerald-600/30 text-white"
                               : "text-slate-300 hover:bg-slate-900 hover:shadow-lg hover:text-white",
                           )}
                         >
-                          {item.label}
+                          <span>{item.label}</span>
+                          {itemUnread > 0 && (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                              {itemUnread > 9 ? "9+" : itemUnread}
+                            </span>
+                          )}
                         </div>
                       </Link>
                     );

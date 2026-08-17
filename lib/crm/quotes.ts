@@ -611,6 +611,10 @@ export async function confirmDepositReceived(id: string) {
     .update({
       proposal_status: "deposit_paid",
       deposit_paid_at: new Date().toISOString(),
+      // Cập nhật luôn cột status (dùng hiển thị badge ở Admin +
+      // Portal) — trước đây chỉ sửa proposal_status, để status bị
+      // "kẹt" ở giá trị cũ (VD: vẫn hiện "Draft"), gây hiểu lầm.
+      status: "Deposit Paid",
     })
     .eq("id", id);
 

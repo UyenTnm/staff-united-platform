@@ -74,7 +74,7 @@ export function InvitePortalCard({
       <div className="flex items-center gap-2 text-sm text-slate-600">
         <UserPlus className="h-4 w-4 flex-shrink-0" />
         Give the client access to view their transaction history at{" "}
-        <strong>{clientEmail}</strong>.
+        <strong>{clientEmail}</strong>
       </div>
       <Button
         onClick={handleInvite}

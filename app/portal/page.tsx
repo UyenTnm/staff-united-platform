@@ -25,9 +25,32 @@ const STATUS_COLOR: Record<string, string> = {
   Sent: "bg-blue-100 text-blue-700",
   Viewed: "bg-amber-100 text-amber-700",
   Accepted: "bg-emerald-100 text-emerald-700",
+  "Deposit Paid": "bg-purple-100 text-purple-700",
   Paid: "bg-emerald-100 text-emerald-800",
   Rejected: "bg-red-100 text-red-700",
 };
+
+// Hiện đúng nhãn theo proposal_status (đáng tin cậy hơn status, vì
+// status từng bị lệch ở các bản ghi cũ) — đảm bảo khách luôn thấy
+// đúng trạng thái thật, kể cả với quote cũ tạo trước khi sửa lỗi.
+function getDisplayStatus(quote: PortalQuote): string {
+  switch (quote.proposal_status) {
+    case "deposit_paid":
+      return "Deposit Paid — In Progress";
+    case "paid":
+      return "Fully Paid";
+    case "accepted":
+      return "Accepted";
+    case "viewed":
+      return "Viewed";
+    case "sent":
+      return "Sent";
+    case "rejected":
+      return "Rejected";
+    default:
+      return quote.status;
+  }
+}
 
 export default function PortalDashboardPage() {
   const router = useRouter();
@@ -179,11 +202,11 @@ export default function PortalDashboardPage() {
                       </div>
                       <span
                         className={`flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
-                          STATUS_COLOR[quote.status] ||
+                          STATUS_COLOR[getDisplayStatus(quote)] ||
                           "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {quote.status}
+                        {getDisplayStatus(quote)}
                       </span>
                     </div>
 
@@ -206,6 +229,7 @@ export default function PortalDashboardPage() {
                         )}
                         <Link
                           href={`/proposal/${quote.public_token}`}
+                          target="_blank"
                           className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />

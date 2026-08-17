@@ -1,6 +1,10 @@
 // lib/crm/quote-items.ts
 
 import { supabase } from "../supabase";
+import {
+  generateMilestonesForService,
+  removeMilestonesForService,
+} from "./milestones";
 
 export interface QuoteItem {
   id: string;
@@ -64,6 +68,14 @@ export async function createQuoteItem(data: {
     });
     throw error;
   }
+
+  // Thêm Service xong → TỰ ĐỘNG sinh sẵn bộ Milestone chuẩn theo
+  // đúng dịch vụ chi tiết khách đã chọn (phân tích từ description).
+  await generateMilestonesForService(
+    data.quote_id,
+    data.service_name,
+    data.description,
+  );
 }
 
 export async function updateQuoteItem(
@@ -99,6 +111,13 @@ export async function updateQuoteItem(
 }
 
 export async function deleteQuoteItem(id: string) {
+  // Lấy trước quote_id + service_name để biết cần dọn milestone nào
+  const { data: itemToDelete } = await supabase
+    .from("quote_items")
+    .select("quote_id, service_name")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase.from("quote_items").delete().eq("id", id);
 
   if (error) {
@@ -109,6 +128,24 @@ export async function deleteQuoteItem(id: string) {
       hint: error.hint,
     });
     throw error;
+  }
+
+  // Chỉ dọn milestone nếu KHÔNG CÒN Service nào khác cùng tên trong
+  // Quote này (tránh xóa nhầm milestone đang dùng chung).
+  if (itemToDelete) {
+    const { data: remaining } = await supabase
+      .from("quote_items")
+      .select("id")
+      .eq("quote_id", itemToDelete.quote_id)
+      .eq("service_name", itemToDelete.service_name)
+      .limit(1);
+
+    if (!remaining || remaining.length === 0) {
+      await removeMilestonesForService(
+        itemToDelete.quote_id,
+        itemToDelete.service_name,
+      );
+    }
   }
 }
 

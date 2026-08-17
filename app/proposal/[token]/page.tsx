@@ -282,6 +282,27 @@ export default function PublicProposalPage() {
             {/* Bảng chi tiết — luôn hiện rõ tổng tiền + đã trả bao
                 nhiêu + còn lại bao nhiêu, kèm danh sách dịch vụ đã
                 chọn, để khách không phải đoán. */}
+
+            {items.length > 0 && (isDepositPaid || isPaid) && (
+              <div className="mt-4 border-t border-emerald-200 pt-4">
+                <p className="mb-2 text-xs font-medium uppercase text-emerald-700">
+                  Services Included
+                </p>
+                <ul className="space-y-1 text-sm text-emerald-900">
+                  {items
+                    .filter((i) => selectedIds.has(i.id))
+                    .map((i) => (
+                      <li key={i.id} className="flex justify-between">
+                        <span>{i.service_name}</span>
+                        <span>
+                          {formatCurrency(getItemTotal(i), isVietnamMarket)}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
             {isDeposit && (isDepositPaid || isPaid) && (
               <div className="mt-4 space-y-1 border-t border-emerald-200 pt-4 text-sm">
                 <div className="flex justify-between text-emerald-900">
@@ -304,26 +325,6 @@ export default function PublicProposalPage() {
                       : `Pending — ${formatCurrency(finalPaymentAmount, isVietnamMarket)}`}
                   </span>
                 </div>
-              </div>
-            )}
-
-            {items.length > 0 && (isDepositPaid || isPaid) && (
-              <div className="mt-4 border-t border-emerald-200 pt-4">
-                <p className="mb-2 text-xs font-medium uppercase text-emerald-700">
-                  Services Included
-                </p>
-                <ul className="space-y-1 text-sm text-emerald-900">
-                  {items
-                    .filter((i) => selectedIds.has(i.id))
-                    .map((i) => (
-                      <li key={i.id} className="flex justify-between">
-                        <span>{i.service_name}</span>
-                        <span>
-                          {formatCurrency(getItemTotal(i), isVietnamMarket)}
-                        </span>
-                      </li>
-                    ))}
-                </ul>
               </div>
             )}
 

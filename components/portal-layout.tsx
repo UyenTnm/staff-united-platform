@@ -1,9 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  X,
+  Building2,
+  ShoppingCart,
+  FileText,
+  MessageCircle,
+  TrendingUp,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getUnreadCountForClient } from "@/lib/crm/support";
+import { playNotifySound, setupAudioUnlock } from "@/lib/notify-sound";
 
 interface PortalLayoutProps {
   children: React.ReactNode;
@@ -14,7 +26,33 @@ interface PortalLayoutProps {
 // mục sau này (Profile, Invoices, Support...) khi scale up.
 export function PortalLayout({ children, userEmail }: PortalLayoutProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadSupport, setUnreadSupport] = useState(0);
+  const prevUnreadRef = useRef(0);
+
+  async function checkUnread() {
+    if (!userEmail) return;
+    const count = await getUnreadCountForClient(userEmail);
+
+    // Nếu số tin chưa đọc TĂNG lên (có tin mới) và không đang ở
+    // ngay trang Support — phát âm thanh nhẹ báo có tin mới.
+    if (count > prevUnreadRef.current && pathname !== "/portal/support") {
+      playNotifySound();
+    }
+    prevUnreadRef.current = count;
+    setUnreadSupport(count);
+  }
+
+  useEffect(() => {
+    setupAudioUnlock();
+  }, []);
+
+  useEffect(() => {
+    checkUnread();
+    const interval = setInterval(checkUnread, 10000);
+    return () => clearInterval(interval);
+  }, [userEmail, pathname]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -25,7 +63,12 @@ export function PortalLayout({ children, userEmail }: PortalLayoutProps) {
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar — desktop */}
       <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
-        <SidebarContent userEmail={userEmail} onLogout={handleLogout} />
+        <SidebarContent
+          userEmail={userEmail}
+          onLogout={handleLogout}
+          pathname={pathname}
+          unreadSupport={unreadSupport}
+        />
       </aside>
 
       {/* Sidebar — mobile drawer */}
@@ -36,7 +79,12 @@ export function PortalLayout({ children, userEmail }: PortalLayoutProps) {
             onClick={() => setMobileOpen(false)}
           />
           <aside className="relative z-50 flex h-full w-64 flex-col bg-white">
-            <SidebarContent userEmail={userEmail} onLogout={handleLogout} />
+            <SidebarContent
+              userEmail={userEmail}
+              onLogout={handleLogout}
+              pathname={pathname}
+              unreadSupport={unreadSupport}
+            />
           </aside>
         </div>
       )}
@@ -64,9 +112,13 @@ export function PortalLayout({ children, userEmail }: PortalLayoutProps) {
 function SidebarContent({
   userEmail,
   onLogout,
+  pathname,
+  unreadSupport,
 }: {
   userEmail: string;
   onLogout: () => void;
+  pathname: string;
+  unreadSupport: number;
 }) {
   return (
     <>
@@ -80,12 +132,77 @@ function SidebarContent({
       <nav className="flex-1 space-y-1 px-3 py-4">
         <a
           href="/portal"
-          className="flex items-center gap-3 rounded-lg bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+            pathname === "/portal"
+              ? "bg-emerald-50 text-emerald-700"
+              : "text-slate-600 hover:bg-slate-50"
+          }`}
         >
           <LayoutDashboard className="h-4 w-4" />
           Transaction History
         </a>
-        {/* Chỗ mở rộng sau này: Profile, Invoices, Support... */}
+        <a
+          href="/portal/projects"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+            pathname === "/portal/projects"
+              ? "bg-emerald-50 text-emerald-700"
+              : "text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          <TrendingUp className="h-4 w-4" />
+          Projects
+        </a>
+        <a
+          href="/portal/profile"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+            pathname === "/portal/profile"
+              ? "bg-emerald-50 text-emerald-700"
+              : "text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          <Building2 className="h-4 w-4" />
+          Company Profile
+        </a>
+        <a
+          href="/portal/request-services"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+            pathname === "/portal/request-services"
+              ? "bg-emerald-50 text-emerald-700"
+              : "text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          Request Services
+        </a>
+        <a
+          href="/portal/documents"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+            pathname === "/portal/documents"
+              ? "bg-emerald-50 text-emerald-700"
+              : "text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          <FileText className="h-4 w-4" />
+          Documents
+        </a>
+        <a
+          href="/portal/support"
+          className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+            pathname === "/portal/support"
+              ? "bg-emerald-50 text-emerald-700"
+              : "text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          <span className="flex items-center gap-3">
+            <MessageCircle className="h-4 w-4" />
+            Support
+          </span>
+          {unreadSupport > 0 && (
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              {unreadSupport > 9 ? "9+" : unreadSupport}
+            </span>
+          )}
+        </a>
       </nav>
 
       <div className="border-t border-slate-100 p-4">
