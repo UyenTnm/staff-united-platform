@@ -106,7 +106,7 @@ export function ProposalPdfUpload({
             handleFile(e.dataTransfer.files?.[0]);
           }}
           disabled={uploading}
-          className={`mt-4 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition ${
+          className={`cursor-pointer mt-4 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition ${
             dragOver
               ? "border-emerald-500 bg-emerald-50"
               : "border-slate-300 hover:border-emerald-400 hover:bg-slate-50"

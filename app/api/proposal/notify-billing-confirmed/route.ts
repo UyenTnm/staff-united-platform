@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
         employee_id: quote.created_by,
         title: "Client confirmed billing info",
         message: `${quote.company_name} confirmed billing info for ${quote.quote_number}. Check if payment has been received.`,
-        type: "quote",
+        // Dùng \"system\" — giá trị AN TOÀN đã có sẵn trong ràng buộc
+        // của bảng (bảng dùng chung với Academy, tránh thêm giá trị
+        // \"quote\" mới có thể vi phạm CHECK constraint hiện có).
+        type: "system",
         action_url: `/crm/quotes/${quote.id}?tab=payment`,
       });
 

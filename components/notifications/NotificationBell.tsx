@@ -42,7 +42,7 @@ export function NotificationBell({ employeeId }: NotificationBellProps) {
         onClick={() => setOpen((prev) => !prev)}
         className="relative rounded-lg p-2 hover:bg-slate-100 transition"
       >
-        <Bell className="w-5 h-5 text-slate-600" />
+        <Bell className="w-5 h-5 text-slate-600 cursor-pointer" />
 
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center px-1">
@@ -52,11 +52,15 @@ export function NotificationBell({ employeeId }: NotificationBellProps) {
       </button>
 
       {open && (
-        <NotificationDropdown
-          employeeId={employeeId}
-          onRefresh={loadUnreadCount}
-          onClose={() => setOpen(false)}
-        />
+        <>
+          {/* Lớp phủ trong suốt — bấm ra ngoài dropdown sẽ tự đóng */}
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <NotificationDropdown
+            employeeId={employeeId}
+            onRefresh={loadUnreadCount}
+            onClose={() => setOpen(false)}
+          />
+        </>
       )}
     </div>
   );

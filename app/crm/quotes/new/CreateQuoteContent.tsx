@@ -192,7 +192,11 @@ export default function CreateQuotePage() {
             />
           </div>
 
-          <Button onClick={handleCreateQuote} disabled={saving}>
+          <Button
+            onClick={handleCreateQuote}
+            disabled={saving}
+            className="cursor-pointer"
+          >
             {saving ? "Creating..." : "Create Quote & Add Services →"}
           </Button>
         </div>

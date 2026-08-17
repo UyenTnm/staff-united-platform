@@ -252,7 +252,11 @@ export default function NewLeadPage() {
             </select>
           </div>
 
-          <Button onClick={handleCreateLead} disabled={saving}>
+          <Button
+            onClick={handleCreateLead}
+            disabled={saving}
+            className="cursor-pointer"
+          >
             {saving ? "Creating..." : "Create Lead"}
           </Button>
         </div>

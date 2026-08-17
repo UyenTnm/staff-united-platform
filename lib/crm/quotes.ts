@@ -53,9 +53,7 @@ export interface Quote {
   billing_company_name: string | null;
   billing_address: string | null;
   billing_tax_code: string | null;
-
   billing_email: string | null;
-  billing_cc_email: string | null;
   billing_contact_person: string | null;
   billing_updated_by: string | null;
   billing_updated_at: string | null;
@@ -97,9 +95,21 @@ export async function createQuote(data: {
 
   // Ghi lại đúng nhân viên đang đăng nhập tạo quote này — dùng để
   // gửi thông báo đúng người khi khách xác nhận Billing Info sau này.
+  // LƯU Ý: employees.id KHÁC auth.users.id — phải tra đúng qua cột
+  // auth_user_id, không được lưu thẳng auth.users.id vào created_by.
   const {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
+
+  let createdByEmployeeId: string | null = null;
+  if (currentUser?.id) {
+    const { data: employeeRow } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("auth_user_id", currentUser.id)
+      .single();
+    createdByEmployeeId = employeeRow?.id ?? null;
+  }
 
   const { data: created, error } = await supabase
     .from("quotes")
@@ -116,7 +126,7 @@ export async function createQuote(data: {
       amount: totalAmount,
       customer_market: data.customer_market,
       payment_type: data.payment_type ?? "full",
-      created_by: currentUser?.id ?? null,
+      created_by: createdByEmployeeId,
       status: "Draft",
       proposal_status: "draft",
     })
@@ -272,7 +282,6 @@ export async function updateBillingInfo(
     billing_address?: string;
     billing_tax_code?: string;
     billing_email?: string;
-    billing_cc_email?: string;
     billing_contact_person?: string;
   },
   updatedBy: "staff" | "client" = "staff",
