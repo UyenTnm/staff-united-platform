@@ -16,6 +16,9 @@ export interface Employee {
   account_status: string;
   created_at: string;
   last_login: string | null;
+  // MỚI — dùng cho phân quyền CRM (Lead/Quote): 'owner' | 'supervisor'
+  // | 'sales' | null (null = không có quyền vào CRM)
+  crm_access: string | null;
 }
 
 export interface CreateEmployeeInput {
@@ -77,7 +80,7 @@ export async function createEmployee(employee: CreateEmployeeInput) {
     await createNotification(
       data.id,
       "Welcome to STAFF United",
-      "Your account has been created. Please log in and change your temporary password.",
+      "Your account has been created. Please log in and change yourtemporary password.",
       "employee",
       "/profile",
     );

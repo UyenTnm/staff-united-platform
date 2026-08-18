@@ -99,6 +99,23 @@ export async function createLead(data: {
   source: string;
   priority: string;
 }) {
+  // Ghi lại đúng nhân viên đang đăng nhập tạo Lead này — dùng cho
+  // phân quyền CRM (Sale chỉ xem Lead của chính mình). LƯU Ý:
+  // employees.id KHÁC auth.users.id — phải tra đúng qua auth_user_id.
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+
+  let createdByEmployeeId: string | null = null;
+  if (currentUser?.id) {
+    const { data: employeeRow } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("auth_user_id", currentUser.id)
+      .single();
+    createdByEmployeeId = employeeRow?.id ?? null;
+  }
+
   const { data: created, error } = await supabase
     .from("leads")
     .insert({
@@ -111,6 +128,7 @@ export async function createLead(data: {
       department: data.department,
       source: data.source,
       priority: data.priority,
+      created_by: createdByEmployeeId,
 
       status: "New",
     })

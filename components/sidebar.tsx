@@ -194,8 +194,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
-    CRM_SECTION,
-
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -273,8 +271,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       ],
     },
 
-    CRM_SECTION,
-
     {
       title: "Performance Management",
       icon: ClipboardCheck,
@@ -338,8 +334,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         },
       ],
     },
-
-    CRM_SECTION,
 
     {
       title: "Performance Management",
@@ -419,6 +413,15 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     case "Employee":
       menuItems = EMPLOYEE_MENU;
       break;
+  }
+
+  // CRM giờ HOÀN TOÀN tách biệt khỏi user_role (Admin/HR/Manager/
+  // Employee) — chỉ phụ thuộc crm_access. Trước đây CRM bị gắn cứng
+  // sẵn vào 3/4 menu, khiến tài khoản "Employee" (mặc định khi tạo
+  // mới) không bao giờ thấy CRM dù có crm_access — giờ luôn tự thêm
+  // vào đúng vị trí đầu tiên, bất kể user_role gì.
+  if (employee?.crm_access) {
+    menuItems = [CRM_SECTION, ...menuItems];
   }
 
   function getSectionLabel(title: string) {

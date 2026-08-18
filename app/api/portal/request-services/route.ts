@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
           notes ? `Note: ${notes}` : ""
         }`,
         type: "system",
+        app: "platform",
         action_url: `/crm/leads/${newLead.id}`,
       });
     }

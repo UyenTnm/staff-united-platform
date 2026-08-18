@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         // của bảng (bảng dùng chung với Academy, tránh thêm giá trị
         // \"quote\" mới có thể vi phạm CHECK constraint hiện có).
         type: "system",
+        app: "platform",
         action_url: `/crm/quotes/${quote.id}?tab=payment`,
       });
 
