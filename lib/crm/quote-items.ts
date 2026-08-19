@@ -152,3 +152,17 @@ export async function deleteQuoteItem(id: string) {
 export function getItemTotal(item: QuoteItem): number {
   return Number(item.quantity) * Number(item.unit_price);
 }
+
+export async function getQuoteItemsByToken(
+  token: string,
+): Promise<QuoteItem[]> {
+  try {
+    const res = await fetch(`/api/proposal/${token}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.items as QuoteItem[];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}

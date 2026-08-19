@@ -453,18 +453,15 @@ export async function markQuoteAsSent(id: string) {
 }
 
 export async function getQuoteByToken(token: string): Promise<Quote | null> {
-  const { data, error } = await supabase
-    .from("quotes")
-    .select("*")
-    .eq("public_token", token)
-    .single();
-
-  if (error) {
+  try {
+    const res = await fetch(`/api/proposal/${token}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.quote as Quote;
+  } catch (error) {
     console.error(error);
     return null;
   }
-
-  return data as Quote;
 }
 
 export async function markQuoteAsViewed(token: string) {

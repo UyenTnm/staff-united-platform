@@ -53,3 +53,17 @@ export async function deleteQuotePage(id: string) {
     throw error;
   }
 }
+
+export async function getQuotePagesByToken(
+  token: string,
+): Promise<QuotePage[]> {
+  try {
+    const res = await fetch(`/api/proposal/${token}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.pages as QuotePage[];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}

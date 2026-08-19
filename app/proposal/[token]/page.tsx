@@ -20,8 +20,17 @@ import {
   updateAcceptedSelection,
 } from "@/lib/crm/quotes";
 import { logSelectionChange } from "@/lib/crm/quote-selection-log";
-import { QuoteItem, getQuoteItems, getItemTotal } from "@/lib/crm/quote-items";
-import { QuotePage, getQuotePages } from "@/lib/crm/quote-pages";
+import {
+  QuoteItem,
+  getQuoteItems,
+  getItemTotal,
+  getQuoteItemsByToken,
+} from "@/lib/crm/quote-items";
+import {
+  QuotePage,
+  getQuotePages,
+  getQuotePagesByToken,
+} from "@/lib/crm/quote-pages";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -51,10 +60,10 @@ export default function PublicProposalPage() {
 
       setQuote(data);
 
-      const quoteItems = await getQuoteItems(data.id);
+      const quoteItems = await getQuoteItemsByToken(token);
       setItems(quoteItems);
 
-      const pages = await getQuotePages(data.id);
+      const pages = await getQuotePagesByToken(token);
       setCustomPages(pages);
       // Tick sẵn TẤT CẢ dịch vụ mặc định (không chỉ optional) — khách
       // tự bỏ bớt cái không muốn, dễ upsale hơn.
