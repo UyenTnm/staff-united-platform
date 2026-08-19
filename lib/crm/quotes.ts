@@ -1,5 +1,3 @@
-// lib/crm/quotes.ts
-
 import { supabase } from "../supabase";
 import { syncLeadStatusFromQuote, updateLeadStatus } from "./lead";
 

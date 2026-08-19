@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { QuotesTable } from "@/components/crm/quotes-table";
 import { StatCard } from "@/components/crm/stat-card";
 import { getQuotes } from "@/lib/crm/quotes";
+import { getQuotesServer } from "@/lib/crm/quotes-server";
 
 // Bắt buộc — trang này đọc data trực tiếp từ Supabase, không được
 // cache tĩnh lúc build, phải luôn fetch mới mỗi lần người dùng vào.
 export const dynamic = "force-dynamic";
 
 export default async function QuotesPage() {
-  const quotes = await getQuotes();
+  const quotes = await getQuotesServer();
 
   // Tách riêng tổng theo từng loại tiền tệ — KHÔNG cộng chung VNĐ và
   // USD vào 1 con số (2 đơn vị khác nhau, cộng chung sẽ sai hoàn toàn).
