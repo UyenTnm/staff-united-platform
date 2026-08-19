@@ -521,12 +521,12 @@ export async function acceptQuoteByToken(
     console.error("Failed to sync lead status:", err);
   }
 
-  await syncStatusesFromProposal(
-    quote.id,
-    quote.lead_id,
-    "accepted",
-    "Accepted",
-  );
+  // await syncStatusesFromProposal(
+  //   quote.id,
+  //   quote.lead_id,
+  //   "accepted",
+  //   "Accepted",
+  // );
 }
 
 // MỚI — khách đổi lại lựa chọn dịch vụ SAU KHI đã Accept lần đầu
