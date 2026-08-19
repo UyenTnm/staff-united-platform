@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getQuoteByToken, getProposalUrl } from "@/lib/crm/quotes";
+import { createClient } from "@supabase/supabase-js";
+import { getProposalUrl } from "@/lib/crm/quotes";
 import { sendProposalLinkEmail } from "@/lib/email/email-service";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
 
 // POST /api/proposal/resend-link
 // Body: { token: string, email: string }
@@ -17,9 +23,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const quote = await getQuoteByToken(token);
+    const { data: quote, error } = await supabaseAdmin
+      .from("quotes")
+      .select("*")
+      .eq("public_token", token)
+      .single();
 
-    if (!quote) {
+    if (error || !quote) {
       return NextResponse.json(
         { error: "Proposal not found." },
         { status: 404 },

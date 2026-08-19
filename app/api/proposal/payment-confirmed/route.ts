@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getQuote } from "@/lib/crm/quotes";
+import { createClient } from "@supabase/supabase-js";
 import { sendPaymentConfirmedEmail } from "@/lib/email/email-service";
 import { generateReceiptPdf } from "@/lib/pdf/generate-receipt";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
 
 export async function POST(request: NextRequest) {
   try {
     const { quoteId, stage } = await request.json();
-    // stage: "deposit" | "final" | "full" — quyết định đúng số tiền
-    // và nội dung email hiển thị cho khách (KHÔNG được luôn gửi full
-    // amount nếu chỉ mới nhận deposit).
 
     if (!quoteId) {
       return NextResponse.json({ error: "Missing quoteId." }, { status: 400 });
     }
 
-    const quote = await getQuote(quoteId);
+    const { data: quote, error: quoteError } = await supabaseAdmin
+      .from("quotes")
+      .select("*")
+      .eq("id", quoteId)
+      .single();
 
-    if (!quote) {
+    if (quoteError || !quote) {
       return NextResponse.json({ error: "Quote not found." }, { status: 404 });
     }
 
@@ -63,8 +69,6 @@ export async function POST(request: NextRequest) {
     });
     const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
-    // Nhãn rõ ràng theo đúng giai đoạn — tránh email luôn ghi
-    // "Payment Received" chung chung dù chỉ mới nhận 1 nửa.
     const paymentLabel =
       stage === "deposit"
         ? "Deposit Payment Received (50%)"

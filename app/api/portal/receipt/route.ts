@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getQuote } from "@/lib/crm/quotes";
 import { generateReceiptPdf } from "@/lib/pdf/generate-receipt";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
 
 // GET /api/portal/receipt?quoteId=xxx
 // Khách bấm "Download Receipt" trên Portal — kiểm tra đúng session
@@ -30,9 +34,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const quote = await getQuote(quoteId);
+    const { data: quote, error } = await supabaseAdmin
+      .from("quotes")
+      .select("*")
+      .eq("id", quoteId)
+      .single();
 
-    if (!quote) {
+    if (error || !quote) {
       return NextResponse.json({ error: "Not found." }, { status: 404 });
     }
 
