@@ -513,6 +513,14 @@ export async function acceptQuoteByToken(
     throw new Error(err.error || "Failed to accept proposal");
   }
 
+  // Chỉ sync lead status, quotes.status đã được cập nhật trong route accept ở trên
+  try {
+    const newLeadStatus = await syncLeadStatusFromQuote("Accepted");
+    await updateLeadStatus(quote.lead_id, newLeadStatus);
+  } catch (err) {
+    console.error("Failed to sync lead status:", err);
+  }
+
   await syncStatusesFromProposal(
     quote.id,
     quote.lead_id,

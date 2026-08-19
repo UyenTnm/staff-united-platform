@@ -8,7 +8,8 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { token, acceptedByName, clientNotes, finalAmount } = await request.json();
+    const { token, acceptedByName, clientNotes, finalAmount } =
+      await request.json();
 
     if (!token) {
       return NextResponse.json({ error: "Missing token." }, { status: 400 });
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
       accepted_at: new Date().toISOString(),
       accepted_by_name: acceptedByName,
       client_notes: clientNotes || null,
+      status: "Accepted",
     };
     if (typeof finalAmount === "number") {
       updatePayload.amount = finalAmount;
