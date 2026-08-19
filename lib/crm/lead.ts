@@ -35,22 +35,19 @@ export async function getLead(id: string) {
 }
 
 export async function updateLeadStatus(id: string, status: string) {
-  const { error } = await supabase
-    .from("leads")
-    .update({
-      status,
-    })
-    .eq("id", id);
+  const res = await fetch("/api/proposal/sync-lead-status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ leadId: id, status }),
+  });
 
-  if (error) {
-    console.error(error);
-    throw error;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("updateLeadStatus error:", err);
+    throw new Error("Failed to update lead status");
   }
 }
 
-// ĐÃ SỬA — tách riêng "đã Accept" (chờ thanh toán) và "đã Paid" (mới
-// tính là Won). Trước đây cả 2 đều map thành "Won", khiến lead bị đánh
-// dấu thắng deal ngay khi khách accept, dù chưa hề chuyển tiền.
 export async function syncLeadStatusFromQuote(quoteStatus: string) {
   switch (quoteStatus) {
     case "Draft":
@@ -66,17 +63,12 @@ export async function syncLeadStatusFromQuote(quoteStatus: string) {
       return "Negotiation";
 
     case "Accepted":
-      // Khách đã đồng ý báo giá, nhưng CHƯA chuyển tiền — không tính
-      // là Won ở bước này.
       return "Awaiting Payment";
 
     case "deposit_paid":
-      // Đã nhận cọc 50% (payment_type = deposit) — đang triển khai
-      // dự án, chưa tính Won.
       return "In Progress";
 
     case "Paid":
-      // Chỉ khi thực sự nhận được tiền mới tính là thắng deal.
       return "Won";
 
     case "Rejected":
@@ -99,9 +91,6 @@ export async function createLead(data: {
   source: string;
   priority: string;
 }) {
-  // Ghi lại đúng nhân viên đang đăng nhập tạo Lead này — dùng cho
-  // phân quyền CRM (Sale chỉ xem Lead của chính mình). LƯU Ý:
-  // employees.id KHÁC auth.users.id — phải tra đúng qua auth_user_id.
   const {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
@@ -120,7 +109,6 @@ export async function createLead(data: {
     .from("leads")
     .insert({
       lead_number: `L-${Date.now()}`,
-
       company_name: data.company_name,
       contact_name: data.contact_name,
       email: data.email,
@@ -129,7 +117,6 @@ export async function createLead(data: {
       source: data.source,
       priority: data.priority,
       created_by: createdByEmployeeId,
-
       status: "New",
     })
     .select()

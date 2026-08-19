@@ -465,6 +465,16 @@ export async function getQuoteByToken(token: string): Promise<Quote | null> {
 }
 
 export async function markQuoteAsViewed(token: string) {
+  try {
+    await fetch("/api/proposal/mark-viewed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+  } catch (error) {
+    console.error(error);
+  }
+
   const quote = await getQuoteByToken(token);
   if (!quote) return;
 
@@ -492,30 +502,15 @@ export async function acceptQuoteByToken(
     throw new Error("Quote not found for token");
   }
 
-  const updatePayload: Record<string, unknown> = {
-    proposal_status: "accepted",
-    accepted_at: new Date().toISOString(),
-    accepted_by_name: acceptedByName,
-    client_notes: clientNotes || null,
-  };
+  const res = await fetch("/api/proposal/accept", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, acceptedByName, clientNotes, finalAmount }),
+  });
 
-  // QUAN TRỌNG — ghi đè amount bằng đúng số tiền thật khách đã chọn
-  // (mandatory + optional đã tick), KHÔNG giữ số tổng ước tính lúc
-  // tạo quote (vốn giả định chọn hết optional). Nếu không có
-  // finalAmount truyền vào (proposal cũ, không có items), giữ nguyên
-  // amount cũ.
-  if (typeof finalAmount === "number") {
-    updatePayload.amount = finalAmount;
-  }
-
-  const { error } = await supabase
-    .from("quotes")
-    .update(updatePayload)
-    .eq("public_token", token);
-
-  if (error) {
-    console.error(error);
-    throw error;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to accept proposal");
   }
 
   await syncStatusesFromProposal(
@@ -536,24 +531,16 @@ export async function updateAcceptedSelection(
   selectedTitles: string,
   finalAmount: number,
 ) {
-  const { error } = await supabase
-    .from("quotes")
-    .update({
-      amount: finalAmount,
-      client_notes: selectedTitles ? `Selected: ${selectedTitles}` : null,
-      // Tự động khóa lại ngay sau khi khách lưu xong — sale phải mở
-      // khóa lại nếu muốn khách sửa tiếp lần nữa.
-      selection_unlocked: false,
-    })
-    .eq("id", quoteId);
+  const res = await fetch("/api/proposal/update-selection", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quoteId, selectedTitles, finalAmount }),
+  });
 
-  if (error) {
-    console.error("updateAcceptedSelection error:", {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-    });
-    throw error;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("updateAcceptedSelection error:", err);
+    throw new Error("Failed to update selection");
   }
 }
 
