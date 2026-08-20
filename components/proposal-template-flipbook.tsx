@@ -1,11 +1,29 @@
 "use client";
 
-import { forwardRef } from "react";
+import { useEffect } from "react";
 // @ts-ignore - react-pageflip không có type định nghĩa đầy đủ
 import HTMLFlipBookRaw from "react-pageflip";
-import { QuoteItem, getItemTotal } from "@/lib/crm/quote-items";
-import { QuotePage } from "@/lib/crm/quote-pages";
-import { STATIC_PAGES } from "@/lib/proposal-static-pages";
+import { QuoteItem } from "@/lib/crm/quote-items";
+import {
+  QuotePage,
+  PackageDetailData,
+  PricingOverviewData,
+  NextStepsData,
+} from "@/lib/crm/quote-pages";
+import {
+  CoverPage,
+  ServicesPage,
+  PackageDetailPage,
+  PricingOverviewPage,
+  NextStepsPage,
+  ContentPage,
+} from "@/components/proposal-pages";
+import {
+  HEADING_FONTS,
+  BODY_FONTS,
+  findFont,
+  buildGoogleFontsHref,
+} from "@/lib/proposal-fonts";
 
 const HTMLFlipBook = HTMLFlipBookRaw as any;
 
@@ -14,159 +32,88 @@ interface ProposalTemplateFlipbookProps {
   contactName: string;
   proposalTitle: string;
   clientLogoUrl: string | null;
+  coverImageUrl?: string | null;
+  fontHeading?: string | null;
+  fontBody?: string | null;
   mandatoryItems: QuoteItem[];
   currencySymbol: string;
   customPages: QuotePage[];
+  // Có 2 callback này => đang ở chế độ REVIEW (trong ProposalWizard),
+  // mỗi trang hiện nút bút chì để nhảy thẳng về sửa trang đó.
+  // Không truyền => chế độ xem thuần (khách xem /proposal/[token]),
+  // không có nút sửa nào cả.
+  onEditCover?: () => void;
+  onEditPage?: (pageId: string) => void;
 }
 
 const ITEMS_PER_SERVICE_PAGE = 5;
 
-// ---- Trang bìa ----
-const CoverPage = forwardRef<
-  HTMLDivElement,
-  {
-    companyName: string;
-    contactName: string;
-    title: string;
-    logoUrl: string | null;
-  }
->(({ companyName, contactName, title, logoUrl }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-900 p-10 text-center"
-    >
-      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-400">
-        Proposal
-      </p>
+// ---- Hook: nạp font Google đã chọn vào trang ----
+function useGoogleFonts(headingValue: string, bodyValue: string) {
+  useEffect(() => {
+    const heading = findFont(HEADING_FONTS, headingValue);
+    const body = findFont(BODY_FONTS, bodyValue);
+    const href = buildGoogleFontsHref([heading, body]);
+    const id = "proposal-google-fonts";
 
-      {logoUrl ? (
-        <div className="my-8 flex h-24 items-center justify-center rounded-xl bg-white/95 px-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={logoUrl}
-            alt={companyName}
-            className="h-16 max-w-full object-contain"
-          />
-        </div>
-      ) : (
-        <div className="my-8 flex h-24 items-center justify-center">
-          <p className="text-3xl font-bold text-white">{companyName}</p>
-        </div>
-      )}
-
-      <h1 className="mt-4 text-2xl font-bold leading-tight text-white">
-        {title}
-      </h1>
-
-      <p className="mt-4 text-sm text-slate-300">Prepared for {contactName}</p>
-
-      <div className="mt-10 flex items-center gap-2 text-xs text-slate-400">
-        <span className="h-px w-8 bg-slate-600" />
-        Prepared by STAFF United
-        <span className="h-px w-8 bg-slate-600" />
-      </div>
-    </div>
-  );
-});
-CoverPage.displayName = "CoverPage";
-
-// ---- Trang dịch vụ (1 nhóm, tối đa 5 hạng mục/trang) ----
-const ServicesPage = forwardRef<
-  HTMLDivElement,
-  {
-    items: QuoteItem[];
-    currencySymbol: string;
-    pageLabel: string;
-  }
->(({ items, currencySymbol, pageLabel }, ref) => {
-  return (
-    <div ref={ref} className="flex h-full w-full flex-col bg-white p-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
-        What&apos;s Included {pageLabel}
-      </p>
-      <h2 className="mt-2 text-lg font-bold text-slate-900">
-        Scope of Services
-      </h2>
-
-      <div className="mt-6 flex-1 space-y-4 overflow-y-auto">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="border-b border-slate-100 pb-3 last:border-b-0"
-          >
-            <div className="flex items-start justify-between">
-              <p className="font-medium text-slate-900">{item.service_name}</p>
-              <p className="whitespace-nowrap font-semibold text-emerald-700">
-                {currencySymbol}
-                {getItemTotal(item).toLocaleString()}
-              </p>
-            </div>
-            {item.description && (
-              <p className="mt-1 text-sm text-slate-500">{item.description}</p>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <p className="mt-4 text-center text-[10px] text-slate-300">
-        STAFF United — {new Date().getFullYear()}
-      </p>
-    </div>
-  );
-});
-ServicesPage.displayName = "ServicesPage";
-
-// ---- Trang nội dung chung (dùng cho cả Custom Page và Static Page) ----
-const ContentPage = forwardRef<
-  HTMLDivElement,
-  { title: string; content: string }
->(({ title, content }, ref) => {
-  return (
-    <div ref={ref} className="flex h-full w-full flex-col bg-white p-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
-        STAFF United
-      </p>
-      <h2 className="mt-2 text-lg font-bold text-slate-900">{title}</h2>
-
-      <div className="mt-6 flex-1 overflow-y-auto">
-        <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600">
-          {content}
-        </p>
-      </div>
-
-      <p className="mt-4 text-center text-[10px] text-slate-300">
-        STAFF United — {new Date().getFullYear()}
-      </p>
-    </div>
-  );
-});
-ContentPage.displayName = "ContentPage";
+    let link = document.getElementById(id) as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+    }
+    if (link.href !== href) {
+      link.href = href;
+    }
+  }, [headingValue, bodyValue]);
+}
 
 // ============================================================
-// Ghép toàn bộ trang theo đúng thứ tự:
-// Cover → Services (tự chia nhóm 5 dịch vụ/trang) → Custom Pages
-// (nhân viên tự thêm riêng cho quote này) → Static Pages (About Us /
-// Why Choose Us / Terms — dùng chung mọi proposal).
+// Trình xem TỔNG THỂ dạng flipbook — chỉ dùng ở:
+// (a) Bước Review cuối cùng của ProposalWizard (truyền onEditCover/
+//     onEditPage để hiện nút bút chì từng trang), hoặc
+// (b) Trang public /proposal/[token] (không truyền 2 callback trên,
+//     khách chỉ xem, không sửa được gì).
+//
+// KHÔNG tự động chèn About Us/Why Choose Us/Terms — không có trong
+// mẫu thiết kế gốc. Sale muốn nội dung tương tự thì tự thêm bằng
+// loại trang "Custom".
 // ============================================================
 export function ProposalTemplateFlipbook({
   companyName,
   contactName,
   proposalTitle,
   clientLogoUrl,
+  coverImageUrl,
+  fontHeading,
+  fontBody,
   mandatoryItems,
   currencySymbol,
   customPages,
+  onEditCover,
+  onEditPage,
 }: ProposalTemplateFlipbookProps) {
-  // Chia mandatoryItems thành từng nhóm tối đa 5 items/trang
+  const headingFont = findFont(HEADING_FONTS, fontHeading);
+  const bodyFont = findFont(BODY_FONTS, fontBody);
+
+  useGoogleFonts(headingFont.value, bodyFont.value);
+
   const serviceChunks: QuoteItem[][] = [];
   for (let i = 0; i < mandatoryItems.length; i += ITEMS_PER_SERVICE_PAGE) {
     serviceChunks.push(mandatoryItems.slice(i, i + ITEMS_PER_SERVICE_PAGE));
   }
 
+  const packageTitles = mandatoryItems.map((i) => i.service_name);
+
+  let packageDetailCount = 0;
+
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="mx-auto" style={{ maxWidth: 420 }}>
+    <div
+      className="flex flex-col items-center gap-3"
+      style={{ fontFamily: bodyFont.cssName }}
+    >
+      <div className="mx-auto w-full" style={{ maxWidth: 420 }}>
         <HTMLFlipBook
           width={400}
           height={560}
@@ -180,6 +127,10 @@ export function ProposalTemplateFlipbook({
             contactName={contactName}
             title={proposalTitle}
             logoUrl={clientLogoUrl}
+            coverImageUrl={coverImageUrl ?? null}
+            packageTitles={packageTitles}
+            headingFontCss={headingFont.cssName}
+            onEdit={onEditCover}
           />
 
           {serviceChunks.map((chunk, index) => (
@@ -192,29 +143,65 @@ export function ProposalTemplateFlipbook({
                   ? `(${index + 1}/${serviceChunks.length})`
                   : ""
               }
+              headingFontCss={headingFont.cssName}
             />
           ))}
 
-          {customPages.map((page) => (
-            <ContentPage
-              key={page.id}
-              title={page.title}
-              content={page.content}
-            />
-          ))}
+          {customPages.map((page) => {
+            const onEdit = onEditPage ? () => onEditPage(page.id) : undefined;
 
-          {STATIC_PAGES.map((page, index) => (
-            <ContentPage
-              key={`static-${index}`}
-              title={page.title}
-              content={page.content}
-            />
-          ))}
+            if (page.page_type === "package_detail") {
+              packageDetailCount += 1;
+              return (
+                <PackageDetailPage
+                  key={page.id}
+                  title={page.title}
+                  data={page.structured_data as unknown as PackageDetailData}
+                  pageNumber={String(packageDetailCount).padStart(2, "0")}
+                  headingFontCss={headingFont.cssName}
+                  onEdit={onEdit}
+                />
+              );
+            }
+            if (page.page_type === "pricing_overview") {
+              return (
+                <PricingOverviewPage
+                  key={page.id}
+                  title={page.title}
+                  data={page.structured_data as unknown as PricingOverviewData}
+                  headingFontCss={headingFont.cssName}
+                  onEdit={onEdit}
+                />
+              );
+            }
+            if (page.page_type === "next_steps") {
+              return (
+                <NextStepsPage
+                  key={page.id}
+                  title={page.title}
+                  data={page.structured_data as unknown as NextStepsData}
+                  headingFontCss={headingFont.cssName}
+                  onEdit={onEdit}
+                />
+              );
+            }
+            return (
+              <ContentPage
+                key={page.id}
+                title={page.title}
+                content={page.content}
+                headingFontCss={headingFont.cssName}
+                onEdit={onEdit}
+              />
+            );
+          })}
         </HTMLFlipBook>
       </div>
 
       <p className="text-xs text-slate-400">
-        Click or drag the corner of the page to flip
+        {onEditCover
+          ? "Click the pencil icon on any page to edit it. Drag or click the corner to flip pages."
+          : "Click or drag the corner of the page to flip"}
       </p>
     </div>
   );

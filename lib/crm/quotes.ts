@@ -41,6 +41,11 @@ export interface Quote {
 
   proposal_pdf_url: string | null;
   client_logo_url: string | null;
+  cover_image_url: string | null;
+  font_heading: string | null;
+  font_body: string | null;
+  uploadCoverImage: string | null;
+  updateProposalFonts: string | null;
 
   customer_market: CustomerMarket | null;
   currency: string | null;
@@ -383,6 +388,56 @@ export async function uploadClientLogo(
   }
 
   return publicUrl;
+}
+
+export async function uploadCoverImage(
+  quoteId: string,
+  file: File,
+): Promise<string> {
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${quoteId}/cover-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("proposals")
+    .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+  if (uploadError) {
+    console.error("Upload cover image error:", uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("proposals")
+    .getPublicUrl(filePath);
+
+  const publicUrl = publicUrlData.publicUrl;
+
+  const { error: updateError } = await supabase
+    .from("quotes")
+    .update({ cover_image_url: publicUrl })
+    .eq("id", quoteId);
+
+  if (updateError) {
+    console.error("Save cover image url error:", updateError);
+    throw updateError;
+  }
+
+  return publicUrl;
+}
+
+export async function updateProposalFonts(
+  quoteId: string,
+  data: { font_heading: string; font_body: string },
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update(data)
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("updateProposalFonts error:", error);
+    throw error;
+  }
 }
 
 function statusLabelFromProposalStatus(proposalStatus: string): string {

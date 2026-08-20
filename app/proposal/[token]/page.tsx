@@ -220,6 +220,9 @@ export default function PublicProposalPage() {
             contactName={quote.contact_name}
             proposalTitle={quote.title}
             clientLogoUrl={quote.client_logo_url}
+            coverImageUrl={quote.cover_image_url}
+            fontHeading={quote.font_heading}
+            fontBody={quote.font_body}
             mandatoryItems={items.filter((i) => !i.is_optional)}
             currencySymbol={currencySymbol}
             customPages={customPages}
