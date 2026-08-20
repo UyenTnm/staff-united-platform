@@ -116,7 +116,7 @@ export function ProposalTemplateFlipbook({
       <div className="mx-auto w-full" style={{ maxWidth: 420 }}>
         <HTMLFlipBook
           width={400}
-          height={560}
+          height={566}
           size="fixed"
           showCover={true}
           mobileScrollSupport={true}
@@ -168,7 +168,9 @@ export function ProposalTemplateFlipbook({
                 <PricingOverviewPage
                   key={page.id}
                   title={page.title}
+                  items={mandatoryItems}
                   data={page.structured_data as unknown as PricingOverviewData}
+                  currencySymbol={currencySymbol}
                   headingFontCss={headingFont.cssName}
                   onEdit={onEdit}
                 />

@@ -181,7 +181,8 @@ export function ProposalWizard({
             </p>
             <div
               className="mx-auto overflow-hidden rounded-xl shadow-2xl"
-              style={{ width: 320, height: 448 }}
+              // style={{ width: 320, height: 448 }}
+              style={{ width: 320, height: 452 }}
             >
               <CoverPage
                 companyName={quote.company_name}
@@ -297,6 +298,8 @@ export function ProposalWizard({
           existingPage={editingPage}
           nextSortOrder={pages.length}
           headingFontCss={headingFont.cssName}
+          items={items}
+          currencySymbol={currencySymbol}
           onSaved={async () => {
             await loadPages();
             setEditingPage(null);

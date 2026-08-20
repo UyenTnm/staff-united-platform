@@ -392,17 +392,28 @@ export const PricingOverviewPage = forwardRef<
   HTMLDivElement,
   {
     title: string;
-    data: PricingOverviewData;
+    items: QuoteItem[]; // Service Options đã nhập ở trang Quote
+    data: PricingOverviewData; // chỉ còn discount_percent
+    currencySymbol: string;
     headingFontCss: string;
     onEdit?: () => void;
   }
->(({ title, data, headingFontCss, onEdit }, ref) => {
+>(({ title, items, data, currencySymbol, headingFontCss, onEdit }, ref) => {
+  const total = items.reduce((sum, i) => sum + getItemTotal(i), 0);
+  const discount = data.discount_percent || 0;
+  const finalPrice = total * (1 - discount / 100);
+  const saveAmount = total - finalPrice;
+
+  const fmt = (n: number) =>
+    `${currencySymbol}${Math.round(n).toLocaleString()}`;
+
   return (
     <div
       ref={ref}
       className={`relative flex h-full w-full flex-col ${NAVY} p-8`}
     >
       <EditButton onEdit={onEdit} />
+
       <h2
         className="text-2xl font-bold text-white"
         style={{ fontFamily: headingFontCss }}
@@ -414,42 +425,43 @@ export const PricingOverviewPage = forwardRef<
       </p>
 
       <div className="mt-6 flex-1 space-y-3 overflow-y-auto">
-        {data.packages?.map((pkg, i) => (
-          <div key={i} className="rounded-xl bg-white/10 p-4">
+        {items.map((item) => (
+          <div key={item.id} className="rounded-xl bg-white/10 p-4">
             <div className="flex items-center justify-between">
-              <p className="font-semibold text-white">{pkg.title}</p>
+              <p className="font-semibold text-white">{item.service_name}</p>
               <p className="whitespace-nowrap font-bold text-blue-200">
-                {pkg.price}
+                {fmt(getItemTotal(item))}
               </p>
             </div>
-            {pkg.description && (
-              <p className="mt-1 text-xs text-blue-200/80">{pkg.description}</p>
+            {item.description && (
+              <p className="mt-1 text-xs text-blue-200/80">
+                {item.description}
+              </p>
             )}
           </div>
         ))}
 
-        {(data.strategic_partnership_price ||
-          data.discount_percent ||
-          data.save_amount) && (
+        {items.length > 0 && (
+          <div className="flex items-center justify-between border-t border-white/15 pt-2 text-sm text-white/80">
+            <span>Subtotal</span>
+            <span>{fmt(total)}</span>
+          </div>
+        )}
+
+        {discount > 0 && (
           <div className="mt-4 rounded-xl border border-blue-400/50 bg-blue-950/40 p-4">
             <p className="text-sm font-bold uppercase text-blue-200">
-              Strategic Partnership Package
+              Strategic Partnership Rate
             </p>
             <div className="mt-2 flex items-end justify-between">
               <p className="text-2xl font-extrabold text-white">
-                {data.strategic_partnership_price || "—"}
+                {fmt(finalPrice)}
               </p>
-              {data.discount_percent && (
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-900">
-                  {data.discount_percent}% Off
-                </span>
-              )}
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-900">
+                {discount}% Off
+              </span>
             </div>
-            {data.save_amount && (
-              <p className="mt-1 text-xs text-blue-200">
-                Save {data.save_amount}
-              </p>
-            )}
+            <p className="mt-1 text-xs text-blue-200">Save {fmt(saveAmount)}</p>
           </div>
         )}
       </div>

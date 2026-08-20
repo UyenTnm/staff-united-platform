@@ -21,11 +21,15 @@ export interface PackageDetailData {
 // Trang "Pricing Overview" (khớp ảnh mẫu 2/7: list package + khối
 // Strategic Partnership với % off). Mỗi package có mô tả ngắn, giống
 // dòng "Description of the package and services included." trong mẫu.
+// export interface PricingOverviewData {
+//   packages: { title: string; description: string; price: string }[];
+//   strategic_partnership_price: string;
+//   discount_percent: string;
+//   save_amount: string;
+// }
+
 export interface PricingOverviewData {
-  packages: { title: string; description: string; price: string }[];
-  strategic_partnership_price: string;
-  discount_percent: string;
-  save_amount: string;
+  discount_percent: number; // 0 = không giảm giá
 }
 
 // Trang "Next Steps" (khớp ảnh mẫu 8) — danh sách bước tiếp theo,

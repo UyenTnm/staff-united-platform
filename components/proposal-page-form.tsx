@@ -20,7 +20,7 @@ import {
   NextStepsPage,
   ContentPage,
 } from "@/components/proposal-pages";
-
+import { QuoteItem, getItemTotal } from "@/lib/crm/quote-items";
 interface ProposalPageFormProps {
   quoteId: string;
   // Truyền vào khi SỬA 1 trang đã có (từ nút bút chì ở Review).
@@ -28,6 +28,8 @@ interface ProposalPageFormProps {
   existingPage?: QuotePage | null;
   nextSortOrder: number;
   headingFontCss: string;
+  items: QuoteItem[];
+  currencySymbol: string;
   onSaved: (page: QuotePage) => void;
   onCancel: () => void;
 }
@@ -46,11 +48,15 @@ const EMPTY_PACKAGE_DETAIL: PackageDetailData = {
   price: "",
 };
 
+// const EMPTY_PRICING_OVERVIEW: PricingOverviewData = {
+//   packages: [{ title: "", description: "", price: "" }],
+//   strategic_partnership_price: "",
+//   discount_percent: "",
+//   save_amount: "",
+// };
+
 const EMPTY_PRICING_OVERVIEW: PricingOverviewData = {
-  packages: [{ title: "", description: "", price: "" }],
-  strategic_partnership_price: "",
-  discount_percent: "",
-  save_amount: "",
+  discount_percent: 0,
 };
 
 const EMPTY_NEXT_STEPS: NextStepsData = {
@@ -68,6 +74,8 @@ export function ProposalPageForm({
   existingPage,
   nextSortOrder,
   headingFontCss,
+  items,
+  currencySymbol,
   onSaved,
   onCancel,
 }: ProposalPageFormProps) {
@@ -139,15 +147,14 @@ export function ProposalPageForm({
         return;
       }
     }
-    if (pageType === "pricing_overview") {
-      const filled = pricingOverview.packages.filter(
-        (p) => p.title.trim() && p.price.trim(),
+
+    if (pageType === "pricing_overview" && items.length === 0) {
+      toast.warning(
+        "No service items found. Add Service Options on the Quote page first.",
       );
-      if (filled.length === 0) {
-        toast.warning("Please add at least one package with a price.");
-        return;
-      }
+      return;
     }
+
     if (pageType === "next_steps") {
       const filled = nextSteps.items.filter((i) => i.trim());
       if (filled.length === 0) {
@@ -165,12 +172,7 @@ export function ProposalPageForm({
           deliverables: packageDetail.deliverables.filter((d) => d.trim()),
         };
       } else if (pageType === "pricing_overview") {
-        structured_data = {
-          ...pricingOverview,
-          packages: pricingOverview.packages.filter(
-            (p) => p.title.trim() && p.price.trim(),
-          ),
-        };
+        structured_data = { ...pricingOverview };
       } else if (pageType === "next_steps") {
         structured_data = {
           ...nextSteps,
@@ -232,30 +234,30 @@ export function ProposalPageForm({
   }
 
   // ---- helpers: Pricing Overview ----
-  function updatePricingPackage(
-    index: number,
-    field: "title" | "description" | "price",
-    value: string,
-  ) {
-    setPricingOverview((prev) => ({
-      ...prev,
-      packages: prev.packages.map((p, i) =>
-        i === index ? { ...p, [field]: value } : p,
-      ),
-    }));
-  }
-  function addPricingPackage() {
-    setPricingOverview((prev) => ({
-      ...prev,
-      packages: [...prev.packages, { title: "", description: "", price: "" }],
-    }));
-  }
-  function removePricingPackage(index: number) {
-    setPricingOverview((prev) => ({
-      ...prev,
-      packages: prev.packages.filter((_, i) => i !== index),
-    }));
-  }
+  // function updatePricingPackage(
+  //   index: number,
+  //   field: "title" | "description" | "price",
+  //   value: string,
+  // ) {
+  //   setPricingOverview((prev) => ({
+  //     ...prev,
+  //     packages: prev.packages.map((p, i) =>
+  //       i === index ? { ...p, [field]: value } : p,
+  //     ),
+  //   }));
+  // }
+  // function addPricingPackage() {
+  //   setPricingOverview((prev) => ({
+  //     ...prev,
+  //     packages: [...prev.packages, { title: "", description: "", price: "" }],
+  //   }));
+  // }
+  // function removePricingPackage(index: number) {
+  //   setPricingOverview((prev) => ({
+  //     ...prev,
+  //     packages: prev.packages.filter((_, i) => i !== index),
+  //   }));
+  // }
 
   // ---- helpers: Next Steps ----
   function updateNextStepItem(index: number, value: string) {
@@ -430,132 +432,78 @@ export function ProposalPageForm({
             </div>
           </div>
         )}
-
+        
         {pageType === "pricing_overview" && (
           <div className="space-y-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">
-                Packages
-              </label>
-              <div className="space-y-3">
-                {pricingOverview.packages.map((p, index) => (
-                  <div
-                    key={index}
-                    className="space-y-2 rounded-lg border border-slate-200 p-3 dark:border-slate-700"
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Package title"
-                        value={p.title}
-                        onChange={(e) =>
-                          updatePricingPackage(index, "title", e.target.value)
-                        }
-                        className="flex-1 rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Price"
-                        value={p.price}
-                        onChange={(e) =>
-                          updatePricingPackage(index, "price", e.target.value)
-                        }
-                        className="w-32 rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                      />
-                      {pricingOverview.packages.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removePricingPackage(index)}
-                          className="text-slate-400 hover:text-red-600"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Short description of what's included..."
-                      value={p.description}
-                      onChange={(e) =>
-                        updatePricingPackage(
-                          index,
-                          "description",
-                          e.target.value,
-                        )
-                      }
-                      className="w-full rounded-lg border border-slate-200 p-2 text-xs dark:border-slate-700 dark:bg-slate-900"
-                    />
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={addPricingPackage}
-                className="mt-2 flex items-center gap-1 text-xs font-medium text-blue-700 hover:text-blue-800"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add package
-              </button>
-            </div>
-
             <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
               <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
-                Strategic Partnership Package (bundle discount)
+                Services (từ &quot;Add Service Options&quot; ở trang Quote)
               </p>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">
-                    Bundle price
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 80,000,000 VND"
-                    value={pricingOverview.strategic_partnership_price}
-                    onChange={(e) =>
-                      setPricingOverview((prev) => ({
-                        ...prev,
-                        strategic_partnership_price: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  />
+              {items.length === 0 ? (
+                <p className="text-xs text-amber-600">
+                  Chưa có service nào. Vào trang Quote chi tiết để thêm Service
+                  Options trước, trang này sẽ tự lấy theo.
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex justify-between text-xs text-slate-600 dark:text-slate-300"
+                    >
+                      <span>{item.service_name}</span>
+                      <span>{getItemTotal(item).toLocaleString()}</span>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">
-                    Discount %
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 15"
-                    value={pricingOverview.discount_percent}
-                    onChange={(e) =>
-                      setPricingOverview((prev) => ({
-                        ...prev,
-                        discount_percent: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">
-                    Save amount
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 12,000,000 VND"
-                    value={pricingOverview.save_amount}
-                    onChange={(e) =>
-                      setPricingOverview((prev) => ({
-                        ...prev,
-                        save_amount: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  />
-                </div>
-              </div>
+              )}
             </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">
+                Discount % (0 = không giảm giá)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                placeholder="e.g. 15"
+                value={pricingOverview.discount_percent || ""}
+                onChange={(e) =>
+                  setPricingOverview({
+                    discount_percent: Number(e.target.value) || 0,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              />
+            </div>
+
+            {(() => {
+              const total = items.reduce((s, i) => s + getItemTotal(i), 0);
+              const discount = pricingOverview.discount_percent || 0;
+              const finalPrice = total * (1 - discount / 100);
+              const save = total - finalPrice;
+              return (
+                <div className="rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800">
+                  <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                    <span>Subtotal</span>
+                    <span>{total.toLocaleString()}</span>
+                  </div>
+                  {discount > 0 && (
+                    <>
+                      <div className="flex justify-between font-semibold text-blue-700 dark:text-blue-400">
+                        <span>Final price ({discount}% off)</span>
+                        <span>{Math.round(finalPrice).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-emerald-600">
+                        <span>Client saves</span>
+                        <span>{Math.round(save).toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -700,7 +648,9 @@ export function ProposalPageForm({
           {pageType === "pricing_overview" && (
             <PricingOverviewPage
               title={title || "Proposal & Pricing"}
+              items={items}
               data={pricingOverview}
+              currencySymbol={currencySymbol}
               headingFontCss={headingFontCss}
             />
           )}
