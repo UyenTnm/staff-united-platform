@@ -32,10 +32,6 @@ import { uploadCoverImage } from "@/lib/crm/quotes";
 export const NAVY =
   "bg-gradient-to-br from-[#0a1a3c] via-[#0f2454] to-[#123a7a]";
 
-// Tiêu đề dài ngắn khác nhau tùy proposal — tự co cỡ chữ theo số ký
-// tự thay vì cố định 1 size, tránh vỡ layout khi sale đặt title dài.
-// Kèm giới hạn tối đa 3 dòng (line-clamp) làm lưới an toàn cuối cùng
-// nếu title vẫn quá dài dù đã co chữ nhỏ nhất.
 function getTitleFontSizeClass(title: string): string {
   const len = title.length;
   if (len <= 20) return "text-2xl";
@@ -44,8 +40,6 @@ function getTitleFontSizeClass(title: string): string {
   return "text-base";
 }
 
-// Nút bút chì nổi góc trên phải — chỉ hiện khi có onEdit (tức đang ở
-// chế độ Review, cho phép nhảy về sửa đúng trang này).
 function EditButton({ onEdit }: { onEdit?: () => void }) {
   if (!onEdit) return null;
   return (
@@ -60,7 +54,7 @@ function EditButton({ onEdit }: { onEdit?: () => void }) {
   );
 }
 
-// ---- Trang bìa ----
+// ---- Trang bìa (v2 — dùng ảnh nền Canva thật, không tự vẽ CSS/SVG) ----
 export const CoverPage = forwardRef<
   HTMLDivElement,
   {
@@ -71,12 +65,9 @@ export const CoverPage = forwardRef<
     coverImageUrl: string | null;
     packageTitles: string[];
     headingFontCss: string;
-    // editable=true: click vào vùng ảnh để upload (chỉ dùng ở bước
-    // soạn trang bìa — ProposalWizard step "cover").
     editable?: boolean;
     quoteId?: string;
     onCoverImageUploaded?: () => void;
-    // onEdit: hiện nút bút chì (chỉ dùng ở chế độ Review/flipbook).
     onEdit?: () => void;
   }
 >(
@@ -98,18 +89,17 @@ export const CoverPage = forwardRef<
   ) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
-    const clipId = useId();
+    // const clipId = useId();
+    // const waveClipId = useId();
 
     async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file || !quoteId) return;
-
       if (!file.type.startsWith("image/")) {
         toast.warning("Please select an image file.");
         return;
       }
-
       setUploading(true);
       try {
         await uploadCoverImage(quoteId, file);
@@ -123,79 +113,58 @@ export const CoverPage = forwardRef<
       }
     }
 
+    const maskStyle: React.CSSProperties = {
+      WebkitMaskImage: "url(/templates/proposal-cover-mask.png)",
+      WebkitMaskSize: "100% 100%",
+      WebkitMaskRepeat: "no-repeat",
+      WebkitMaskPosition: "0 0",
+      maskImage: "url(/templates/proposal-cover-mask.png)",
+      maskSize: "100% 100%",
+      maskRepeat: "no-repeat",
+      maskPosition: "0 0",
+    };
+
     return (
       <div
         ref={ref}
-        className="relative flex h-full w-full flex-col overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(180deg, #1a365b 0%, #0d294c 45%, #051f40 100%)",
-        }}
+        className="relative h-full w-full overflow-hidden bg-[#0d294c]"
+        style={{ aspectRatio: "1655 / 2340" }}
       >
         <EditButton onEdit={onEdit} />
 
-        {/* clipPathUnits="objectBoundingBox" => path viết theo tỉ lệ
-            0..1. Path này được fit (Catmull-Rom -> cubic Bezier) trực
-            tiếp qua các điểm đo pixel thật trên ảnh mẫu gốc 1.png
-            (1414x2000px) — không phải áng chừng. Container tương ứng
-            box thật: x=[46.7%,100%] (rộng 53.3%), y=[0,60%]. */}
-        <svg width="0" height="0" style={{ position: "absolute" }}>
-          <defs>
-            <clipPath
-              id={`cover-blob-${clipId}`}
-              clipPathUnits="objectBoundingBox"
-            >
-              <path d="M1,0 C0.941,0.006 0.725,0.022 0.645,0.033 C0.566,0.044 0.558,0.056 0.525,0.067 C0.493,0.078 0.471,0.089 0.450,0.100 C0.430,0.111 0.417,0.122 0.403,0.133 C0.390,0.144 0.385,0.144 0.368,0.167 C0.351,0.189 0.325,0.228 0.302,0.267 C0.280,0.306 0.258,0.350 0.233,0.400 C0.208,0.450 0.179,0.511 0.152,0.567 C0.125,0.622 0.094,0.689 0.073,0.733 C0.052,0.778 0.039,0.800 0.026,0.833 C0.014,0.867 -0.021,0.906 0,0.933 C0.021,0.961 -0.017,0.989 0.15,1 C0.317,1.011 0.858,1 1,1 L1,0 Z" />
-            </clipPath>
-            <linearGradient
-              id={`wave-grad-${clipId}`}
-              x1="0"
-              y1="0"
-              x2="1"
-              y2="0"
-            >
-              <stop offset="0%" stopColor="#0d294c" />
-              <stop offset="50%" stopColor="#4f8ecb" />
-              <stop offset="100%" stopColor="#0d294c" />
-            </linearGradient>
-          </defs>
-        </svg>
+        {/* Ảnh nền Canva thật — mọi hình khối/màu/icon nằm sẵn ở đây */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/templates/proposal-cover-bg.png"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          draggable={false}
+        />
 
-        {/* ---- Khối trắng dáng giọt nước — dùng đúng box đo được:
-            rộng 53.3%, cao 60% trang. ---- */}
-        <div
-          className="absolute right-0 top-0 overflow-hidden"
-          style={{
-            height: "60%",
-            width: "53.3%",
-            backgroundColor: "#c6cdde",
-            clipPath: `url(#cover-blob-${clipId})`,
-          }}
-        >
-          {coverImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+        {coverImageUrl && (
+          <div className="absolute inset-0 h-full w-full" style={maskStyle}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={coverImageUrl}
               alt=""
               className="h-full w-full object-cover"
             />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <Camera className="h-12 w-12 text-slate-400" strokeWidth={1.2} />
-            </div>
-          )}
+          </div>
+        )}
 
-          {editable && (
+        {editable && (
+          <>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="absolute inset-0 flex items-center justify-center bg-black/0 text-xs font-medium text-transparent transition hover:bg-black/40 hover:text-white"
+              className="absolute inset-0 h-full w-full bg-black/0 text-xs font-medium text-transparent transition hover:bg-black/10"
+              style={maskStyle}
             >
-              {uploading ? "Uploading..." : "Click to upload image"}
+              <span className="flex h-full w-full items-center justify-center hover:bg-black/40 hover:text-white">
+                {uploading ? "Uploading..." : "Click to upload image"}
+              </span>
             </button>
-          )}
-          {editable && (
             <input
               ref={fileInputRef}
               type="file"
@@ -203,190 +172,74 @@ export const CoverPage = forwardRef<
               className="hidden"
               onChange={handleFileSelected}
             />
-          )}
-        </div>
+          </>
+        )}
 
-        {/* ---- Dải sóng — path fit qua dữ liệu pixel thật (đã lọc
-            nhiễu do đè lên icon Prepared For/By/Date), viewBox 0 0 1 1
-            nên tọa độ = % trang trực tiếp. ---- */}
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 1 1"
-          preserveAspectRatio="none"
+        {/* ---- Overlay: Partner Company Logo ---- */}
+        <div
+          className="absolute flex items-center"
+          style={{ left: "30%", top: "4%", width: "36%", height: "8%" }}
         >
-          <path
-            d="M0,0.8 C0.013,0.792 0.053,0.763 0.08,0.75 C0.107,0.737 0.133,0.728 0.16,0.72 C0.187,0.712 0.22,0.705 0.24,0.7 C0.26,0.695 0.267,0.692 0.28,0.689 C0.293,0.686 0.307,0.685 0.32,0.683 C0.333,0.681 0.347,0.680 0.36,0.677 C0.373,0.674 0.387,0.668 0.4,0.663 C0.413,0.659 0.427,0.654 0.44,0.65 C0.453,0.646 0.467,0.642 0.48,0.638 C0.493,0.634 0.507,0.629 0.52,0.625 C0.533,0.621 0.547,0.619 0.56,0.615 C0.573,0.612 0.587,0.607 0.6,0.604 C0.613,0.601 0.627,0.598 0.64,0.595 C0.653,0.592 0.667,0.588 0.68,0.585 C0.693,0.582 0.707,0.579 0.72,0.576 C0.733,0.573 0.747,0.569 0.76,0.565 C0.773,0.561 0.787,0.558 0.8,0.554 C0.813,0.550 0.827,0.545 0.84,0.54 C0.853,0.535 0.867,0.530 0.88,0.525 C0.893,0.520 0.907,0.514 0.92,0.51 C0.933,0.506 0.947,0.475 0.96,0.5 C0.973,0.525 0.993,0.633 1,0.66 L1,0.7 C0.993,0.673 0.973,0.565 0.96,0.54 C0.947,0.515 0.933,0.546 0.92,0.55 C0.907,0.554 0.893,0.56 0.88,0.565 C0.867,0.57 0.853,0.575 0.84,0.58 C0.827,0.585 0.813,0.590 0.8,0.594 C0.787,0.598 0.773,0.601 0.76,0.605 C0.747,0.609 0.733,0.613 0.72,0.616 C0.707,0.619 0.693,0.622 0.68,0.625 C0.667,0.628 0.653,0.632 0.64,0.635 C0.627,0.638 0.613,0.641 0.6,0.644 C0.587,0.647 0.573,0.651 0.56,0.655 C0.547,0.659 0.533,0.661 0.52,0.665 C0.507,0.669 0.493,0.674 0.48,0.678 C0.467,0.682 0.453,0.686 0.44,0.69 C0.427,0.694 0.413,0.699 0.4,0.703 C0.387,0.708 0.373,0.714 0.36,0.717 C0.347,0.720 0.333,0.721 0.32,0.723 C0.307,0.725 0.293,0.726 0.28,0.729 C0.267,0.732 0.26,0.735 0.24,0.74 C0.22,0.745 0.187,0.752 0.16,0.76 C0.133,0.768 0.107,0.777 0.08,0.79 C0.053,0.803 0.013,0.832 0,0.84 Z"
-            fill={`url(#wave-grad-${clipId})`}
-          />
-        </svg>
-
-        <div className="relative z-10 flex flex-1 flex-col px-6 pt-6 text-white">
-          <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
-              src="/logo.png"
-              alt="STAFF United"
-              style={{ height: 28, width: "auto" }}
-              className="object-contain"
+              src={logoUrl}
+              alt={companyName}
+              className="max-h-full max-w-full object-contain"
             />
-            <span className="h-5 w-px bg-white/20" />
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoUrl}
-                alt={companyName}
-                style={{ height: 22, width: "auto" }}
-                className="max-w-[90px] object-contain"
-              />
-            ) : (
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-blue-200">
-                Partner Company
-                <br />
-                Logo Here
-              </span>
-            )}
-          </div>
-
-          <h1
-            className={`mt-9 line-clamp-3 font-bold leading-tight text-white ${getTitleFontSizeClass(title)}`}
-            style={{ fontFamily: headingFontCss }}
-          >
-            {title}
-          </h1>
-          <div className="mt-3 flex items-center gap-1.5">
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: "#4f8ecb" }}
-            />
-            <span
-              className="h-px w-16"
-              style={{ backgroundColor: "#4f8ecb" }}
-            />
-          </div>
-
-          <p
-            className="mt-4 text-xl font-extrabold uppercase leading-[1.15]"
-            style={{ color: "#4f8ecb" }}
-          >
-            Proposal
-            <br />& Pricing
-          </p>
-
-          {packageTitles.length > 0 && (
-            <div className="mt-4 space-y-1">
-              {packageTitles.slice(0, 4).map((name, i) => (
-                <p key={i} className="text-sm text-white/90">
-                  {name}
-                </p>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-6 space-y-3 text-xs">
-            <div className="flex items-center gap-2.5">
-              <span
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2"
-                style={{ borderColor: "#4f8ecb" }}
-              >
-                <User className="h-4 w-4" style={{ color: "#4f8ecb" }} />
-              </span>
-              <div>
-                <p
-                  className="font-semibold uppercase tracking-wide"
-                  style={{ color: "#4f8ecb" }}
-                >
-                  Prepared For
-                </p>
-                <p className="font-medium text-white">
-                  {companyName} ({contactName})
-                </p>
-              </div>
-            </div>
-            <span className="ml-4 block h-px w-8 bg-white/15" />
-
-            <div className="flex items-center gap-2.5">
-              <span
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2"
-                style={{ borderColor: "#4f8ecb" }}
-              >
-                <Building2 className="h-4 w-4" style={{ color: "#4f8ecb" }} />
-              </span>
-              <div>
-                <p
-                  className="font-semibold uppercase tracking-wide"
-                  style={{ color: "#4f8ecb" }}
-                >
-                  Prepared By
-                </p>
-                <p className="font-medium text-white">STAFF United</p>
-              </div>
-            </div>
-            <span className="ml-4 block h-px w-8 bg-white/15" />
-
-            <div className="flex items-center gap-2.5">
-              <span
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2"
-                style={{ borderColor: "#4f8ecb" }}
-              >
-                <Calendar className="h-4 w-4" style={{ color: "#4f8ecb" }} />
-              </span>
-              <div>
-                <p
-                  className="font-semibold uppercase tracking-wide"
-                  style={{ color: "#4f8ecb" }}
-                >
-                  Date
-                </p>
-                <p className="font-medium text-white">
-                  {new Date().toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ---- Hàng 4 icon — đo được nằm ở y≈0.885 ---- */}
-        <div className="relative z-10 flex items-start justify-center gap-0 px-3 pb-4">
-          {[
-            { icon: Eye, label: "Strong\nVisibility" },
-            { icon: MessageCircle, label: "Clear\nCommunication" },
-            { icon: Handshake, label: "Trusted\nPartnerships" },
-            { icon: TrendingUp, label: "Driving\nGrowth" },
-          ].map(({ icon: Icon, label }, i) => (
-            <div key={i} className="flex items-start">
-              {i > 0 && <span className="mx-2 mt-1 h-8 w-px bg-white/15" />}
-              <div className="flex w-16 flex-col items-center gap-1.5 text-center">
-                <Icon
-                  className="h-5 w-5"
-                  strokeWidth={1.5}
-                  style={{ color: "#4f8ecb" }}
-                />
-                <p className="whitespace-pre-line text-[8px] font-medium leading-tight text-white/80">
-                  {label}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ---- Footer — đo được nằm ở y≈0.965 và 0.985 ---- */}
-        <div className="relative z-10 pb-4 text-center">
-          <div className="mb-2 flex items-center justify-center gap-3 px-8">
-            <span className="h-px flex-1 bg-white/20" />
-            <p className="whitespace-nowrap text-[7px] uppercase tracking-widest text-white/70">
-              Confidential — For Intended Recipient Only
+          ) : editable ? (
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-300/50">
+              Partner logo
             </p>
-            <span className="h-px flex-1 bg-white/20" />
-          </div>
-          <p className="text-[11px] font-bold uppercase tracking-wide">
-            <span style={{ color: "#4f8ecb" }}>All Women.</span>{" "}
-            <span className="text-white">All Business.</span>
-          </p>
+          ) : null}
         </div>
+
+        {/* ---- Overlay: Project Title — tự co chữ theo độ dài ---- */}
+        <h1
+          className={`absolute line-clamp-3 font-bold leading-tight text-white ${getTitleFontSizeClass(title)}`}
+          style={{
+            left: "5%",
+            top: "14%",
+            width: "58%",
+            fontFamily: headingFontCss,
+          }}
+        >
+          {title}
+        </h1>
+
+        {/* ---- Overlay: Package Titles ×4 ---- */}
+        {packageTitles.length > 0 && (
+          <div
+            className="absolute space-y-1"
+            style={{ left: "5%", top: "35%", width: "58%" }}
+          >
+            {packageTitles.slice(0, 4).map((name, i) => (
+              <p key={i} className="text-sm text-white/90">
+                {name}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {/* ---- Overlay: Client / Company Name ---- */}
+        <p
+          className="absolute text-[10px] font-bold text-white"
+          style={{ left: "12%", top: "51%", width: "50%" }}
+        >
+          {companyName} ({contactName})
+        </p>
+
+        {/* ---- Overlay: Date ---- */}
+        <p
+          className="absolute text-[10px] font-bold text-white"
+          style={{ left: "12%", top: "66%", width: "50%" }}
+        >
+          {new Date().toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
       </div>
     );
   },

@@ -89,7 +89,14 @@ export function ProposalWizard({
   }
 
   const mandatoryItems = items.filter((i) => !i.is_optional);
-  const packageTitles = mandatoryItems.map((i) => i.service_name);
+  // Package Title trên trang bìa lấy từ các trang "Package Detail" mà
+  // sale đã thêm ở Bước 2 (List) — KHÔNG lấy từ quote_items (đó là
+  // Service Options ở trang Quote chi tiết, dùng để tính giá, khác
+  // mục đích). Nhờ vậy sale chỉ cần thêm Package Detail trong Wizard
+  // là trang bìa tự cập nhật theo, không cần vào chỗ khác.
+  const packageTitles = pages
+    .filter((p) => p.page_type === "package_detail")
+    .map((p) => p.title);
   const headingFont = findFont(HEADING_FONTS, quote.font_heading);
   const isVietnamMarket = quote.customer_market === "vietnam";
   const currencySymbol = isVietnamMarket ? "₫" : "$";
