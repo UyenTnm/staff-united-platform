@@ -6,6 +6,7 @@ export type QuotePageType =
   | "custom"
   | "package_detail"
   | "pricing_overview"
+  | "partnership_summary"
   | "next_steps";
 
 // ---- Structured data cho từng loại trang ----
@@ -29,7 +30,12 @@ export interface PackageDetailData {
 // }
 
 export interface PricingOverviewData {
-  discount_percent: number; // 0 = không giảm giá
+  packages: { title: string; description: string; price: string }[];
+  strategic_partnership_price: string;
+  discount_percent: string;
+  save_amount: string;
+  payment_terms: string[];
+  image_url: string;
 }
 
 // Trang "Next Steps" (khớp ảnh mẫu 8) — danh sách bước tiếp theo,
@@ -109,6 +115,7 @@ export async function updateQuotePage(
     title?: string;
     content?: string;
     structured_data?: Record<string, unknown>;
+    sort_order?: number;
   },
 ) {
   const { error } = await supabase
@@ -148,4 +155,31 @@ export async function getQuotePagesByToken(
     console.error(error);
     return [];
   }
+}
+
+// Upload ảnh riêng cho trang Pricing Overview (khối blob góc phải) —
+// KHÁC với ảnh Cover, sale có thể dùng ảnh khác nhau cho từng trang.
+// Lưu URL vào structured_data.image_url của chính trang đó, không
+// đụng tới bảng quotes.
+export async function uploadPricingPageImage(
+  quoteId: string,
+  file: File,
+): Promise<string> {
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${quoteId}/pricing-img-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("proposals")
+    .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+  if (uploadError) {
+    console.error("Upload pricing image error:", uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("proposals")
+    .getPublicUrl(filePath);
+
+  return publicUrlData.publicUrl;
 }

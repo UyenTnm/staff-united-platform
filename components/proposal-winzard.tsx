@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Trash2, Plus, Pencil, ImageIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  Trash2,
+  Plus,
+  Pencil,
+  ImageIcon,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +27,7 @@ import {
   QuotePage,
   getQuotePages,
   deleteQuotePage,
+  updateQuotePage,
 } from "@/lib/crm/quote-pages";
 import { HEADING_FONTS, findFont } from "@/lib/proposal-fonts";
 
@@ -77,6 +86,24 @@ export function ProposalWizard({
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete page.");
+    }
+  }
+
+  async function handleMovePage(index: number, direction: "up" | "down") {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= pages.length) return;
+
+    const current = pages[index];
+    const target = pages[targetIndex];
+
+    try {
+      // Hoán đổi sort_order giữa 2 trang liền kề
+      await updateQuotePage(current.id, { sort_order: target.sort_order });
+      await updateQuotePage(target.id, { sort_order: current.sort_order });
+      await loadPages();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to reorder pages.");
     }
   }
 
@@ -229,7 +256,7 @@ export function ProposalWizard({
             <p className="text-sm text-slate-400">Loading pages...</p>
           ) : (
             <div className="space-y-2">
-              {pages.map((page) => (
+              {pages.map((page, index) => (
                 <div
                   key={page.id}
                   className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
@@ -249,7 +276,23 @@ export function ProposalWizard({
                       {page.title}
                     </p>
                   </button>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleMovePage(index, "up")}
+                      disabled={index === 0}
+                      className="text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-400"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMovePage(index, "down")}
+                      disabled={index === pages.length - 1}
+                      className="text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-400"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
                     <button
                       type="button"
                       onClick={() => {
@@ -268,6 +311,26 @@ export function ProposalWizard({
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
+
+                  {/* <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingPage(page);
+                        setMode("page-form");
+                      }}
+                      className="text-slate-400 hover:text-blue-600"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePage(page.id)}
+                      className="text-slate-400 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div> */}
                 </div>
               ))}
             </div>
@@ -298,8 +361,6 @@ export function ProposalWizard({
           existingPage={editingPage}
           nextSortOrder={pages.length}
           headingFontCss={headingFont.cssName}
-          items={items}
-          currencySymbol={currencySymbol}
           onSaved={async () => {
             await loadPages();
             setEditingPage(null);

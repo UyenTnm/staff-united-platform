@@ -15,6 +15,7 @@ import {
   ServicesPage,
   PackageDetailPage,
   PricingOverviewPage,
+  PartnershipSummaryPage,
   NextStepsPage,
   ContentPage,
 } from "@/components/proposal-pages";
@@ -104,7 +105,11 @@ export function ProposalTemplateFlipbook({
     serviceChunks.push(mandatoryItems.slice(i, i + ITEMS_PER_SERVICE_PAGE));
   }
 
-  const packageTitles = mandatoryItems.map((i) => i.service_name);
+  // const packageTitles = mandatoryItems.map((i) => i.service_name);
+
+  const packageTitles = customPages
+    .filter((p) => p.page_type === "package_detail")
+    .map((p) => p.title);
 
   let packageDetailCount = 0;
 
@@ -116,9 +121,11 @@ export function ProposalTemplateFlipbook({
       <div className="mx-auto w-full" style={{ maxWidth: 420 }}>
         <HTMLFlipBook
           width={400}
-          height={566}
+          height={560}
           size="fixed"
-          showCover={true}
+          showCover={false}
+          showPageCorners={false}
+          drawShadow={false}
           mobileScrollSupport={true}
           className="shadow-2xl"
         >
@@ -168,14 +175,23 @@ export function ProposalTemplateFlipbook({
                 <PricingOverviewPage
                   key={page.id}
                   title={page.title}
-                  items={mandatoryItems}
                   data={page.structured_data as unknown as PricingOverviewData}
-                  currencySymbol={currencySymbol}
                   headingFontCss={headingFont.cssName}
                   onEdit={onEdit}
                 />
               );
             }
+            if (page.page_type === "partnership_summary") {
+              return (
+                <PartnershipSummaryPage
+                  key={page.id}
+                  data={page.structured_data as unknown as PricingOverviewData}
+                  headingFontCss={headingFont.cssName}
+                  onEdit={onEdit}
+                />
+              );
+            }
+
             if (page.page_type === "next_steps") {
               return (
                 <NextStepsPage

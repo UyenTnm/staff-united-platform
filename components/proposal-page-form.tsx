@@ -13,14 +13,17 @@ import {
   NextStepsData,
   createQuotePage,
   updateQuotePage,
+  uploadPricingPageImage,
 } from "@/lib/crm/quote-pages";
+
 import {
   PackageDetailPage,
   PricingOverviewPage,
+  PartnershipSummaryPage,
   NextStepsPage,
   ContentPage,
 } from "@/components/proposal-pages";
-import { QuoteItem, getItemTotal } from "@/lib/crm/quote-items";
+
 interface ProposalPageFormProps {
   quoteId: string;
   // Truyền vào khi SỬA 1 trang đã có (từ nút bút chì ở Review).
@@ -28,8 +31,6 @@ interface ProposalPageFormProps {
   existingPage?: QuotePage | null;
   nextSortOrder: number;
   headingFontCss: string;
-  items: QuoteItem[];
-  currencySymbol: string;
   onSaved: (page: QuotePage) => void;
   onCancel: () => void;
 }
@@ -38,6 +39,8 @@ const PAGE_TYPE_LABELS: Record<QuotePageType, string> = {
   custom: "Custom Page (free text)",
   package_detail: "Package Detail (objective, deliverables, timeline, price)",
   pricing_overview: "Pricing Overview (package list + partnership rate)",
+  partnership_summary:
+    "Strategic Partnership Summary (individual packages + preferred rate)",
   next_steps: "Next Steps (closing page with numbered/bullet list)",
 };
 
@@ -48,15 +51,13 @@ const EMPTY_PACKAGE_DETAIL: PackageDetailData = {
   price: "",
 };
 
-// const EMPTY_PRICING_OVERVIEW: PricingOverviewData = {
-//   packages: [{ title: "", description: "", price: "" }],
-//   strategic_partnership_price: "",
-//   discount_percent: "",
-//   save_amount: "",
-// };
-
 const EMPTY_PRICING_OVERVIEW: PricingOverviewData = {
-  discount_percent: 0,
+  packages: [{ title: "", description: "", price: "" }],
+  strategic_partnership_price: "",
+  discount_percent: "",
+  save_amount: "",
+  payment_terms: [""],
+  image_url: "",
 };
 
 const EMPTY_NEXT_STEPS: NextStepsData = {
@@ -65,17 +66,21 @@ const EMPTY_NEXT_STEPS: NextStepsData = {
   closing_note: "",
 };
 
-// Form soạn 1 trang (Package Detail / Pricing Overview / Next Steps /
-// Custom) kèm preview đơn ngay bên cạnh, cập nhật theo thời gian
-// thực khi sale gõ — dùng cho cả "thêm trang mới" (ProposalWizard
-// bước Add Page) lẫn "sửa trang đã có" (bấm bút chì từ bước Review).
+// Form soạn 1 trang (Package Detail / Pricing Overview /
+// Partnership Summary / Next Steps / Custom) kèm preview đơn ngay
+// bên cạnh, cập nhật theo thời gian thực khi sale gõ — dùng cho cả
+// "thêm trang mới" (ProposalWizard bước Add Page) lẫn "sửa trang đã
+// có" (bấm bút chì từ bước Review).
+//
+// LƯU Ý: Pricing Overview / Partnership Summary dùng chung 1 form
+// (packages[] nhập tay) — KHÔNG tự tính từ quote_items (Service
+// Options ở trang Quote chi tiết là mục đích khác: tính giá thanh
+// toán thật, không phải nội dung hiển thị trên proposal).
 export function ProposalPageForm({
   quoteId,
   existingPage,
   nextSortOrder,
   headingFontCss,
-  items,
-  currencySymbol,
   onSaved,
   onCancel,
 }: ProposalPageFormProps) {
@@ -94,7 +99,8 @@ export function ProposalPageForm({
       : EMPTY_PACKAGE_DETAIL,
   );
   const [pricingOverview, setPricingOverview] = useState<PricingOverviewData>(
-    existingPage?.page_type === "pricing_overview"
+    existingPage?.page_type === "pricing_overview" ||
+      existingPage?.page_type === "partnership_summary"
       ? (existingPage.structured_data as unknown as PricingOverviewData)
       : EMPTY_PRICING_OVERVIEW,
   );
@@ -104,6 +110,11 @@ export function ProposalPageForm({
       : EMPTY_NEXT_STEPS,
   );
   const [saving, setSaving] = useState(false);
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const isPricingLike =
+    pageType === "pricing_overview" || pageType === "partnership_summary";
 
   // Nếu chuyển sang sửa 1 trang khác (existingPage đổi id), nạp lại
   // toàn bộ state theo đúng trang mới đó.
@@ -118,7 +129,8 @@ export function ProposalPageForm({
         : EMPTY_PACKAGE_DETAIL,
     );
     setPricingOverview(
-      existingPage.page_type === "pricing_overview"
+      existingPage.page_type === "pricing_overview" ||
+        existingPage.page_type === "partnership_summary"
         ? (existingPage.structured_data as unknown as PricingOverviewData)
         : EMPTY_PRICING_OVERVIEW,
     );
@@ -128,6 +140,29 @@ export function ProposalPageForm({
         : EMPTY_NEXT_STEPS,
     );
   }, [existingPage?.id]);
+
+  async function handlePricingImageUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.warning("Please select an image file.");
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const url = await uploadPricingPageImage(quoteId, file);
+      setPricingOverview((prev) => ({ ...prev, image_url: url }));
+      toast.success("Image uploaded!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload image.");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
 
   async function handleSave() {
     if (!title.trim()) {
@@ -147,14 +182,15 @@ export function ProposalPageForm({
         return;
       }
     }
-
-    if (pageType === "pricing_overview" && items.length === 0) {
-      toast.warning(
-        "No service items found. Add Service Options on the Quote page first.",
+    if (isPricingLike) {
+      const filled = pricingOverview.packages.filter(
+        (p) => p.title.trim() && p.price.trim(),
       );
-      return;
+      if (filled.length === 0) {
+        toast.warning("Please add at least one package with a price.");
+        return;
+      }
     }
-
     if (pageType === "next_steps") {
       const filled = nextSteps.items.filter((i) => i.trim());
       if (filled.length === 0) {
@@ -171,8 +207,13 @@ export function ProposalPageForm({
           ...packageDetail,
           deliverables: packageDetail.deliverables.filter((d) => d.trim()),
         };
-      } else if (pageType === "pricing_overview") {
-        structured_data = { ...pricingOverview };
+      } else if (isPricingLike) {
+        structured_data = {
+          ...pricingOverview,
+          packages: pricingOverview.packages.filter(
+            (p) => p.title.trim() && p.price.trim(),
+          ),
+        };
       } else if (pageType === "next_steps") {
         structured_data = {
           ...nextSteps,
@@ -233,31 +274,31 @@ export function ProposalPageForm({
     }));
   }
 
-  // ---- helpers: Pricing Overview ----
-  // function updatePricingPackage(
-  //   index: number,
-  //   field: "title" | "description" | "price",
-  //   value: string,
-  // ) {
-  //   setPricingOverview((prev) => ({
-  //     ...prev,
-  //     packages: prev.packages.map((p, i) =>
-  //       i === index ? { ...p, [field]: value } : p,
-  //     ),
-  //   }));
-  // }
-  // function addPricingPackage() {
-  //   setPricingOverview((prev) => ({
-  //     ...prev,
-  //     packages: [...prev.packages, { title: "", description: "", price: "" }],
-  //   }));
-  // }
-  // function removePricingPackage(index: number) {
-  //   setPricingOverview((prev) => ({
-  //     ...prev,
-  //     packages: prev.packages.filter((_, i) => i !== index),
-  //   }));
-  // }
+  // ---- helpers: Pricing Overview / Partnership Summary ----
+  function updatePricingPackage(
+    index: number,
+    field: "title" | "description" | "price",
+    value: string,
+  ) {
+    setPricingOverview((prev) => ({
+      ...prev,
+      packages: prev.packages.map((p, i) =>
+        i === index ? { ...p, [field]: value } : p,
+      ),
+    }));
+  }
+  function addPricingPackage() {
+    setPricingOverview((prev) => ({
+      ...prev,
+      packages: [...prev.packages, { title: "", description: "", price: "" }],
+    }));
+  }
+  function removePricingPackage(index: number) {
+    setPricingOverview((prev) => ({
+      ...prev,
+      packages: prev.packages.filter((_, i) => i !== index),
+    }));
+  }
 
   // ---- helpers: Next Steps ----
   function updateNextStepItem(index: number, value: string) {
@@ -311,7 +352,7 @@ export function ProposalPageForm({
           <input
             type="text"
             placeholder={
-              pageType === "pricing_overview"
+              isPricingLike
                 ? "e.g. Proposal & Pricing"
                 : pageType === "next_steps"
                   ? "e.g. Next Steps to Begin This Partnership"
@@ -432,78 +473,158 @@ export function ProposalPageForm({
             </div>
           </div>
         )}
-        
-        {pageType === "pricing_overview" && (
+
+        {isPricingLike && (
           <div className="space-y-3">
-            <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-              <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
-                Services (từ &quot;Add Service Options&quot; ở trang Quote)
-              </p>
-              {items.length === 0 ? (
-                <p className="text-xs text-amber-600">
-                  Chưa có service nào. Vào trang Quote chi tiết để thêm Service
-                  Options trước, trang này sẽ tự lấy theo.
-                </p>
-              ) : (
-                <div className="space-y-1">
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex justify-between text-xs text-slate-600 dark:text-slate-300"
-                    >
-                      <span>{item.service_name}</span>
-                      <span>{getItemTotal(item).toLocaleString()}</span>
-                    </div>
-                  ))}
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">
+                Company / cover image for this page (optional)
+              </label>
+              {pricingOverview.image_url && (
+                <div className="mb-2 overflow-hidden rounded-lg border border-slate-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={pricingOverview.image_url}
+                    alt=""
+                    className="h-24 w-full object-cover"
+                  />
                 </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePricingImageUpload}
+                disabled={uploadingImage}
+                className="text-sm"
+              />
+              {uploadingImage && (
+                <p className="mt-1 text-xs text-slate-400">Uploading...</p>
               )}
             </div>
 
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-500">
-                Discount % (0 = không giảm giá)
+                Packages
               </label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                placeholder="e.g. 15"
-                value={pricingOverview.discount_percent || ""}
-                onChange={(e) =>
-                  setPricingOverview({
-                    discount_percent: Number(e.target.value) || 0,
-                  })
-                }
-                className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-              />
+              <div className="space-y-3">
+                {pricingOverview.packages.map((p, index) => (
+                  <div
+                    key={index}
+                    className="space-y-2 rounded-lg border border-slate-200 p-3 dark:border-slate-700"
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Package title"
+                        value={p.title}
+                        onChange={(e) =>
+                          updatePricingPackage(index, "title", e.target.value)
+                        }
+                        className="flex-1 rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Price"
+                        value={p.price}
+                        onChange={(e) =>
+                          updatePricingPackage(index, "price", e.target.value)
+                        }
+                        className="w-32 rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      />
+                      {pricingOverview.packages.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removePricingPackage(index)}
+                          className="text-slate-400 hover:text-red-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Short description (optional)"
+                      value={p.description}
+                      onChange={(e) =>
+                        updatePricingPackage(
+                          index,
+                          "description",
+                          e.target.value,
+                        )
+                      }
+                      className="w-full rounded-lg border border-slate-200 p-2 text-xs dark:border-slate-700 dark:bg-slate-900"
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={addPricingPackage}
+                className="mt-2 flex items-center gap-1 text-xs font-medium text-blue-700 hover:text-blue-800"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add package
+              </button>
             </div>
 
-            {(() => {
-              const total = items.reduce((s, i) => s + getItemTotal(i), 0);
-              const discount = pricingOverview.discount_percent || 0;
-              const finalPrice = total * (1 - discount / 100);
-              const save = total - finalPrice;
-              return (
-                <div className="rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800">
-                  <div className="flex justify-between text-slate-600 dark:text-slate-300">
-                    <span>Subtotal</span>
-                    <span>{total.toLocaleString()}</span>
-                  </div>
-                  {discount > 0 && (
-                    <>
-                      <div className="flex justify-between font-semibold text-blue-700 dark:text-blue-400">
-                        <span>Final price ({discount}% off)</span>
-                        <span>{Math.round(finalPrice).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-emerald-600">
-                        <span>Client saves</span>
-                        <span>{Math.round(save).toLocaleString()}</span>
-                      </div>
-                    </>
-                  )}
+            <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+              <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
+                Strategic Partnership Package (bundle discount)
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">
+                    Bundle price
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 80,000,000 VND"
+                    value={pricingOverview.strategic_partnership_price}
+                    onChange={(e) =>
+                      setPricingOverview((prev) => ({
+                        ...prev,
+                        strategic_partnership_price: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  />
                 </div>
-              );
-            })()}
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">
+                    Discount %
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 15"
+                    value={pricingOverview.discount_percent}
+                    onChange={(e) =>
+                      setPricingOverview((prev) => ({
+                        ...prev,
+                        discount_percent: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">
+                    Save amount
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 12,000,000 VND"
+                    value={pricingOverview.save_amount}
+                    onChange={(e) =>
+                      setPricingOverview((prev) => ({
+                        ...prev,
+                        save_amount: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -639,7 +760,7 @@ export function ProposalPageForm({
         >
           {pageType === "package_detail" && (
             <PackageDetailPage
-              title={title || "Package Title"}
+              title={title}
               data={packageDetail}
               pageNumber="01"
               headingFontCss={headingFontCss}
@@ -648,9 +769,13 @@ export function ProposalPageForm({
           {pageType === "pricing_overview" && (
             <PricingOverviewPage
               title={title || "Proposal & Pricing"}
-              items={items}
               data={pricingOverview}
-              currencySymbol={currencySymbol}
+              headingFontCss={headingFontCss}
+            />
+          )}
+          {pageType === "partnership_summary" && (
+            <PartnershipSummaryPage
+              data={pricingOverview}
               headingFontCss={headingFontCss}
             />
           )}
