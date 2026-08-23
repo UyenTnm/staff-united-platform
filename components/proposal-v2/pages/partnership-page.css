@@ -1,0 +1,207 @@
+.partnership-page {
+  position: relative;
+  overflow: hidden;
+}
+
+.partnership-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 38px;
+}
+
+/* Waves */
+
+.wave-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Header */
+
+.header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.divider {
+  width: 1px;
+  height: 44px;
+  background: #67b8ff;
+}
+
+.client-logo {
+  width: 158px;
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+/* Body */
+
+.body {
+  margin-top: 118px;
+}
+
+.body h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 40px;
+  color: #061c43;
+  line-height: 1.08;
+  margin-bottom: 28px;
+}
+
+/* Table */
+
+.package-table {
+  background: #dce9f7;
+  border-radius: 22px;
+  padding: 24px;
+}
+
+.package-table h3 {
+  color: #4b88cc;
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px dashed #5ea6ea;
+  font-size: 14px;
+  color: #10294f;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 18px;
+  font-size: 16px;
+  color: #061c43;
+}
+
+/* Rate Card */
+
+.rate-card {
+  margin-top: 14px;
+  background: #053f7c;
+  border-radius: 20px;
+  padding: 22px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rate-left p {
+  color: #5ea6ea;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rate-left h2 {
+  margin-top: 10px;
+  font-size: 46px;
+  line-height: 1;
+}
+
+.save-line {
+  width: 220px;
+  height: 1px;
+  background: #5ea6ea;
+  margin: 16px 0;
+}
+
+.rate-left h4 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.discount-box {
+  background: #e8eef8;
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #053f7c;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.percent {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.percent small {
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+/* Payment */
+
+.payment {
+  margin-top: 14px;
+}
+
+.payment h3 {
+  color: #4b88cc;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.payment ul {
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #111827;
+}
+
+.payment li {
+  margin-bottom: 2px;
+}
+
+.rate-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.total-label {
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0.95;
+  text-decoration: line-through;
+}

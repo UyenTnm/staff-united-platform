@@ -1,0 +1,182 @@
+.pricing-page {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.pricing-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 34px 36px;
+}
+
+/* ---------------- Header ---------------- */
+
+.pricing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: white;
+}
+
+.partner-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.partner-line {
+  width: 1px;
+  height: 42px;
+  background: #67b8ff;
+}
+
+.partner-text {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+}
+
+.page-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.page-number {
+  font-size: 54px;
+  font-weight: 700;
+  color: #63b8ff;
+  line-height: 1;
+}
+
+.page-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+}
+
+/* ---------------- Waves ---------------- */
+
+.wave-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+}
+
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+}
+
+/* ---------------- Body ---------------- */
+
+.body {
+  position: relative;
+  z-index: 3;
+  margin-top: 120px;
+  color: #0b2147;
+}
+
+.package-title {
+  font-family: "Playfair Display", serif;
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #081f48;
+}
+
+/* ---------------- Sections ---------------- */
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #0058c8;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.objective {
+  font-size: 13px;
+  line-height: 1.9;
+  color: #2f3e57;
+  white-space: pre-line;
+  margin-bottom: 28px;
+}
+
+/* ---------------- Deliverables ---------------- */
+
+.deliverables {
+  margin-top: 10px;
+}
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+/* ---------------- Bottom Cards ---------------- */
+
+.bottom-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 230px;
+}
+
+.info-card {
+  position: relative;
+  height: 98px;
+  border-radius: 18px;
+  overflow: hidden;
+  color: white;
+}
+
+.info-card .bg {
+  position: absolute;
+  inset: 0;
+}
+
+.info-card .content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+  gap: 14px;
+}
+
+.info-card .divider {
+  width: 1px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.info-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.info-card p {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.1;
+}
