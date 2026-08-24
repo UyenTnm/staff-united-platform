@@ -11,12 +11,59 @@ import {
   CalendarDays,
   CircleDollarSign,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   data: PricingPageData;
+  onOverflowChange?: (overflow: boolean) => void;
 }
 
-export default function PricingPage({ data }: Props) {
+export default function PricingPage({ data, onOverflowChange }: Props) {
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const bottomCardsRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const [contentOverflow, setContentOverflow] = useState(false);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      const content = contentRef.current;
+      const bottomCards = bottomCardsRef.current;
+
+      if (!content || !bottomCards) return;
+
+      const contentBottom = content.getBoundingClientRect().bottom;
+
+      const cardsTop = bottomCards.getBoundingClientRect().top;
+
+      const safeGap = 12;
+
+      const overflow = contentBottom > cardsTop - safeGap;
+
+      setContentOverflow(overflow);
+      onOverflowChange?.(overflow);
+    };
+
+    checkOverflow();
+
+    const observer = new ResizeObserver(checkOverflow);
+
+    if (contentRef.current) {
+      observer.observe(contentRef.current);
+    }
+
+    if (bottomCardsRef.current) {
+      observer.observe(bottomCardsRef.current);
+    }
+
+    window.addEventListener("resize", checkOverflow);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", checkOverflow);
+    };
+  }, [data, onOverflowChange]);
+
   return (
     <PageShell className="pricing-page">
       {/* Background */}
@@ -44,10 +91,18 @@ export default function PricingPage({ data }: Props) {
 
             <div className="partner-line" />
 
-            <div className="partner-text">
-              PARTNER COMPANY
-              <br />
-              LOGO HERE
+            <div className="relative h-[58px] w-[120px]">
+              {data.clientLogo ? (
+                <Image
+                  src={data.clientLogo}
+                  alt="Client Logo"
+                  fill
+                  sizes="120px"
+                  className="object-contain"
+                />
+              ) : (
+                <span className="text-[9px] text-white/60">CLIENT LOGO</span>
+              )}
             </div>
           </div>
 
@@ -65,68 +120,92 @@ export default function PricingPage({ data }: Props) {
         </div>
 
         {/* BODY */}
-        <div className="body">
-          <h1 className="package-title">{data.packageTitle}</h1>
+        {/* BODY */}
+        <div ref={bodyRef} className="body">
+          {contentOverflow && (
+            <div className="content-warning-test">
+              ⚠️ PAGE CONTENT IS TOO LONG
+            </div>
+          )}
+          {/* ACTUAL CONTENT */}
+          <div ref={contentRef} className="pricing-main-content">
+            <h1 className="package-title">{data.packageTitle}</h1>
 
-          {/* Objective */}
-          <div className="section-title">
-            <Target size={22} color="#0058C8" />
-            <span>STRATEGIC OBJECTIVE</span>
-          </div>
-
-          <p className="objective">{data.strategicObjective}</p>
-
-          {/* Deliverables */}
-          <div className="deliverables">
+            {/* Objective */}
             <div className="section-title">
-              <ClipboardCheck size={22} color="#0058C8" />
-              <span>KEY DELIVERABLES</span>
+              <Target size={22} color="#0058C8" />
+              <span>STRATEGIC OBJECTIVE</span>
             </div>
 
-            {data.deliverables.map((item, index) => (
-              <div key={index} className="check-item">
-                <CheckSquare size={18} color="#0058C8" />
-                <span>{item}</span>
+            <p className="objective">{data.strategicObjective}</p>
+
+            {/* Deliverables */}
+            <div className="deliverables">
+              <div className="section-title">
+                <Image
+                  src="/proposal/cover/key-deliverable.png"
+                  alt=""
+                  width={22}
+                  height={22}
+                />
+
+                <span>KEY DELIVERABLES</span>
               </div>
-            ))}
+
+              {data.deliverables.map((item, index) => (
+                <div key={index} className="check-item">
+                  <CheckSquare size={18} color="#0058C8" />
+
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Bottom */}
-          <div className="bottom-cards">
+          {/* Bottom Cards */}
+          <div ref={bottomCardsRef} className="bottom-cards">
+            {/* TIMELINE */}
             <div className="info-card">
               <Image
-                src="/proposal/cover/bg-timeline.svg"
+                src="/proposal/cover/bg-timeline.png"
                 alt=""
                 fill
-                className="bg object-cover"
+                className="info-card-bg"
+                sizes="100%"
               />
 
-              <div className="content">
-                <CalendarDays size={34} color="#6EC1FF" />
+              <div className="info-card-inner">
+                <div className="info-card-icon">
+                  <CalendarDays size={42} color="#6EC1FF" strokeWidth={1.8} />
+                </div>
 
-                <div className="divider" />
-
-                <div>
+                <div className="info-card-text">
                   <h4>TIMELINE</h4>
                   <p>{data.timeline}</p>
                 </div>
               </div>
             </div>
 
+            {/* PRICE */}
             <div className="info-card">
               <Image
-                src="/proposal/cover/bg-price.svg"
+                src="/proposal/cover/bg-price.png"
                 alt=""
                 fill
-                className="bg object-cover"
+                className="info-card-bg"
+                sizes="100%"
               />
 
-              <div className="content">
-                <CircleDollarSign size={34} color="#6EC1FF" />
+              <div className="info-card-inner">
+                <div className="info-card-icon">
+                  <CircleDollarSign
+                    size={42}
+                    color="#6EC1FF"
+                    strokeWidth={1.8}
+                  />
+                </div>
 
-                <div className="divider" />
-
-                <div>
+                <div className="info-card-text">
                   <h4>PRICE</h4>
                   <p>{data.price}</p>
                 </div>

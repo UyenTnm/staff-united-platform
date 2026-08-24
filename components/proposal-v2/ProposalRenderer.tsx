@@ -5,111 +5,90 @@ import NextStepsPage from "./pages/NextStepsPage";
 import PartnershipPage from "./pages/PartnershipPage";
 import PricingPage from "./pages/PricingPage";
 import ScopePage from "./pages/ScopePage";
-import { CoverPageData, ScopePageData, PricingPageData } from "./types";
+import {
+  CoverPageData,
+  ScopePageData,
+  PricingPageData,
+  PartnershipPageData,
+  NextStepsPageData,
+} from "./types";
 
 interface ProposalRendererProps {
   cover: CoverPageData;
+  scope: ScopePageData;
+  pricing: PricingPageData;
+  partnership: PartnershipPageData;
+  currentStep: number;
+  nextSteps: NextStepsPageData;
+  onPricingOverflowChange?: (overflow: boolean) => void;
 }
 
-export default function ProposalRenderer({ cover }: ProposalRendererProps) {
-  const scope: ScopePageData = {
-    projectTitle: cover.proposalTitle,
-    packageName: "Strategic Partnership Package",
-    totalPrice: "VND 45,000,000",
-    services: [
-      {
-        title: "Business Process Optimisation",
-        description: "Workflow improvement & automation",
-        price: "8,000,000",
-      },
-      {
-        title: "Marketing Execution Support",
-        description: "Campaign planning & execution",
-        price: "12,000,000",
-      },
-      {
-        title: "Customer Success Improvement",
-        description: "Retention & client experience",
-        price: "10,000,000",
-      },
-      {
-        title: "Website & CRM Enhancement",
-        description: "Website optimisation & CRM setup",
-        price: "15,000,000",
-      },
-      {
-        title: "Long-term Growth Partnership",
-        description: "Ongoing strategic support",
-        price: "Included",
-      },
-    ],
-  };
+export default function ProposalRenderer({
+  cover,
+  scope,
+  pricing,
+  partnership,
+  nextSteps,
+  currentStep,
+  onPricingOverflowChange,
+}: ProposalRendererProps) {
+  // const partnership = {
+  //   packageName: "STRATEGIC PARTNERSHIP PACKAGE",
 
-  const pricing: PricingPageData = {
-    packageTitle: "Business Process Optimisation",
+  //   individualPackages: [
+  //     { title: "Business Process Optimisation", price: "8,000,000" },
+  //     { title: "Marketing Execution Support", price: "12,000,000" },
+  //     { title: "Customer Success Improvement", price: "10,000,000" },
+  //     { title: "Website & CRM Enhancement", price: "15,000,000" },
+  //   ],
 
-    strategicObjective:
-      "Optimise internal workflows and improve operational efficiency through automation.\n\Reduce manual tasks, increase visibility across departments, and create a scalable business process for long-term growth.",
+  //   totalPrice: "45,000,000 VND",
 
-    deliverables: [
-      "Workflow audit & process mapping",
-      "Automation opportunity analysis",
-      "SOP optimisation",
-      "Task management structure",
-      "Internal reporting dashboard",
-      "Team implementation support",
-    ],
+  //   finalPrice: "Price VND",
 
-    timeline: "4–8 Weeks",
+  //   savePrice: "SAVE PRICE VND",
 
-    price: "18,000,000 VND",
-  };
+  //   discount: "0%",
 
-  const partnership = {
-    packageName: "STRATEGIC PARTNERSHIP PACKAGE",
-
-    individualPackages: [
-      { title: "Business Process Optimisation", price: "8,000,000" },
-      { title: "Marketing Execution Support", price: "12,000,000" },
-      { title: "Customer Success Improvement", price: "10,000,000" },
-      { title: "Website & CRM Enhancement", price: "15,000,000" },
-    ],
-
-    totalPrice: "45,000,000 VND",
-
-    finalPrice: "Price VND",
-
-    savePrice: "SAVE PRICE VND",
-
-    discount: "0%",
-
-    paymentTerms: [
-      "50% deposit required to initiate the project.",
-      "50% final payment due upon completion.",
-      "Additional work outside agreed scope quoted separately.",
-      "Text",
-      "Text",
-    ],
-  };
-
-  const nextSteps = {
-    preparedBy: "STAFF United",
-    email: "website@staffunitedgroup.com",
-    nextSteps: [
-      "Review and confirm the proposed scope.",
-      "Approve the final package and timeline.",
-      "Sign the Service Agreement.",
-      "Project kickoff and onboarding session.",
-    ],
-  };
+  //   paymentTerms: [
+  //     "50% deposit required to initiate the project.",
+  //     "50% final payment due upon completion.",
+  //     "Additional work outside agreed scope quoted separately.",
+  //     "Text",
+  //     "Text",
+  //   ],
+  // };
 
   return (
-    <div className="space-y-8">
-      <CoverPage data={cover} />
-      <ScopePage data={scope} />
-      <PricingPage data={pricing} />
-      <PartnershipPage data={partnership} />
-      <NextStepsPage data={nextSteps} />
+    <div>
+      {currentStep === 0 && <CoverPage data={cover} />}
+
+      {currentStep === 1 && (
+        <ScopePage
+          data={{
+            ...scope,
+            clientLogo: cover.clientLogo,
+          }}
+        />
+      )}
+
+      {currentStep === 2 && (
+        <PricingPage
+          data={pricing}
+          onOverflowChange={onPricingOverflowChange}
+        />
+      )}
+
+      {currentStep === 3 && <PartnershipPage data={partnership} />}
+
+      {currentStep === 4 && (
+        <NextStepsPage
+          data={{
+            ...nextSteps,
+            clientLogo: cover.clientLogo,
+          }}
+        />
+      )}
     </div>
   );
 }

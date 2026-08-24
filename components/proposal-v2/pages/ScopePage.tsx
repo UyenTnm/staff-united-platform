@@ -35,21 +35,66 @@ export default function ScopePage({ data }: Props) {
 
             <div className="divider" />
 
-            <div>
-              <p className="partner">PARTNER COMPANY</p>
-              <p className="partner">LOGO HERE</p>
+            <div className="relative h-[58px] w-[120px]">
+              {data.clientLogo ? (
+                <Image
+                  src={data.clientLogo}
+                  alt="Client Logo"
+                  fill
+                  className="object-contain"
+                />
+              ) : (
+                <div className="flex h-full items-center">
+                  <span className="text-[9px] text-white/60">CLIENT LOGO</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Top Right Image */}
+        {/* Top Right Image */}
         <div className="hero-image">
-          <Image
-            src="/proposal/cover/photo-mask-1.png"
-            alt=""
-            fill
-            className="object-contain object-right-top"
-          />
+          {data.scopeImage ? (
+            <div
+              className="absolute inset-0"
+              style={{
+                WebkitMaskImage: "url('/proposal/cover/photo-mask-1.png')",
+                WebkitMaskRepeat: "no-repeat",
+                WebkitMaskPosition: "right top",
+                WebkitMaskSize: "contain",
+
+                maskImage: "url('/proposal/cover/photo-mask-1.png')",
+                maskRepeat: "no-repeat",
+                maskPosition: "right top",
+                maskSize: "contain",
+              }}
+            >
+              <Image
+                src={data.scopeImage}
+                alt="Scope Cover"
+                fill
+                className="object-cover"
+                style={{
+                  transform: `
+            translate(
+              ${data.scopeImagePositionX ?? 0}px,
+              ${data.scopeImagePositionY ?? 0}px
+            )
+            scale(${data.scopeImageScale ?? 1})
+          `,
+                  transformOrigin: "center center",
+                }}
+              />
+            </div>
+          ) : (
+            <Image
+              src="/proposal/cover/photo-mask-1.png"
+              alt="Scope Cover Placeholder"
+              fill
+              className="object-contain object-right-top"
+            />
+          )}
         </div>
 
         {/* Title */}
@@ -86,21 +131,37 @@ export default function ScopePage({ data }: Props) {
         </div>
 
         {/* Strategic Package */}
+        {/* Strategic Partnership Package */}
         <div className="price-card">
+          {/* LEFT — Final Client Price */}
           <div className="price-left">
-            <p>STRATEGIC PARTNERSHIP PACKAGE</p>
+            <p className="price-package-name">{data.packageName}</p>
 
-            <h2>PRICE</h2>
-
-            <div className="price-row">
-              <span className="currency">VND</span>
-              <small>(Preferred Client Rate)</small>
+            <div className="final-price">
+              <span>{data.totalPrice}</span>
+              {/* <small>VND</small> */}
             </div>
+
+            <p className="preferred-rate">(Preferred Client Rate)</p>
           </div>
 
-          <div className="discount-box">
-            <TicketPercent size={22} />
-            <strong>0%</strong>
+          {/* RIGHT — Discount */}
+          <div className="discount-area">
+            <div className="discount-box">
+              <div className="discount-top">
+                <TicketPercent size={26} />
+
+                <strong>{data.discount}%</strong>
+
+                <span>DISCOUNT</span>
+              </div>
+
+              <div className="original-price">
+                {data.originalPrice} {data.currency}
+              </div>
+
+              {/* <div className="original-price">{data.originalPrice} VND</div> */}
+            </div>
           </div>
         </div>
 
@@ -109,11 +170,9 @@ export default function ScopePage({ data }: Props) {
           <h3>PAYMENT TERMS</h3>
 
           <ul>
-            <li>50% deposit required to initiate the project.</li>
-            <li>50% final payment upon completion.</li>
-            <li>Additional work will be quoted separately.</li>
-            <li>Text</li>
-            <li>Text</li>
+            {data.paymentTerms.map((term, index) => (
+              <li key={index}>{term}</li>
+            ))}
           </ul>
         </div>
       </div>

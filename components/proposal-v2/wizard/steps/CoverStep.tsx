@@ -93,13 +93,13 @@ export default function CoverStep({ data, onChange }: Props) {
 
         <UploadImage
           title="Partner Logo"
-          image={data.clientLogo}
+          image={data.clientLogo ?? undefined}
           onChange={(url) => update("clientLogo", url)}
         />
 
         <UploadImage
           title="Cover Image"
-          image={data.coverImage}
+          image={data.coverImage ?? undefined}
           onChange={(url) => update("coverImage", url)}
         />
 
@@ -112,12 +112,30 @@ export default function CoverStep({ data, onChange }: Props) {
 
             <input
               type="range"
-              min={-50}
-              max={50}
+              min={-300}
+              max={300}
+              step={1}
               value={data.coverPositionX ?? 0}
               onChange={(e) => update("coverPositionX", Number(e.target.value))}
               className="w-full accent-[#103663]"
             />
+
+            <div>
+              <div className="mb-1 flex justify-between">
+                <span>Zoom</span>
+                <span>{Math.round((data.coverScale ?? 1.15) * 100)}%</span>
+              </div>
+
+              <input
+                type="range"
+                min={0.4}
+                max={3}
+                step={0.01}
+                value={data.coverScale ?? 1.15}
+                onChange={(e) => update("coverScale", Number(e.target.value))}
+                className="w-full accent-[#103663]"
+              />
+            </div>
           </div>
 
           <div>

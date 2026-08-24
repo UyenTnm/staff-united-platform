@@ -143,28 +143,18 @@
   font-weight: 700;
 }
 
-.discount-box {
-  background: #e8eef8;
-  border-radius: 12px;
-  padding: 14px 18px;
-  color: #053f7c;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.percent {
+/* .percent {
   display: flex;
   align-items: flex-end;
   gap: 4px;
   font-size: 34px;
   font-weight: 800;
-}
+} */
 
-.percent small {
+/* .percent small {
   font-size: 15px;
   margin-bottom: 5px;
-}
+} */
 
 /* Payment */
 
@@ -190,18 +180,226 @@
   margin-bottom: 2px;
 }
 
+.original-price span {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.original-price strong {
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+/* ================================
+   RATE RIGHT
+================================ */
+
 .rate-right {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 14px;
 }
 
-.total-label {
-  color: white;
+/* ================================
+   DISCOUNT BOX
+   3 COLUMNS:
+   ICON | PERCENT | OFF
+================================ */
+
+.discount-box {
+  width: 195px;
+  height: 60px;
+
+  background: #e8f0fd;
+  border-radius: 10px;
+
+  display: grid;
+
+  grid-template-columns: 42px 1fr 42px;
+
+  align-items: center;
+  justify-items: center;
+
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  color: #0b4f95;
+}
+
+/* ================================
+   COLUMN 1 — TICKET ICON
+================================ */
+
+.discount-box svg {
+  width: 24px;
+  height: 24px;
+
+  color: #5aa4df;
+
+  display: block;
+
+  position: static;
+
+  flex-shrink: 0;
+}
+
+/* ================================
+   COLUMN 2 — 10 %
+================================ */
+
+.discount-percent {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+
+  white-space: nowrap;
+
+  line-height: 1;
+}
+
+.discount-percent strong {
+  font-size: 30px;
+  font-weight: 800;
+
+  color: #0b4f95;
+
+  line-height: 1;
+}
+
+.discount-percent span {
+  margin-left: 2px;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  color: #0b4f95;
+
+  line-height: 1;
+}
+
+/* ================================
+   COLUMN 3 — OFF
+================================ */
+
+.discount-off {
   font-size: 16px;
   font-weight: 700;
+
+  color: #5aa4df;
+
+  white-space: nowrap;
+
+  line-height: 1;
+}
+
+/* ================================
+   ORIGINAL PRICE LABEL
+================================ */
+
+.total-label {
+  margin: 0;
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
   text-align: center;
-  opacity: 0.95;
+
+  line-height: 1.2;
+
   text-decoration: line-through;
+  text-decoration-thickness: 1px;
+
+  opacity: 0.95;
+}
+
+/* =========================================
+   FORCE DISCOUNT TO HORIZONTAL 3-COLUMN ROW
+========================================= */
+
+.rate-right .discount-box {
+  width: 195px !important;
+  min-width: 195px !important;
+  height: 60px !important;
+
+  display: grid !important;
+  grid-template-columns: 38px 1fr 38px !important;
+
+  flex-direction: row !important;
+
+  align-items: center !important;
+  justify-items: center !important;
+
+  gap: 0 !important;
+
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+
+  background: #e8f0fd !important;
+  border-radius: 10px !important;
+}
+
+/* ICON */
+.rate-right .discount-box svg {
+  width: 24px !important;
+  height: 24px !important;
+
+  color: #5aa4df !important;
+
+  margin: 0 !important;
+}
+
+/* 10 % */
+.rate-right .discount-percent {
+  display: flex !important;
+
+  flex-direction: row !important;
+
+  align-items: baseline !important;
+  justify-content: center !important;
+
+  white-space: nowrap !important;
+
+  line-height: 1 !important;
+}
+
+.rate-right .discount-percent strong {
+  font-size: 30px !important;
+  font-weight: 800 !important;
+
+  color: #0b4f95 !important;
+
+  line-height: 1 !important;
+}
+
+.rate-right .discount-percent span {
+  margin-left: 2px !important;
+
+  font-size: 18px !important;
+  font-weight: 800 !important;
+
+  color: #0b4f95 !important;
+
+  line-height: 1 !important;
+}
+
+/* OFF */
+.rate-right .discount-off {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+
+  color: #5aa4df !important;
+
+  white-space: nowrap !important;
+
+  line-height: 1 !important;
 }

@@ -86,11 +86,7 @@ export default function NextStepsPage({ data }: Props) {
 
         {/* Message */}
         <div className="closing-message">
-          <p>
-            We look forward to supporting Vietnam LifeScience in strengthening
-            its brand visibility, professional market presence, and business
-            development across physical and digital channels.
-          </p>
+          <p>{data.closingMessage}</p>
         </div>
 
         {/* Footer */}

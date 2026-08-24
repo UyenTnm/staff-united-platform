@@ -36,16 +36,12 @@ export default function CoverPage({ data }: Props) {
         />
       </div>
 
-      {/* Right Curved Image */}
-
-      {/* RIGHT LEAF IMAGE */}
-      {/* RIGHT LEAF IMAGE */}
       {/* RIGHT LEAF IMAGE */}
       <div className="absolute inset-y-0 right-0 w-[80%]">
         <div className="absolute right-0 top-0 h-[65%] w-[70%]">
           {/* Ảnh */}
           <div
-            className="absolute inset-0 z-10"
+            className="absolute inset-0 overflow-hidden"
             style={{
               WebkitMaskImage: "url('/proposal/cover/photo-mask.png')",
               WebkitMaskRepeat: "no-repeat",
@@ -53,24 +49,34 @@ export default function CoverPage({ data }: Props) {
               WebkitMaskSize: "100% 100%",
               maskImage: "url('/proposal/cover/photo-mask.png')",
               maskRepeat: "no-repeat",
-              maskPosition: "center",
+              maskPosition: "right top",
               maskSize: "100% 100%",
             }}
           >
-            <div
-              className="absolute inset-0"
-              style={{
-                transform: `translate(${data.coverPositionX ?? 0}px, ${data.coverPositionY ?? 0}px) scale(${data.coverScale ?? 1.15})`,
-                transformOrigin: "center",
-              }}
-            >
-              <Image
-                src={data.coverImage}
-                alt=""
-                fill
-                className="object-cover"
-              />
-            </div>
+            {data.coverImage?.trim() ? (
+              <div
+                className="absolute"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  transform: `
+          translate(
+            ${data.coverPositionX ?? 0}px,
+            ${data.coverPositionY ?? 0}px
+          )
+          scale(${data.coverScale ?? 1.15})
+        `,
+                  transformOrigin: "center center",
+                }}
+              >
+                <Image
+                  src={data.coverImage}
+                  alt="Cover Image"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            ) : null}
           </div>
 
           {/* Border */}
@@ -127,7 +133,7 @@ export default function CoverPage({ data }: Props) {
           </div>
           <div className="h-12 w-px bg-[#5DAEFF]" />
           <div className="flex items-center">
-            <div className="relative h-[58px] w-[120px] flex items-center justify-center">
+            <div className="relative h-[70px] w-[140px] flex items-center justify-center">
               {data.clientLogo ? (
                 <Image
                   src={data.clientLogo}
