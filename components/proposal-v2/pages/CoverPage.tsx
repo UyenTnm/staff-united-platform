@@ -120,31 +120,37 @@ export default function CoverPage({ data }: Props) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col px-11 py-10 text-white">
+      <div className="relative z-10 scope-main flex h-full flex-col text-white">
         {/* Logos */}
-        <div className="flex w-[56%] items-center gap-4">
-          <div className="flex h-[70px] w-[140px] items-center justify-center rounded-lg ">
+        {/* Logos */}
+        <div className="cover-logo-group">
+          {/* STAFF LOGO */}
+          <div className="cover-logo-slot">
             <Image
-              src="/proposal/cover/logo.png"
+              src="/logo.png"
               alt="STAFF United"
-              width={158}
-              height={72}
+              fill
+              sizes="140px"
+              className="cover-logo-image"
             />
           </div>
-          <div className="h-12 w-px bg-[#5DAEFF]" />
-          <div className="flex items-center">
-            <div className="relative h-[70px] w-[140px] flex items-center justify-center">
-              {data.clientLogo ? (
-                <Image
-                  src={data.clientLogo}
-                  alt="Client Logo"
-                  fill
-                  className="object-contain"
-                />
-              ) : (
-                <span className="text-[10px] text-white/60">CLIENT LOGO</span>
-              )}
-            </div>
+
+          {/* DIVIDER */}
+          <div className="cover-logo-divider" />
+
+          {/* CLIENT LOGO */}
+          <div className="cover-logo-slot">
+            {data.clientLogo ? (
+              <Image
+                src={data.clientLogo}
+                alt="Client Logo"
+                fill
+                sizes="140px"
+                className="cover-logo-image"
+              />
+            ) : (
+              <span className="cover-client-placeholder">CLIENT LOGO</span>
+            )}
           </div>
         </div>
 

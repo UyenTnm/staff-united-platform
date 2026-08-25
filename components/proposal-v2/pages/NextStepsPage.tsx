@@ -26,40 +26,41 @@ export default function NextStepsPage({ data }: Props) {
       <div className="content">
         {/* Header */}
         {/* ---------- HEADER ---------- */}
-        <div className="header-equation">
+        {/* HEADER */}
+        <div className="next-logo-equation">
           {/* STAFF */}
-          <Image
-            src="/proposal/cover/logo.png"
-            alt="STAFF"
-            width={158}
-            height={72}
-          />
+          <div className="next-logo-slot">
+            <Image
+              src="/logo.png"
+              alt="STAFF United"
+              fill
+              sizes="140px"
+              className="next-logo-image"
+            />
+          </div>
 
           {/* + */}
-          <div className="operator">+</div>
+          <div className="next-operator">+</div>
 
           {/* CLIENT */}
-          <div className="client-logo">
+          <div className="next-logo-slot">
             {data.clientLogo ? (
               <Image
                 src={data.clientLogo}
-                alt="Client"
-                width={158}
-                height={72}
-                className="object-contain"
+                alt="Client Logo"
+                fill
+                sizes="140px"
+                className="next-logo-image"
               />
             ) : (
-              <>
-                <span>PARTNER COMPANY</span>
-                <span>LOGO HERE</span>
-              </>
+              <span className="next-client-placeholder">PARTNER COMPANY</span>
             )}
           </div>
 
           {/* = */}
-          <div className="operator">=</div>
+          <div className="next-operator">=</div>
 
-          {/* Result */}
+          {/* RESULT */}
           <div className="authority">
             <span>SCALABLE</span>
             <span>INDUSTRY</span>

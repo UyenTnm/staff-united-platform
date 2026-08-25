@@ -25,34 +25,38 @@ export default function ScopePage({ data }: Props) {
       <div className="scope-content">
         {/* Header */}
         <div className="header">
-          <div className="flex items-center gap-4">
-            <Image
-              src="/proposal/cover/logo.png"
-              alt="STAFF United"
-              width={158}
-              height={72}
-            />
+          <div className="scope-logo-group">
+            {/* STAFF LOGO */}
+            <div className="scope-logo-slot">
+              <Image
+                src="/logo.png"
+                alt="STAFF United"
+                fill
+                sizes="140px"
+                className="scope-logo-image"
+              />
+            </div>
 
-            <div className="divider" />
+            {/* DIVIDER */}
+            <div className="scope-logo-divider" />
 
-            <div className="relative h-[58px] w-[120px]">
+            {/* CLIENT LOGO */}
+            <div className="scope-logo-slot">
               {data.clientLogo ? (
                 <Image
                   src={data.clientLogo}
                   alt="Client Logo"
                   fill
-                  className="object-contain"
+                  sizes="140px"
+                  className="scope-logo-image"
                 />
               ) : (
-                <div className="flex h-full items-center">
-                  <span className="text-[9px] text-white/60">CLIENT LOGO</span>
-                </div>
+                <span className="scope-client-placeholder">CLIENT LOGO</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Top Right Image */}
         {/* Top Right Image */}
         <div className="hero-image">
           {data.scopeImage ? (

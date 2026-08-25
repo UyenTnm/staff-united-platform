@@ -74,12 +74,19 @@ export default function ProposalRenderer({
 
       {currentStep === 2 && (
         <PricingPage
-          data={pricing}
+          data={{ ...pricing, clientLogo: cover.clientLogo }}
           onOverflowChange={onPricingOverflowChange}
         />
       )}
 
-      {currentStep === 3 && <PartnershipPage data={partnership} />}
+      {currentStep === 3 && (
+        <PartnershipPage
+          data={{
+            ...partnership,
+            clientLogo: cover.clientLogo,
+          }}
+        />
+      )}
 
       {currentStep === 4 && (
         <NextStepsPage

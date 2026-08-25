@@ -1,36 +1,69 @@
-/* ===== Header ===== */
+/* =========================
+   NEXT STEPS LOGO EQUATION
+   ========================= */
 
-.header-equation {
-  display: grid;
-  grid-template-columns: 158px 28px 395px 28px 1fr;
+.next-logo-equation {
+  display: flex;
   align-items: center;
-  column-gap: 10px;
+  justify-content: center;
+  width: 100%;
 }
 
-.operator {
-  text-align: center;
+/* STAFF + CLIENT LOGO SLOTS */
+.next-logo-slot {
+  position: relative;
+
+  width: 140px;
+  height: 70px;
+
+  flex: 0 0 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+/* Logo */
+.next-logo-image {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+/* + and = */
+.next-operator {
+  width: 34px;
+  flex: 0 0 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   color: #ffffff;
   font-size: 28px;
   font-weight: 700;
   line-height: 1;
+
+  margin: 0 28px;
 }
 
-.client-logo {
-  width: 158px;
-  height: 72px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  color: #ffffff;
+/* Client placeholder */
+.next-client-placeholder {
   font-size: 10px;
   font-weight: 700;
-  line-height: 1.45;
   letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
 }
 
+/* SCALABLE INDUSTRY AUTHORITY */
 .authority {
+  margin-left: 28px;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -52,7 +85,7 @@
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 40px;
+  padding: 34px 36px;
   display: flex;
   flex-direction: column;
 }

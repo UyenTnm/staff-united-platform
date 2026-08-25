@@ -82,26 +82,32 @@ export default function PricingPage({ data, onOverflowChange }: Props) {
         {/* HEADER */}
         <div className="pricing-header">
           <div className="partner-wrap">
-            <Image
-              src="/proposal/cover/logo.png"
-              alt="logo"
-              width={158}
-              height={72}
-            />
+            {/* STAFF LOGO */}
+            <div className="logo-slot">
+              <Image
+                src="/logo.png"
+                alt="STAFF United"
+                fill
+                sizes="140px"
+                className="logo-image"
+              />
+            </div>
 
+            {/* DIVIDER */}
             <div className="partner-line" />
 
-            <div className="relative h-[58px] w-[120px]">
+            {/* CLIENT LOGO */}
+            <div className="logo-slot">
               {data.clientLogo ? (
                 <Image
                   src={data.clientLogo}
                   alt="Client Logo"
                   fill
-                  sizes="120px"
-                  className="object-contain"
+                  sizes="140px"
+                  className="logo-image"
                 />
               ) : (
-                <span className="text-[9px] text-white/60">CLIENT LOGO</span>
+                <span className="client-placeholder">CLIENT LOGO</span>
               )}
             </div>
           </div>

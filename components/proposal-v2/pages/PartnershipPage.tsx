@@ -35,31 +35,37 @@ export default function PartnershipPage({ data }: Props) {
 
       <div className="partnership-content">
         {/* HEADER */}
+        {/* HEADER */}
         <div className="header">
-          <div className="logo-group">
-            <Image
-              src="/proposal/cover/logo.png"
-              alt="STAFF"
-              width={158}
-              height={72}
-            />
+          <div className="partnership-logo-group">
+            {/* STAFF LOGO */}
+            <div className="partnership-logo-slot">
+              <Image
+                src="/logo.png"
+                alt="STAFF United"
+                fill
+                sizes="140px"
+                className="partnership-logo-image"
+              />
+            </div>
 
-            <div className="divider" />
+            {/* DIVIDER */}
+            <div className="partnership-logo-divider" />
 
-            <div className="client-logo">
+            {/* CLIENT LOGO */}
+            <div className="partnership-logo-slot">
               {data.clientLogo ? (
                 <Image
                   src={data.clientLogo}
-                  alt="Client"
-                  width={158}
-                  height={72}
-                  className="object-contain"
+                  alt="Client Logo"
+                  fill
+                  sizes="140px"
+                  className="partnership-logo-image"
                 />
               ) : (
-                <>
-                  <span>PARTNER COMPANY</span>
-                  <span>LOGO HERE</span>
-                </>
+                <span className="partnership-client-placeholder">
+                  PARTNER COMPANY
+                </span>
               )}
             </div>
           </div>

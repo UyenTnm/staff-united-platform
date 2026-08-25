@@ -8,19 +8,13 @@
   position: relative;
   z-index: 5;
   height: 100%;
-  padding: 34px;
+  padding: 34px 36px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.divider {
-  width: 1px;
-  height: 42px;
-  background: #68b7ff;
 }
 
 .partner {
@@ -364,4 +358,59 @@
   padding-left: 18px;
   line-height: 1.8;
   font-size: 14px;
+}
+
+/* =========================
+   LOGO HEADER
+   ========================= */
+
+.scope-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* STAFF + CLIENT đều có cùng một vùng cố định */
+.scope-logo-slot {
+  position: relative;
+
+  width: 140px;
+  height: 70px;
+
+  flex: 0 0 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+/* Logo luôn nằm giữa vùng của nó */
+.scope-logo-image {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Divider luôn nằm chính giữa */
+.scope-logo-divider {
+  width: 1px;
+  height: 42px;
+
+  flex: 0 0 1px;
+
+  margin-left: 28px;
+  margin-right: 18px;
+
+  background: #68b7ff;
+}
+
+/* Placeholder */
+.scope-client-placeholder {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
 }
