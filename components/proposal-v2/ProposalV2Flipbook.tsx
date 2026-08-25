@@ -236,7 +236,7 @@ export default function ProposalV2Flipbook({ pages }: Props) {
           </div>
         </HTMLFlipBook>
       </div>
-      <p className="text-xs mt-10 text-slate-400">
+      <p className="text-xs mt-2 mb-2 text-slate-400">
         Click or drag the corner of the page to flip
       </p>
       <ProposalPdfDownload pages={pages} />
