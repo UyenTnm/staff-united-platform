@@ -9,6 +9,7 @@ import { WireTransferUSD } from "@/components/wire-transfer-usd";
 import { ResendProposalLink } from "@/components/resend-proposal-link";
 import { BillingInfoForm } from "@/components/billing-info-form";
 import { ProposalTemplateFlipbook } from "@/components/proposal-template-flipbook";
+import ProposalV2Flipbook from "@/components/proposal-v2/ProposalV2Flipbook";
 import { ProposalFlipbook } from "@/components/proposal-flipbook";
 // import { formatCurrency } from "@/lib/format-currency";
 
@@ -205,26 +206,23 @@ export default function PublicProposalPage() {
     (quote.proposal_status === "accepted" && !quote.selection_unlocked);
 
   return (
-    <div className="min-h-screen bg-slate-100 py-10 px-4">
+    <div className="min-h-screen bg-slate-100 py-6 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Template Flipbook — trang bìa (logo khách) + trang dịch vụ,
             tự sinh theo template thống nhất, không cần upload PDF. */}
         {quote.proposal_pdf_url ? (
-          // Ưu tiên PDF (Canva) nếu đã upload — bản chính đang dùng
           <ProposalFlipbook pdfUrl={quote.proposal_pdf_url} />
+        ) : quote.template_version === "v2" ? (
+          <ProposalV2Flipbook pages={customPages} />
         ) : (
-          // Dự phòng: chưa có PDF thì tự sinh template (đang phát
-          // triển thêm, tạm chưa hoàn thiện layout)
           <ProposalTemplateFlipbook
             companyName={quote.company_name}
             contactName={quote.contact_name}
             proposalTitle={quote.title}
             clientLogoUrl={quote.client_logo_url}
             coverImageUrl={quote.cover_image_url}
-            fontHeading={quote.font_heading}
-            fontBody={quote.font_body}
-            mandatoryItems={items.filter((i) => !i.is_optional)}
-            currencySymbol={currencySymbol}
+            mandatoryItems={items}
+            currencySymbol={quote.currency === "USD" ? "$" : "₫"}
             customPages={customPages}
           />
         )}

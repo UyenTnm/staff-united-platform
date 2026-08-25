@@ -279,7 +279,7 @@ export default function ScopeStep({ data, onChange }: Props) {
           </label>
 
           <div className="rounded-xl border border-[#D5DADF] bg-[#F4F7FB] px-4 py-3 font-semibold text-[#103663]">
-            {data.originalPrice || "0"} VND
+            {data.originalPrice || "0"} {data.currency}
           </div>
 
           <p className="mt-1 text-xs text-[#718096]">
@@ -315,7 +315,7 @@ export default function ScopeStep({ data, onChange }: Props) {
           </label>
 
           <div className="rounded-xl border border-[#D5DADF] bg-[#F4F7FB] px-4 py-3 font-semibold text-[#103663]">
-            {data.totalPrice} VND
+            {data.totalPrice} {data.currency}
           </div>
 
           <p className="mt-1 text-xs text-[#718096]">

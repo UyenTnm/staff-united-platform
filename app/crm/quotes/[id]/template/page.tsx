@@ -8,7 +8,7 @@ import { AppLayout } from "@/components/app-layout";
 
 import { Quote, getQuote } from "@/lib/crm/quotes";
 import { QuoteItem, getQuoteItems } from "@/lib/crm/quote-items";
-import { ProposalWizard } from "@/components/proposal-winzard";
+import ProposalWizard from "@/components/proposal-v2/wizard/ProposalWizard";
 
 // Trang riêng — "Create Proposal with STAFF United Template".
 // Chỉ còn nhiệm vụ load dữ liệu quote/items rồi giao hết cho
@@ -53,7 +53,7 @@ export default function QuoteTemplatePage() {
 
   return (
     <AppLayout>
-      <ProposalWizard quote={quote} items={items} onQuoteRefresh={loadAll} />
+      <ProposalWizard quote={quote} items={items} />
     </AppLayout>
   );
 }

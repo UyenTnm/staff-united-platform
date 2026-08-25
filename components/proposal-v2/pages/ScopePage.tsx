@@ -128,7 +128,9 @@ export default function ScopePage({ data }: Props) {
               </div>
 
               <div className="right">
-                <span>{item.price}</span>
+                <span>
+                  {item.price} {data.currency}
+                </span>
               </div>
             </div>
           ))}
@@ -143,7 +145,7 @@ export default function ScopePage({ data }: Props) {
 
             <div className="final-price">
               <span>{data.totalPrice}</span>
-              {/* <small>VND</small> */}
+              <small>{data.currency}</small>
             </div>
 
             <p className="preferred-rate">(Preferred Client Rate)</p>

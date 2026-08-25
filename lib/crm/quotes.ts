@@ -30,6 +30,8 @@ export interface Quote {
   status: string;
   created_at: string;
 
+  template_version: "legacy" | "v2";
+
   public_token: string;
   proposal_status: ProposalStatus;
   sent_at: string | null;
@@ -89,8 +91,14 @@ export async function createQuote(data: {
   title: string;
   notes: string;
   customer_market: CustomerMarket;
+
+  currency: "VND" | "USD";
+  currency_code: "VND" | "USD";
+
   payment_type?: PaymentType;
   items: NewQuoteItemInput[];
+
+  template_version?: "legacy" | "v2";
 }) {
   const totalAmount = data.items.reduce(
     (sum, item) => sum + item.quantity * item.unit_price,
@@ -129,10 +137,13 @@ export async function createQuote(data: {
       notes: data.notes,
       amount: totalAmount,
       customer_market: data.customer_market,
+      currency: data.currency,
+      currency_code: data.currency_code,
       payment_type: data.payment_type ?? "full",
       created_by: createdByEmployeeId,
       status: "Draft",
       proposal_status: "draft",
+      template_version: data.template_version ?? "legacy",
     })
     .select()
     .single();
@@ -728,4 +739,19 @@ export async function uploadProposalPdf(
   }
 
   return publicUrl;
+}
+
+export async function setQuoteTemplateVersion(
+  quoteId: string,
+  version: "legacy" | "v2",
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({ template_version: version })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("setQuoteTemplateVersion error:", error);
+    throw error;
+  }
 }

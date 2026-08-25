@@ -15,10 +15,15 @@ import { useEffect, useRef, useState } from "react";
 
 interface Props {
   data: PricingPageData;
+  pageNumber?: string;
   onOverflowChange?: (overflow: boolean) => void;
 }
 
-export default function PricingPage({ data, onOverflowChange }: Props) {
+export default function PricingPage({
+  data,
+  pageNumber = "01",
+  onOverflowChange,
+}: Props) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const bottomCardsRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -113,7 +118,7 @@ export default function PricingPage({ data, onOverflowChange }: Props) {
           </div>
 
           <div className="page-info">
-            <div className="page-number">03</div>
+            <div className="page-number">{pageNumber}</div>
 
             <div className="page-label">
               PROJECT

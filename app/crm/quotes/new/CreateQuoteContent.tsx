@@ -61,6 +61,8 @@ export default function CreateQuotePage() {
         title: title.trim(),
         notes,
         customer_market: customerMarket,
+        currency: customerMarket === "international" ? "USD" : "VND",
+        currency_code: customerMarket === "international" ? "USD" : "VND",
         payment_type: paymentType,
         items: [], // Chưa có dịch vụ nào — sẽ thêm ở trang chi tiết
       });

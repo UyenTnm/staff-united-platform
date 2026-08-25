@@ -74,7 +74,7 @@ export default function PackageStep({
 
         <input
           type="text"
-          value={data.packageTitle}
+          value={data.packageTitle ?? ""}
           onChange={(e) => update("packageTitle", e.target.value)}
           placeholder="Business Process Optimisation"
           className="w-full rounded-2xl border border-[#D5DADF] bg-white px-5 py-4 text-lg outline-none transition focus:border-[#4F8DC9]"
@@ -196,16 +196,9 @@ export default function PackageStep({
             className="flex-1 rounded-2xl border border-[#D5DADF] bg-white px-5 py-4 text-lg outline-none transition focus:border-[#4F8DC9]"
           />
 
-          <select
-            value={data.currency}
-            onChange={(e) =>
-              update("currency", e.target.value as "VND" | "USD")
-            }
-            className="w-32 rounded-2xl border border-[#D5DADF] bg-white px-4 py-4 text-lg outline-none"
-          >
-            <option value="VND">VND</option>
-            <option value="USD">USD</option>
-          </select>
+          <div className="flex w-32 items-center justify-center rounded-2xl border border-[#D5DADF] bg-[#F3F6FA] px-4 py-4 text-lg font-semibold text-[#123B68]">
+            {data.currency}
+          </div>
         </div>
       </div>
     </div>
