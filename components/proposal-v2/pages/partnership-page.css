@@ -212,6 +212,16 @@
   margin-bottom: 2px;
 }
 
+.original-price {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
 .original-price span {
   font-size: 11px;
   font-weight: 600;
@@ -231,12 +241,27 @@
    RATE RIGHT
 ================================ */
 
-.rate-right {
+/* .rate-right {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 14px;
+} */
+
+.rate-right {
+  width: 195px;
+  min-width: 195px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  flex: 0 0 195px;
 }
 
 /* ================================
@@ -245,7 +270,7 @@
    ICON | PERCENT | OFF
 ================================ */
 
-.discount-box {
+/* .discount-box {
   width: 195px;
   height: 60px;
 
@@ -264,6 +289,28 @@
   box-sizing: border-box;
 
   color: #0b4f95;
+} */
+
+.discount-box {
+  width: 195px;
+  min-width: 195px;
+  height: 60px;
+
+  background: #e8f0fd;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* gap: 10px; */
+
+  padding: 0 12px;
+  box-sizing: border-box;
+
+  color: #0b4f95;
+
+  flex-shrink: 0;
 }
 
 /* ================================
@@ -363,7 +410,7 @@
   min-width: 195px !important;
   height: 60px !important;
 
-  display: grid !important;
+  /* display: grid !important; */
   grid-template-columns: 38px 1fr 38px !important;
 
   flex-direction: row !important;
@@ -388,19 +435,18 @@
   color: #5aa4df !important;
 
   margin: 0 !important;
+
+  flex: 0 0 24px;
 }
 
 /* 10 % */
 .rate-right .discount-percent {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex !important;
-
-  flex-direction: row !important;
-
   align-items: baseline !important;
   justify-content: center !important;
-
   white-space: nowrap !important;
-
   line-height: 1 !important;
 }
 
@@ -426,6 +472,8 @@
 
 /* OFF */
 .rate-right .discount-off {
+  flex: 0 0 auto;
+
   font-size: 16px !important;
   font-weight: 700 !important;
 

@@ -118,7 +118,7 @@ export default function PartnershipPage({ data }: Props) {
                   <TicketPercent size={24} strokeWidth={2} />
 
                   <div className="discount-percent">
-                    <strong>{data.discount}</strong>
+                    <strong>{data.discount} %</strong>
                   </div>
 
                   <span className="discount-off">Off</span>
