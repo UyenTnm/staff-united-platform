@@ -1,0 +1,205 @@
+/* =========================
+   NEXT STEPS LOGO EQUATION
+   ========================= */
+
+.next-logo-equation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* STAFF + CLIENT LOGO SLOTS */
+.next-logo-slot {
+  position: relative;
+
+  width: 140px;
+  height: 70px;
+
+  flex: 0 0 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+/* Logo */
+.next-logo-image {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+/* + and = */
+.next-operator {
+  width: 34px;
+  flex: 0 0 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+
+  margin: 0 28px;
+}
+
+/* Client placeholder */
+.next-client-placeholder {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
+/* SCALABLE INDUSTRY AUTHORITY */
+.authority {
+  margin-left: 28px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.next-page {
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 34px 36px;
+  display: flex;
+  flex-direction: column;
+}
+
+.wave-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+.title {
+  margin-top: 72px;
+  display: flex;
+  justify-content: center;
+}
+
+.title h1 {
+  font-family: "Poppins", sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff; /* trắng toàn bộ */
+  text-align: center;
+  white-space: nowrap; /* không rớt dòng */
+  line-height: 1;
+}
+
+.steps {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.step {
+  width: 300px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.step strong {
+  display: block;
+  font-size: 15px;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.step p {
+  color: #ffffff;
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+/* ----- Closing Message ----- */
+
+.closing-message {
+  margin-top: 120px; /* khoảng cách từ Steps xuống */
+  display: flex;
+  justify-content: center;
+}
+
+.closing-message p {
+  max-width: 660px;
+  text-align: center;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* ----- Footer ----- */
+
+.footer {
+  margin-top: 150px; /* khoảng trắng lớn như Figma */
+  text-align: center;
+  border-top: none;
+  padding-top: 0;
+}
+
+.footer h3 {
+  color: #67b8ff;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.contact-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.contact-row span:last-child {
+  text-decoration: underline;
+}
+
+.email {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+}

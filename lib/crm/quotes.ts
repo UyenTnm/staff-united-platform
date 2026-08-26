@@ -30,6 +30,8 @@ export interface Quote {
   status: string;
   created_at: string;
 
+  template_version: "legacy" | "v2";
+
   public_token: string;
   proposal_status: ProposalStatus;
   sent_at: string | null;
@@ -41,8 +43,15 @@ export interface Quote {
 
   proposal_pdf_url: string | null;
   client_logo_url: string | null;
+  cover_image_url: string | null;
+  font_heading: string | null;
+  font_body: string | null;
+  uploadCoverImage: string | null;
+  updateProposalFonts: string | null;
 
   customer_market: CustomerMarket | null;
+  package_discount_enabled: boolean;
+  package_discount_percent: number;
   currency: string | null;
   currency_code: string | null;
 
@@ -84,13 +93,28 @@ export async function createQuote(data: {
   title: string;
   notes: string;
   customer_market: CustomerMarket;
+
+  currency: "VND" | "USD";
+  currency_code: "VND" | "USD";
+
   payment_type?: PaymentType;
   items: NewQuoteItemInput[];
+
+  template_version?: "legacy" | "v2";
 }) {
-  const totalAmount = data.items.reduce(
+  const subtotal = data.items.reduce(
     (sum, item) => sum + item.quantity * item.unit_price,
     0,
   );
+
+  const packageDiscountEnabled = false;
+  const packageDiscountPercent = 0;
+
+  const discountAmount = packageDiscountEnabled
+    ? subtotal * (packageDiscountPercent / 100)
+    : 0;
+
+  const finalAmount = subtotal - discountAmount;
 
   // Ghi lại đúng nhân viên đang đăng nhập tạo quote này — dùng để
   // gửi thông báo đúng người khi khách xác nhận Billing Info sau này.
@@ -122,12 +146,17 @@ export async function createQuote(data: {
       contact_phone: data.contact_phone ?? null,
       title: data.title,
       notes: data.notes,
-      amount: totalAmount,
+      amount: finalAmount,
       customer_market: data.customer_market,
+      currency: data.currency,
+      currency_code: data.currency_code,
+      package_discount_enabled: packageDiscountEnabled,
+      package_discount_percent: packageDiscountPercent,
       payment_type: data.payment_type ?? "full",
       created_by: createdByEmployeeId,
       status: "Draft",
       proposal_status: "draft",
+      template_version: data.template_version ?? "legacy",
     })
     .select()
     .single();
@@ -383,6 +412,56 @@ export async function uploadClientLogo(
   }
 
   return publicUrl;
+}
+
+export async function uploadCoverImage(
+  quoteId: string,
+  file: File,
+): Promise<string> {
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${quoteId}/cover-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("proposals")
+    .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+  if (uploadError) {
+    console.error("Upload cover image error:", uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("proposals")
+    .getPublicUrl(filePath);
+
+  const publicUrl = publicUrlData.publicUrl;
+
+  const { error: updateError } = await supabase
+    .from("quotes")
+    .update({ cover_image_url: publicUrl })
+    .eq("id", quoteId);
+
+  if (updateError) {
+    console.error("Save cover image url error:", updateError);
+    throw updateError;
+  }
+
+  return publicUrl;
+}
+
+export async function updateProposalFonts(
+  quoteId: string,
+  data: { font_heading: string; font_body: string },
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update(data)
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("updateProposalFonts error:", error);
+    throw error;
+  }
 }
 
 function statusLabelFromProposalStatus(proposalStatus: string): string {
@@ -673,4 +752,48 @@ export async function uploadProposalPdf(
   }
 
   return publicUrl;
+}
+
+export async function setQuoteTemplateVersion(
+  quoteId: string,
+  version: "legacy" | "v2",
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({ template_version: version })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("setQuoteTemplateVersion error:", error);
+    throw error;
+  }
+}
+
+export async function updateQuotePricing(
+  quoteId: string,
+  data: {
+    amount: number;
+    package_discount_enabled: boolean;
+    package_discount_percent: number;
+  },
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({
+      amount: data.amount,
+      package_discount_enabled: data.package_discount_enabled,
+      package_discount_percent: data.package_discount_percent,
+    })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("updateQuotePricing error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+
+    throw error;
+  }
 }

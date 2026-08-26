@@ -50,6 +50,12 @@ export default async function QuotesPage() {
               <Button asChild variant="outline">
                 <Link href="/crm">Go to Leads to create a quote</Link>
               </Button>
+
+              {/* <Button asChild>
+                <Link href="/crm/quotes/new?existing=true">
+                  Create Quote for Existing Client
+                </Link>
+              </Button> */}
             </div>
 
             {/* Hàng 1 — tổng tiền, tách riêng VNĐ / USD (2 cột) */}

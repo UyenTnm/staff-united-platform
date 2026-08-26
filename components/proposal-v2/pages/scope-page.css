@@ -1,0 +1,416 @@
+.scope-page {
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.scope-content {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  padding: 34px 36px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.partner {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.page-number {
+  font-size: 10px;
+}
+
+.hero-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42%;
+  height: 260px;
+}
+
+.title-area {
+  margin-top: 42px;
+}
+
+.title-area h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 44px;
+  line-height: 1.05;
+  width: 320px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.scope-divider {
+  display: flex;
+  align-items: center;
+  margin-top: 28px;
+  width: 100%;
+  gap: 0;
+  max-width: 620px;
+}
+
+.scope-divider .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #58a8ff;
+  flex-shrink: 0;
+}
+
+.scope-divider .line {
+  height: 2px;
+  background: #58a8ff;
+}
+
+.scope-divider .left {
+  width: 135px; /* gạch trái */
+  /* margin: 0 8px; */
+}
+
+.scope-divider .right {
+  width: 130px; /* gạch phải */
+  /* margin: 0 8px; */
+}
+
+.scope-divider .label {
+  margin: 0 14px; /* Khoảng cách chỉ nằm ở text */
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.package-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.package-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px 20px;
+  min-height: 86px;
+
+  border-radius: 16px;
+
+  background-image: url("/proposal/cover/bg-scope-services.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  box-shadow: 0 0 0 1px rgba(90, 170, 255, 0.15) inset;
+}
+
+.package-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+}
+
+.package-card p {
+  margin-top: 4px;
+  font-size: 11px; /* 14 → 11 */
+  line-height: 1.35;
+  width: 260px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.right {
+  width: 120px;
+  text-align: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* =========================
+   STRATEGIC PARTNERSHIP
+   ========================= */
+
+.price-card {
+  margin-top: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 108px;
+
+  padding: 18px 20px;
+
+  border-radius: 18px;
+
+  background-image: url("/proposal/scope/bg-price-scope.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border: 1px solid rgba(88, 168, 255, 0.45);
+
+  color: #ffffff;
+
+  overflow: hidden;
+}
+
+/* =========================
+   LEFT SIDE
+   ========================= */
+
+.price-left {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+}
+
+.price-package-name {
+  margin-bottom: 6px;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 0.18em;
+  text-transform: none;
+
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Final price */
+
+.final-price {
+  display: flex;
+  align-items: baseline;
+
+  gap: 5px;
+
+  color: #ffffff;
+}
+
+.final-price span {
+  font-size: 30px;
+  line-height: 1;
+
+  font-weight: 800;
+  letter-spacing: -0.02em;
+
+  color: #ffffff;
+}
+
+.final-price small {
+  font-size: 12px;
+
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+/* Preferred client rate */
+
+.preferred-rate {
+  margin-top: 5px;
+
+  font-size: 9px;
+
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* =========================
+   RIGHT SIDE
+   ========================= */
+
+.discount-area {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-end;
+
+  gap: 7px;
+
+  margin-left: 20px;
+}
+
+/* White discount box */
+
+.discount-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 190px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #e8f0fd;
+  color: #0b4ea2;
+}
+
+.discount-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.discount-top strong {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.discount-top span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #4f8dc9;
+}
+
+/* .original-price {
+  margin-top: 5px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #52657d;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: #52657d;
+  white-space: nowrap;
+} */
+
+.discount-box svg {
+  flex-shrink: 0;
+
+  color: #0751a8;
+}
+
+/* Discount text */
+
+.discount-content {
+  display: flex;
+  align-items: baseline;
+
+  gap: 7px;
+}
+
+.discount-content strong {
+  font-size: 19px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  color: #0751a8;
+}
+
+.discount-content span {
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  color: #4f8dc9;
+}
+
+/* Original price */
+
+.original-price {
+  padding-right: 3px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  color: #4f8ecb;
+
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1.2px;
+  text-decoration-color: #4f8ecb;
+}
+
+.payment-box {
+  margin-top: 12px;
+  border-radius: 18px;
+  padding: 18px;
+  background: #0a2f63;
+  border: 1px solid rgba(104, 183, 255, 0.25);
+}
+
+.payment-box h3 {
+  color: #58a8ff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.payment-box ul {
+  padding-left: 18px;
+  line-height: 1.8;
+  font-size: 14px;
+}
+
+/* =========================
+   LOGO HEADER
+   ========================= */
+
+.scope-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* STAFF + CLIENT đều có cùng một vùng cố định */
+.scope-logo-slot {
+  position: relative;
+
+  width: 140px;
+  height: 70px;
+
+  flex: 0 0 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+/* Logo luôn nằm giữa vùng của nó */
+.scope-logo-image {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Divider luôn nằm chính giữa */
+.scope-logo-divider {
+  width: 1px;
+  height: 42px;
+
+  flex: 0 0 1px;
+
+  margin-left: 28px;
+  margin-right: 18px;
+
+  background: #68b7ff;
+}
+
+/* Placeholder */
+.scope-client-placeholder {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}

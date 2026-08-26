@@ -391,7 +391,10 @@ export default function QuoteDetailPage() {
                     </span>
                   ) : (
                     <Button asChild variant="outline">
-                      <Link href={`/crm/quotes/${quote.id}/template`}>
+                      <Link
+                        href={`/crm/quotes/${quote.id}/template`}
+                        target="_blank"
+                      >
                         Create with Template →
                       </Link>
                     </Button>

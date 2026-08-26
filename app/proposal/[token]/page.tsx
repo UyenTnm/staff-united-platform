@@ -9,6 +9,7 @@ import { WireTransferUSD } from "@/components/wire-transfer-usd";
 import { ResendProposalLink } from "@/components/resend-proposal-link";
 import { BillingInfoForm } from "@/components/billing-info-form";
 import { ProposalTemplateFlipbook } from "@/components/proposal-template-flipbook";
+import ProposalV2Flipbook from "@/components/proposal-v2/ProposalV2Flipbook";
 import { ProposalFlipbook } from "@/components/proposal-flipbook";
 // import { formatCurrency } from "@/lib/format-currency";
 
@@ -90,11 +91,85 @@ export default function PublicProposalPage() {
 
   // Không phân biệt mandatory/optional với khách — mọi dịch vụ đều
   // là 1 danh sách chọn tự do, tổng tiền = tổng các dịch vụ đã tick.
-  const selectedTotal = items
-    .filter((i) => selectedIds.has(i.id))
-    .reduce((sum, i) => sum + getItemTotal(i), 0);
+  const selectedItems = items.filter((i) => selectedIds.has(i.id));
 
-  const finalAmount = items.length > 0 ? selectedTotal : quote?.amount || 0;
+  /**
+   * 1. Subtotal — giá gốc của các services khách đã chọn
+   */
+  const selectedSubtotal = selectedItems.reduce(
+    (sum, item) => sum + getItemTotal(item),
+    0,
+  );
+
+  /**
+   * 2. Service discounts
+   */
+  const serviceDiscountTotal = selectedItems.reduce((sum, item) => {
+    if (!item.discount_enabled) return sum;
+
+    const itemTotal = getItemTotal(item);
+    const discountPercent = Number(item.discount_percent || 0);
+
+    return sum + (itemTotal * discountPercent) / 100;
+  }, 0);
+
+  /**
+   * 3. Tổng sau Service Discount
+   */
+  const afterServiceDiscount = selectedSubtotal - serviceDiscountTotal;
+
+  /**
+   * 4. Package Discount
+   *
+   * Package discount được tính trên giá sau Service Discount.
+   */
+  const isFullPackageSelected =
+    items.length > 0 && selectedIds.size === items.length;
+
+  const packageDiscountPercent =
+    quote?.package_discount_enabled && isFullPackageSelected
+      ? Number(quote.package_discount_percent || 0)
+      : 0;
+
+  const packageDiscountTotal =
+    (afterServiceDiscount * packageDiscountPercent) / 100;
+
+  /**
+   * 5. Tổng discount
+   */
+  const totalDiscount = serviceDiscountTotal + packageDiscountTotal;
+
+  const discountedServiceItems = selectedItems.filter(
+    (item) => item.discount_enabled && Number(item.discount_percent || 0) > 0,
+  );
+
+  const hasServiceDiscount = serviceDiscountTotal > 0;
+  const hasPackageDiscount = packageDiscountTotal > 0;
+
+  const singleServiceDiscountPercent =
+    discountedServiceItems.length === 1
+      ? Number(discountedServiceItems[0].discount_percent || 0)
+      : 0;
+
+  /**
+   * 6. FINAL TOTAL
+   */
+  const calculatedFinalAmount = afterServiceDiscount - packageDiscountTotal;
+
+  const finalAmount =
+    items.length > 0 ? Math.max(0, calculatedFinalAmount) : quote?.amount || 0;
+
+  const originalAmount =
+    items.length > 0 ? selectedSubtotal : quote?.amount || 0;
+
+  /**
+   * Effective discount percentage.
+   *
+   * Nếu có cả Service Discount + Package Discount,
+   * đây là % discount thực tế trên subtotal.
+   */
+  // const effectiveDiscountPercent =
+  //   selectedSubtotal > 0 ? (totalDiscount / selectedSubtotal) * 100 : 0;
 
   const isVietnamMarket = quote?.customer_market === "vietnam";
   const currencySymbol = isVietnamMarket ? "₫" : "$";
@@ -205,23 +280,23 @@ export default function PublicProposalPage() {
     (quote.proposal_status === "accepted" && !quote.selection_unlocked);
 
   return (
-    <div className="min-h-screen bg-slate-100 py-10 px-4">
+    <div className="min-h-screen bg-slate-100 py-6 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Template Flipbook — trang bìa (logo khách) + trang dịch vụ,
             tự sinh theo template thống nhất, không cần upload PDF. */}
         {quote.proposal_pdf_url ? (
-          // Ưu tiên PDF (Canva) nếu đã upload — bản chính đang dùng
           <ProposalFlipbook pdfUrl={quote.proposal_pdf_url} />
+        ) : quote.template_version === "v2" ? (
+          <ProposalV2Flipbook pages={customPages} />
         ) : (
-          // Dự phòng: chưa có PDF thì tự sinh template (đang phát
-          // triển thêm, tạm chưa hoàn thiện layout)
           <ProposalTemplateFlipbook
             companyName={quote.company_name}
             contactName={quote.contact_name}
             proposalTitle={quote.title}
             clientLogoUrl={quote.client_logo_url}
-            mandatoryItems={items.filter((i) => !i.is_optional)}
-            currencySymbol={currencySymbol}
+            coverImageUrl={quote.cover_image_url}
+            mandatoryItems={items}
+            currencySymbol={quote.currency === "USD" ? "$" : "₫"}
             customPages={customPages}
           />
         )}
@@ -383,28 +458,88 @@ export default function PublicProposalPage() {
             {/* Bảng tóm tắt điều khoản thanh toán — hiện RÕ trước khi
                 khách bấm Accept, tránh hiểu nhầm. */}
             <div className="rounded-lg bg-slate-50 p-4 text-sm">
-              <div className="flex justify-between font-medium text-slate-900">
+              {/* {totalDiscount > 0 && (
+                <div className="space-y-1">
+                  {hasServiceDiscount && (
+                    <div className="flex justify-between text-slate-500">
+                      <span>
+                        {discountedServiceItems.length === 1
+                          ? `Discount ${Math.round(singleServiceDiscountPercent)}%`
+                          : "Service Discounts"}
+                      </span>
+
+                      <span className="font-medium text-emerald-600">
+                        -{formatCurrency(serviceDiscountTotal, isVietnamMarket)}
+                      </span>
+                    </div>
+                  )}
+
+                  {hasPackageDiscount && (
+                    <div className="flex justify-between text-slate-500">
+                      <span>
+                        Package Discount {Math.round(packageDiscountPercent)}%
+                      </span>
+
+                      <span className="font-medium text-emerald-600">
+                        -{formatCurrency(packageDiscountTotal, isVietnamMarket)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )} */}
+
+              {/* <div className="mt-2 flex justify-between font-semibold text-slate-900">
                 <span>Total Amount</span>
+
                 <span>{formatCurrency(finalAmount, isVietnamMarket)}</span>
+              </div> */}
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-slate-500">
+                  <span>Original Total</span>
+                  <span className="line-through">
+                    {formatCurrency(originalAmount, isVietnamMarket)}
+                  </span>
+                </div>
+
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span>Total Discount</span>
+                    <span>
+                      -{formatCurrency(totalDiscount, isVietnamMarket)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold text-slate-900">
+                  <span>Total Amount</span>
+                  <span>{formatCurrency(finalAmount, isVietnamMarket)}</span>
+                </div>
               </div>
+
               <div className="mt-2 flex justify-between text-slate-500">
                 <span>Payment Terms</span>
+
                 <span className="font-medium text-slate-700">
                   {isDeposit
                     ? "50% Deposit + 50% on Completion"
                     : "Full payment (100%)"}
                 </span>
               </div>
+
               {isDeposit && (
                 <div className="mt-2 space-y-1 border-t border-slate-200 pt-2 text-xs text-slate-500">
                   <div className="flex justify-between">
                     <span>Deposit (50%) — due now</span>
+
                     <span>
                       {formatCurrency(depositAmount, isVietnamMarket)}
                     </span>
                   </div>
+
                   <div className="flex justify-between">
                     <span>Final Payment (50%) — due on completion</span>
+
                     <span>
                       {formatCurrency(finalPaymentAmount, isVietnamMarket)}
                     </span>

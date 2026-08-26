@@ -15,6 +15,8 @@ export interface QuoteItem {
   unit_price: number;
   currency_code: string | null;
   is_optional: boolean;
+  discount_enabled: boolean;
+  discount_percent: number;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -46,6 +48,8 @@ export async function createQuoteItem(data: {
   // MỚI — truyền đúng đơn vị tiền tệ (VND/USD) khi tạo item, phòng
   // trường hợp cột currency_code trong DB yêu cầu bắt buộc (NOT NULL).
   currency_code?: string;
+  discount_enabled?: boolean;
+  discount_percent?: number;
 }) {
   const { error } = await supabase.from("quote_items").insert({
     quote_id: data.quote_id,
@@ -56,6 +60,9 @@ export async function createQuoteItem(data: {
     is_optional: data.is_optional ?? true,
     sort_order: data.sort_order ?? 0,
     currency_code: data.currency_code ?? "VND",
+
+    discount_enabled: data.discount_enabled ?? false,
+    discount_percent: data.discount_percent ?? 0,
   });
 
   if (error) {
@@ -153,6 +160,23 @@ export function getItemTotal(item: QuoteItem): number {
   return Number(item.quantity) * Number(item.unit_price);
 }
 
+export function getItemDiscountAmount(item: QuoteItem): number {
+  if (!item.discount_enabled) return 0;
+
+  const subtotal = getItemTotal(item);
+
+  const percent = Math.min(
+    Math.max(Number(item.discount_percent) || 0, 0),
+    100,
+  );
+
+  return subtotal * (percent / 100);
+}
+
+export function getItemFinalTotal(item: QuoteItem): number {
+  return getItemTotal(item) - getItemDiscountAmount(item);
+}
+
 export async function getQuoteItemsByToken(
   token: string,
 ): Promise<QuoteItem[]> {
@@ -164,5 +188,37 @@ export async function getQuoteItemsByToken(
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+export async function updateQuoteItemDiscount(
+  id: string,
+  data: {
+    discount_enabled: boolean;
+    discount_percent: number;
+  },
+) {
+  const percent = Math.min(
+    Math.max(Number(data.discount_percent) || 0, 0),
+    100,
+  );
+
+  const { error } = await supabase
+    .from("quote_items")
+    .update({
+      discount_enabled: data.discount_enabled,
+      discount_percent: percent,
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("updateQuoteItemDiscount error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+
+    throw error;
   }
 }

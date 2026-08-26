@@ -118,7 +118,7 @@ export function ProposalFlipbook({ pdfUrl }: ProposalFlipbookProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex w-full flex-col items-center gap-3">
       <HTMLFlipBook
         ref={flipBookRef}
         width={400}

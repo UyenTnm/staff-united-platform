@@ -1,0 +1,485 @@
+.partnership-page {
+  position: relative;
+  overflow: hidden;
+}
+
+.partnership-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 34px 36px;
+}
+
+/* Waves */
+
+.wave-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Header */
+
+.header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* =========================
+   PARTNERSHIP LOGO HEADER
+   ========================= */
+
+.partnership-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Fixed STAFF + CLIENT area */
+.partnership-logo-slot {
+  position: relative;
+
+  width: 140px;
+  height: 70px;
+
+  flex: 0 0 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+/* Both logos */
+.partnership-logo-image {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Fixed divider */
+.partnership-logo-divider {
+  width: 1px;
+  height: 42px;
+
+  flex: 0 0 1px;
+
+  margin-left: 28px;
+  margin-right: 18px;
+
+  background: #67b8ff;
+}
+
+/* Placeholder */
+.partnership-client-placeholder {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
+/* Body */
+
+.body {
+  margin-top: 118px;
+}
+
+.body h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 40px;
+  color: #061c43;
+  line-height: 1.08;
+  margin-bottom: 28px;
+}
+
+/* Table */
+
+.package-table {
+  background: #dce9f7;
+  border-radius: 22px;
+  padding: 24px;
+}
+
+.package-table h3 {
+  color: #4b88cc;
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px dashed #5ea6ea;
+  font-size: 14px;
+  color: #10294f;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 18px;
+  font-size: 16px;
+  color: #061c43;
+}
+
+/* Rate Card */
+
+.rate-card {
+  margin-top: 14px;
+  background: #053f7c;
+  border-radius: 20px;
+  padding: 22px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rate-left p {
+  color: #5ea6ea;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rate-left h2 {
+  margin-top: 10px;
+  font-size: 46px;
+  line-height: 1;
+}
+
+.save-line {
+  width: 220px;
+  height: 1px;
+  background: #5ea6ea;
+  margin: 16px 0;
+}
+
+.rate-left h4 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* .percent {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 34px;
+  font-weight: 800;
+} */
+
+/* .percent small {
+  font-size: 15px;
+  margin-bottom: 5px;
+} */
+
+/* Payment */
+
+.payment {
+  margin-top: 14px;
+}
+
+.payment h3 {
+  color: #4b88cc;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.payment ul {
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #111827;
+}
+
+.payment li {
+  margin-bottom: 2px;
+}
+
+.original-price {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.original-price span {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.original-price strong {
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+/* ================================
+   RATE RIGHT
+================================ */
+
+/* .rate-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+} */
+
+.rate-right {
+  width: 195px;
+  min-width: 195px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  flex: 0 0 195px;
+}
+
+/* ================================
+   DISCOUNT BOX
+   3 COLUMNS:
+   ICON | PERCENT | OFF
+================================ */
+
+/* .discount-box {
+  width: 195px;
+  height: 60px;
+
+  background: #e8f0fd;
+  border-radius: 10px;
+
+  display: grid;
+
+  grid-template-columns: 42px 1fr 42px;
+
+  align-items: center;
+  justify-items: center;
+
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  color: #0b4f95;
+} */
+
+.discount-box {
+  width: 195px;
+  min-width: 195px;
+  height: 60px;
+
+  background: #e8f0fd;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* gap: 10px; */
+
+  padding: 0 12px;
+  box-sizing: border-box;
+
+  color: #0b4f95;
+
+  flex-shrink: 0;
+}
+
+/* ================================
+   COLUMN 1 — TICKET ICON
+================================ */
+
+.discount-box svg {
+  width: 24px;
+  height: 24px;
+
+  color: #5aa4df;
+
+  display: block;
+
+  position: static;
+
+  flex-shrink: 0;
+}
+
+/* ================================
+   COLUMN 2 — 10 %
+================================ */
+
+.discount-percent {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+
+  white-space: nowrap;
+
+  line-height: 1;
+}
+
+.discount-percent strong {
+  font-size: 30px;
+  font-weight: 800;
+
+  color: #0b4f95;
+
+  line-height: 1;
+}
+
+.discount-percent span {
+  margin-left: 2px;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  color: #0b4f95;
+
+  line-height: 1;
+}
+
+/* ================================
+   COLUMN 3 — OFF
+================================ */
+
+.discount-off {
+  font-size: 16px;
+  font-weight: 700;
+
+  color: #5aa4df;
+
+  white-space: nowrap;
+
+  line-height: 1;
+}
+
+/* ================================
+   ORIGINAL PRICE LABEL
+================================ */
+
+.total-label {
+  margin: 0;
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  text-align: center;
+
+  line-height: 1.2;
+
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+
+  opacity: 0.95;
+}
+
+/* =========================================
+   FORCE DISCOUNT TO HORIZONTAL 3-COLUMN ROW
+========================================= */
+
+.rate-right .discount-box {
+  width: 195px !important;
+  min-width: 195px !important;
+  height: 60px !important;
+
+  /* display: grid !important; */
+  grid-template-columns: 38px 1fr 38px !important;
+
+  flex-direction: row !important;
+
+  align-items: center !important;
+  justify-items: center !important;
+
+  gap: 0 !important;
+
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+
+  background: #e8f0fd !important;
+  border-radius: 10px !important;
+}
+
+/* ICON */
+.rate-right .discount-box svg {
+  width: 24px !important;
+  height: 24px !important;
+
+  color: #5aa4df !important;
+
+  margin: 0 !important;
+
+  flex: 0 0 24px;
+}
+
+/* 10 % */
+.rate-right .discount-percent {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex !important;
+  align-items: baseline !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.rate-right .discount-percent strong {
+  font-size: 30px !important;
+  font-weight: 800 !important;
+
+  color: #0b4f95 !important;
+
+  line-height: 1 !important;
+}
+
+.rate-right .discount-percent span {
+  margin-left: 2px !important;
+
+  font-size: 18px !important;
+  font-weight: 800 !important;
+
+  color: #0b4f95 !important;
+
+  line-height: 1 !important;
+}
+
+/* OFF */
+.rate-right .discount-off {
+  flex: 0 0 auto;
+
+  font-size: 16px !important;
+  font-weight: 700 !important;
+
+  color: #5aa4df !important;
+
+  white-space: nowrap !important;
+
+  line-height: 1 !important;
+}

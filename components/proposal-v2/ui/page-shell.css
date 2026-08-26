@@ -1,0 +1,22 @@
+/* Preview wrapper */
+.proposal-preview {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  /* padding: 24px; */
+  background: #e5e7eb;
+}
+
+/* A4 Document */
+.proposal-page {
+  position: relative;
+  width: 794px;
+  height: 1123px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #041f43;
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.18),
+    0 8px 18px rgba(15, 23, 42, 0.1);
+  flex-shrink: 0;
+}

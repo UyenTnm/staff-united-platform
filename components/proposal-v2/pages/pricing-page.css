@@ -1,0 +1,376 @@
+.pricing-page {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.pricing-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 34px 36px;
+}
+
+/* ---------------- Header ---------------- */
+
+.pricing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: white;
+}
+
+.partner-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* .partner-line {
+  width: 1px;
+  height: 42px;
+  background: #67b8ff;
+} */
+
+.partner-text {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+}
+
+.page-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.page-number {
+  font-size: 54px;
+  font-weight: 700;
+  color: #63b8ff;
+  line-height: 1;
+}
+
+.page-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+}
+
+/* ---------------- Waves ---------------- */
+
+.wave-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+}
+
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 14%;
+  z-index: 1;
+}
+
+/* ---------------- Body ---------------- */
+
+.body {
+  position: relative;
+  z-index: 3;
+
+  margin-top: 120px;
+
+  /*
+   * Reserve space for Timeline + Price
+   */
+  height: calc(100% - 300px);
+
+  overflow: hidden;
+
+  color: #0b2147;
+}
+
+.package-title {
+  font-family: "Playfair Display", serif;
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #081f48;
+}
+
+/* ---------------- Sections ---------------- */
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #0058c8;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.objective {
+  font-size: 13px;
+  line-height: 1.9;
+  color: #2f3e57;
+  white-space: pre-line;
+  margin-bottom: 28px;
+}
+
+/* ---------------- Deliverables ---------------- */
+
+.deliverables {
+  margin-top: 10px;
+}
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+/* ---------------- Bottom Cards ---------------- */
+
+.bottom-cards {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+
+  transform: translateX(-50%);
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 42px;
+
+  width: 80%;
+  z-index: 5;
+}
+
+/* ---------------- Info Cards ---------------- */
+
+.info-card-text h4 {
+  margin: 0 0 6px;
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.info-card-text p {
+  margin: 0;
+
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* ---------------- Bottom Cards ---------------- */
+
+.info-card {
+  position: relative;
+  width: 100%;
+  height: 125px;
+  overflow: hidden;
+  border-radius: 14px;
+  color: white;
+}
+
+/* BACKGROUND - NẰM YÊN */
+.info-card-bg {
+  position: absolute !important;
+
+  top: 0;
+  left: 0;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: fill;
+
+  z-index: 0;
+}
+
+/* ICON + TEXT */
+.info-card-inner {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+
+  z-index: 1;
+
+  box-sizing: border-box;
+}
+
+/* CỘT 1 - ICON */
+.info-card-icon {
+  width: 120px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* CỘT 2 - TEXT */
+.info-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 18px;
+}
+
+.info-card-text h4 {
+  margin: 0 0 7px;
+
+  color: white;
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.info-card-text p {
+  margin: 0;
+
+  color: white;
+
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* .content-warning {
+  position: absolute;
+
+  top: 0;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: calc(100% - 40px);
+
+  padding: 10px 14px;
+
+  background: #fff4e5;
+  border: 1px solid #f5b74f;
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  font-size: 11px;
+
+  color: #8a5a00;
+
+  z-index: 20;
+}
+
+.content-warning strong {
+  font-size: 12px;
+} */
+
+.content-warning-test {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  z-index: 9999;
+
+  padding: 10px 18px;
+
+  border-radius: 8px;
+
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+
+  color: #b91c1c;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Fixed logo position */
+.logo-slot {
+  position: relative;
+  width: 140px;
+  height: 70px;
+
+  flex: 0 0 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+/* Both logos use exactly the same rendering rule */
+.logo-image {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+.client-placeholder {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
+.partner-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Hai vùng logo bằng nhau */
+.logo-slot {
+  position: relative;
+  width: 140px;
+  height: 70px;
+  flex: 0 0 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partner-line {
+  width: 1px;
+  height: 42px;
+  flex: 0 0 1px;
+
+  margin-left: 28px;
+  margin-right: 18px;
+
+  background: #67b8ff;
+}
