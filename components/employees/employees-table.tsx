@@ -159,7 +159,9 @@ export function EmployeesTable() {
                 <TableCell className="text-slate-600 dark:text-slate-400">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    {new Date(employee.created_at).toLocaleDateString()}
+                    {employee.created_at
+                      ? new Date(employee.created_at).toLocaleDateString()
+                      : "—"}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
