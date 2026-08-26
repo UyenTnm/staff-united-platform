@@ -50,6 +50,8 @@ export interface Quote {
   updateProposalFonts: string | null;
 
   customer_market: CustomerMarket | null;
+  package_discount_enabled: boolean;
+  package_discount_percent: number;
   currency: string | null;
   currency_code: string | null;
 
@@ -100,10 +102,19 @@ export async function createQuote(data: {
 
   template_version?: "legacy" | "v2";
 }) {
-  const totalAmount = data.items.reduce(
+  const subtotal = data.items.reduce(
     (sum, item) => sum + item.quantity * item.unit_price,
     0,
   );
+
+  const packageDiscountEnabled = false;
+  const packageDiscountPercent = 0;
+
+  const discountAmount = packageDiscountEnabled
+    ? subtotal * (packageDiscountPercent / 100)
+    : 0;
+
+  const finalAmount = subtotal - discountAmount;
 
   // Ghi lại đúng nhân viên đang đăng nhập tạo quote này — dùng để
   // gửi thông báo đúng người khi khách xác nhận Billing Info sau này.
@@ -135,10 +146,12 @@ export async function createQuote(data: {
       contact_phone: data.contact_phone ?? null,
       title: data.title,
       notes: data.notes,
-      amount: totalAmount,
+      amount: finalAmount,
       customer_market: data.customer_market,
       currency: data.currency,
       currency_code: data.currency_code,
+      package_discount_enabled: packageDiscountEnabled,
+      package_discount_percent: packageDiscountPercent,
       payment_type: data.payment_type ?? "full",
       created_by: createdByEmployeeId,
       status: "Draft",
@@ -752,6 +765,35 @@ export async function setQuoteTemplateVersion(
 
   if (error) {
     console.error("setQuoteTemplateVersion error:", error);
+    throw error;
+  }
+}
+
+export async function updateQuotePricing(
+  quoteId: string,
+  data: {
+    amount: number;
+    package_discount_enabled: boolean;
+    package_discount_percent: number;
+  },
+) {
+  const { error } = await supabase
+    .from("quotes")
+    .update({
+      amount: data.amount,
+      package_discount_enabled: data.package_discount_enabled,
+      package_discount_percent: data.package_discount_percent,
+    })
+    .eq("id", quoteId);
+
+  if (error) {
+    console.error("updateQuotePricing error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+
     throw error;
   }
 }

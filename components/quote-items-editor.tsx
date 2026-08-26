@@ -13,7 +13,12 @@ import {
   createQuoteItem,
   deleteQuoteItem,
   getItemTotal,
+  getItemFinalTotal,
+  getItemDiscountAmount,
+  updateQuoteItemDiscount,
 } from "@/lib/crm/quote-items";
+
+import { getQuote, updateQuotePricing } from "@/lib/crm/quotes";
 
 interface QuoteItemsEditorProps {
   quoteId: string;
@@ -60,8 +65,18 @@ export function QuoteItemsEditor({
   const [addingAll, setAddingAll] = useState(false);
 
   async function loadItems() {
-    const data = await getQuoteItems(quoteId);
+    const [data, quote] = await Promise.all([
+      getQuoteItems(quoteId),
+      getQuote(quoteId),
+    ]);
+
     setItems(data);
+
+    if (quote) {
+      setDiscountEnabled(Boolean(quote.package_discount_enabled));
+      setDiscountPercent(String(quote.package_discount_percent ?? 0));
+    }
+
     setLoading(false);
   }
 
@@ -196,11 +211,54 @@ export function QuoteItemsEditor({
 
   const mandatoryTotal = items
     .filter((i) => !i.is_optional)
-    .reduce((sum, i) => sum + getItemTotal(i), 0);
+    .reduce((sum, i) => sum + getItemFinalTotal(i), 0);
 
   const optionalTotal = items
     .filter((i) => i.is_optional)
-    .reduce((sum, i) => sum + getItemTotal(i), 0);
+    .reduce((sum, i) => sum + getItemFinalTotal(i), 0);
+
+  const [discountEnabled, setDiscountEnabled] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState("0");
+
+  const [showPackageDiscountWarning, setShowPackageDiscountWarning] =
+    useState(false);
+
+  const hasServiceDiscount = items.some(
+    (item) => item.discount_enabled && Number(item.discount_percent) > 0,
+  );
+
+  const subtotal = items.reduce(
+    (sum, item) => sum + getItemFinalTotal(item),
+    0,
+  );
+
+  const safeDiscountPercent = Math.min(
+    Math.max(Number(discountPercent) || 0, 0),
+    100,
+  );
+
+  const discountAmount = discountEnabled
+    ? subtotal * (safeDiscountPercent / 100)
+    : 0;
+
+  const finalAmount = subtotal - discountAmount;
+
+  async function savePackageDiscount(enabled: boolean, percent: number) {
+    try {
+      const safePercent = Math.min(Math.max(percent || 0, 0), 100);
+
+      const amount = subtotal - (enabled ? subtotal * (safePercent / 100) : 0);
+
+      await updateQuotePricing(quoteId, {
+        amount,
+        package_discount_enabled: enabled,
+        package_discount_percent: safePercent,
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save package discount.");
+    }
+  }
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
@@ -276,6 +334,105 @@ export function QuoteItemsEditor({
                         {getItemTotal(item).toLocaleString()}
                       </span>
                     </p>
+
+                    {item.discount_enabled && (
+                      <div className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs">
+                        <div className="flex justify-between text-emerald-700">
+                          <span>Discount ({item.discount_percent}%)</span>
+
+                          <span>
+                            -{currencySymbol}
+                            {getItemDiscountAmount(item).toLocaleString()}
+                          </span>
+                        </div>
+
+                        <div className="mt-1 flex justify-between border-t border-emerald-200 pt-1 font-semibold text-emerald-800">
+                          <span>Final price</span>
+
+                          <span>
+                            {currencySymbol}
+                            {getItemFinalTotal(item).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {!isLocked && (
+                      <div className="mt-2">
+                        <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600">
+                          <input
+                            type="checkbox"
+                            checked={item.discount_enabled}
+                            onChange={async (e) => {
+                              const enabled = e.target.checked;
+
+                              try {
+                                await updateQuoteItemDiscount(item.id, {
+                                  discount_enabled: enabled,
+                                  discount_percent: enabled
+                                    ? Number(item.discount_percent) || 0
+                                    : 0,
+                                });
+
+                                await loadItems();
+                              } catch (error) {
+                                console.error(error);
+                                toast.error("Failed to update discount.");
+                              }
+                            }}
+                            className="h-4 w-4 rounded accent-emerald-600"
+                          />
+                          Apply Service Discount
+                        </label>
+
+                        {item.discount_enabled && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={item.discount_percent}
+                              onChange={(e) => {
+                                const percent = Math.min(
+                                  Math.max(Number(e.target.value) || 0, 0),
+                                  100,
+                                );
+
+                                setItems((prev) =>
+                                  prev.map((current) =>
+                                    current.id === item.id
+                                      ? {
+                                          ...current,
+                                          discount_percent: percent,
+                                        }
+                                      : current,
+                                  ),
+                                );
+                              }}
+                              onBlur={async () => {
+                                try {
+                                  await updateQuoteItemDiscount(item.id, {
+                                    discount_enabled: true,
+                                    discount_percent:
+                                      Number(item.discount_percent) || 0,
+                                  });
+
+                                  await loadItems();
+                                } catch (error) {
+                                  console.error(error);
+                                  toast.error("Failed to save discount.");
+                                }
+                              }}
+                              className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-sm"
+                            />
+
+                            <span className="text-xs text-slate-500">
+                              % discount
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {!isLocked && (
                     <button
@@ -302,6 +459,139 @@ export function QuoteItemsEditor({
                     {currencySymbol}
                     {optionalTotal.toLocaleString()}
                   </span>
+                </div>
+
+                <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={discountEnabled}
+                      onChange={async (e) => {
+                        const enabled = e.target.checked;
+
+                        if (enabled && hasServiceDiscount) {
+                          setShowPackageDiscountWarning(true);
+                          return;
+                        }
+
+                        const percent = enabled ? safeDiscountPercent : 0;
+
+                        setDiscountEnabled(enabled);
+                        setDiscountPercent(String(percent));
+
+                        await savePackageDiscount(enabled, percent);
+                      }}
+                      className="h-4 w-4 rounded accent-blue-600"
+                      disabled={isLocked}
+                    />
+                    Apply Package Discount
+                  </label>
+                  {hasServiceDiscount && !discountEnabled && (
+                    <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                      ⚠️ One or more services already have an individual
+                      discount. Package Discount is normally recommended when
+                      offering multiple services as a bundle.
+                    </p>
+                  )}
+
+                  {discountEnabled && (
+                    <div className="mt-3">
+                      <label className="mb-1 block text-xs font-medium text-slate-500">
+                        Discount (%)
+                      </label>
+
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={discountPercent}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setDiscountPercent(value);
+                        }}
+                        onBlur={async () => {
+                          const percent = Math.min(
+                            Math.max(Number(discountPercent) || 0, 0),
+                            100,
+                          );
+
+                          setDiscountPercent(String(percent));
+
+                          await savePackageDiscount(true, percent);
+                        }}
+                        className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm"
+                        disabled={isLocked}
+                      />
+                    </div>
+                  )}
+
+                  <div className="mt-4 space-y-1 border-t border-blue-200 pt-3 text-sm">
+                    <div className="flex justify-between text-slate-500">
+                      <span>Subtotal</span>
+                      <span>
+                        {currencySymbol}
+                        {subtotal.toLocaleString()}
+                      </span>
+                    </div>
+
+                    {discountEnabled && safeDiscountPercent > 0 && (
+                      <div className="flex justify-between text-emerald-600">
+                        <span>Package Discount ({safeDiscountPercent}%)</span>
+                        <span>
+                          -{currencySymbol}
+                          {discountAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between border-t pt-2 text-base font-bold text-slate-900">
+                      <span>Final Price</span>
+                      <span>
+                        {currencySymbol}
+                        {finalAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {showPackageDiscountWarning && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
+                      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          Package Discount
+                        </h3>
+
+                        <p className="mt-2 text-sm text-slate-500 whitespace-nowrap">
+                          Recommended when offering multiple services together.
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowPackageDiscountWarning(false)}
+                            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              setDiscountEnabled(true);
+                              setShowPackageDiscountWarning(false);
+
+                              await savePackageDiscount(
+                                true,
+                                safeDiscountPercent,
+                              );
+                            }}
+                            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer"
+                          >
+                            Apply Discount
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

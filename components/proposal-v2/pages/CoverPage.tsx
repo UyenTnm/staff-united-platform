@@ -21,7 +21,7 @@ interface Props {
 }
 
 export default function CoverPage({ data }: Props) {
-  const details = [...data.proposalDetails].slice(0, 5);
+  const details = [...data.proposalDetails].slice(0, 6);
 
   return (
     <PageShell className="bg-[#041F43]">
@@ -183,7 +183,7 @@ export default function CoverPage({ data }: Props) {
         <div className="flex-1" />
 
         {/* Information */}
-        <div className="mt-8 grid gap-5 max-w-[54%]">
+        <div className="mt-4 grid gap-5 max-w-[54%]">
           <Info icon={User} title="Prepared For" value={data.preparedFor} />
           <Info icon={Building2} title="Prepared By" value={data.preparedBy} />
           <Info icon={CalendarDays} title="Date" value={data.date} />

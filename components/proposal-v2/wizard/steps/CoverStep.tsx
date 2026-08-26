@@ -25,6 +25,12 @@ export default function CoverStep({ data, onChange }: Props) {
     update("proposalDetails", next);
   };
 
+  const addDetail = () => {
+    if (data.proposalDetails.length >= 6) return;
+
+    update("proposalDetails", [...data.proposalDetails, ""]);
+  };
+
   return (
     <div className="space-y-8 font-[Poppins]">
       <section>
@@ -71,7 +77,7 @@ export default function CoverStep({ data, onChange }: Props) {
         </h2>
 
         <p className="mt-1 text-sm text-[#4A596E]">
-          Maximum 5 lines on the cover page.
+          Maximum 6 lines on the cover page.
         </p>
 
         <div className="mt-4 space-y-3">
@@ -84,6 +90,16 @@ export default function CoverStep({ data, onChange }: Props) {
             />
           ))}
         </div>
+
+        {data.proposalDetails.length < 6 && (
+          <button
+            type="button"
+            onClick={addDetail}
+            className="mt-4 w-full rounded-xl border border-dashed border-[#4F8DC9] bg-[#F8FBFF] py-3 font-semibold text-[#174A7E] transition hover:bg-[#EEF6FF]"
+          >
+            + Add Scope Line
+          </button>
+        )}
       </section>
 
       {/* ---------- BRAND ASSETS ---------- */}
