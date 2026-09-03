@@ -210,7 +210,7 @@ export default function MonthlyReviewDetailPage() {
                   <td className="text-right">
                     <Button asChild variant="outline">
                       <Link
-                        href={`/reviews/${review.review_month}/${review.employee_id}`}
+                        href={`/employees/${review.employee_id}/reviews/${review.id}`}
                       >
                         Review
                       </Link>

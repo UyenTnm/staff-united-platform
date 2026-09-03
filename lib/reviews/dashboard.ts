@@ -25,7 +25,6 @@ export interface ReviewDashboardData {
   kaizen: {
     draft: number;
     pending: number;
-    underReview: number;
     approved: number;
     rewarded: number;
   };

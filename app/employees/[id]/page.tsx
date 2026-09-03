@@ -12,6 +12,8 @@ import {
   calculateReviewScores,
   type ReviewScores,
 } from "@/lib/performance/engine";
+import { ScoreBar } from "@/components/performance/score-bar";
+import { QuickActions } from "@/components/employees/quick-actions";
 
 import {
   getCurrentReview,
@@ -33,12 +35,6 @@ export default function EmployeeDetailPage() {
 
   useEffect(() => {
     async function loadEmployee() {
-      // const data = await getEmployee(params.id as string);
-
-      // const perf = await calculateReviewScores(params.id as string);
-
-      // const review = await getCurrentReview(params.id as string);
-
       const [data, perf, review, history] = await Promise.all([
         getEmployee(params.id as string),
         calculateReviewScores(params.id as string),
@@ -173,12 +169,6 @@ export default function EmployeeDetailPage() {
                   ? currentReview.status
                   : "No review has been created for this month."}
               </p>
-
-              {currentReview && performance && (
-                <h3 className="text-2xl font-bold mt-4">
-                  {performance.total} / 15
-                </h3>
-              )}
             </div>
 
             <Button asChild>
@@ -201,7 +191,27 @@ export default function EmployeeDetailPage() {
               </Link>
             </Button>
           </div>
+
+          {currentReview && performance && (
+            <div className="mt-6 pt-6 border-t space-y-4">
+              <ScoreBar
+                label="Total Monthly Bonus"
+                score={performance.total}
+                max={15}
+                size="lg"
+                helper={`Quality ${performance.quality}/5 · Behavior ${performance.behavior}/5 · Kaizen ${performance.kaizen}/5`}
+              />
+
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/employees/${employee.id}/summary`}>
+                  View Full Breakdown
+                </Link>
+              </Button>
+            </div>
+          )}
         </Card>
+
+        <QuickActions employeeId={employee.id} />
 
         <Card className="p-6">
           <h2 className="text-xl font-semibold">Review History</h2>

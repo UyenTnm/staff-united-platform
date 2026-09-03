@@ -58,6 +58,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const searchParams = useSearchParams();
 
   const from = searchParams.get("from");
+  const currentTab = searchParams.get("tab");
   const router = useRouter();
   const { employee } = useAuth();
 
@@ -199,9 +200,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       icon: ClipboardCheck,
       items: [
         {
-          label: "Pending Reviews",
-          href: "/reviews/pending",
+          label: "Overview",
+          href: "/performance/overview",
         },
+
         {
           label: "Monthly Reviews",
           href: "/reviews",
@@ -214,10 +216,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           label: "Behavior",
           href: "/behavior",
         },
-        {
-          label: "Returned Reviews",
-          href: "/performance/returned",
-        },
       ],
     },
 
@@ -227,19 +225,19 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       items: [
         {
           label: "Pending",
-          href: "/kaizens/pending",
+          href: "/kaizens?tab=pending",
         },
         {
           label: "Waiting Verification",
-          href: "/kaizens/waiting-verification",
+          href: "/kaizens?tab=verification",
         },
         {
           label: "Approved",
-          href: "/kaizens/approved",
+          href: "/kaizens?tab=approved",
         },
         {
           label: "Rewarded",
-          href: "/kaizens/rewarded",
+          href: "/kaizens?tab=rewarded",
         },
       ],
     },
@@ -276,9 +274,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       icon: ClipboardCheck,
       items: [
         {
-          label: "Pending Reviews",
-          href: "/reviews/pending",
+          label: "Overview",
+          href: "/performance/overview",
         },
+
         {
           label: "Monthly Reviews",
           href: "/reviews",
@@ -291,10 +290,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           label: "Behavior",
           href: "/behavior",
         },
-        {
-          label: "Returned Reviews",
-          href: "/performance/returned",
-        },
       ],
     },
 
@@ -304,20 +299,19 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       items: [
         {
           label: "Pending",
-          href: "/kaizens/pending",
+          href: "/kaizens?tab=pending",
         },
-
         {
           label: "Waiting Verification",
-          href: "/kaizens/waiting-verification",
+          href: "/kaizens?tab=verification",
         },
         {
           label: "Approved",
-          href: "/kaizens/approved",
+          href: "/kaizens?tab=approved",
         },
         {
           label: "Rewarded",
-          href: "/kaizens/rewarded",
+          href: "/kaizens?tab=rewarded",
         },
       ],
     },
@@ -340,16 +334,17 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       icon: ClipboardCheck,
       items: [
         {
-          label: "Pending Reviews",
-          href: "/reviews/pending",
+          label: "Overview",
+          href: "/performance/overview",
         },
+
         {
           label: "Quality Approval",
-          href: "/quality/manager",
+          href: "/quality?tab=manager",
         },
         {
           label: "Behavior Approval",
-          href: "/behavior/manager",
+          href: "/behavior?tab=manager",
         },
       ],
     },
@@ -360,19 +355,19 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       items: [
         {
           label: "Pending",
-          href: "/kaizens/pending",
+          href: "/kaizens?tab=pending",
         },
         {
           label: "Waiting Verification",
-          href: "/kaizens/waiting-verification",
+          href: "/kaizens?tab=verification",
         },
         {
           label: "Approved",
-          href: "/kaizens/approved",
+          href: "/kaizens?tab=approved",
         },
         {
           label: "Rewarded",
-          href: "/kaizens/rewarded",
+          href: "/kaizens?tab=rewarded",
         },
       ],
     },
@@ -598,22 +593,32 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                   {section.items.map((item) => {
                     let isActive = false;
 
-                    if (item.href === "/kaizens/pending") {
+                    if (item.href === "/kaizens?tab=pending") {
                       isActive =
-                        pathname.startsWith("/kaizens/pending") ||
+                        (pathname === "/kaizens" &&
+                          (currentTab === "pending" || !currentTab)) ||
                         from === "pending";
-                    } else if (item.href === "/kaizens/waiting-verification") {
+                    } else if (item.href === "/kaizens?tab=verification") {
                       isActive =
-                        pathname.startsWith("/kaizens/waiting-verification") ||
+                        (pathname === "/kaizens" &&
+                          currentTab === "verification") ||
                         from === "verification";
-                    } else if (item.href === "/kaizens/approved") {
+                    } else if (item.href === "/kaizens?tab=approved") {
                       isActive =
-                        pathname.startsWith("/kaizens/approved") ||
+                        (pathname === "/kaizens" &&
+                          currentTab === "approved") ||
                         from === "approved";
-                    } else if (item.href === "/kaizens/rewarded") {
+                    } else if (item.href === "/kaizens?tab=rewarded") {
                       isActive =
-                        pathname.startsWith("/kaizens/rewarded") ||
+                        (pathname === "/kaizens" &&
+                          currentTab === "rewarded") ||
                         from === "reward";
+                    } else if (item.href === "/quality?tab=manager") {
+                      isActive =
+                        pathname === "/quality" && currentTab === "manager";
+                    } else if (item.href === "/behavior?tab=manager") {
+                      isActive =
+                        pathname === "/behavior" && currentTab === "manager";
                     } else if (item.href === "/employees") {
                       isActive =
                         pathname.startsWith("/employees") &&
@@ -631,7 +636,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                     } else if (item.href === "/crm/support") {
                       isActive = pathname.startsWith("/crm/support");
                     } else {
-                      isActive = pathname.startsWith(item.href);
+                      isActive = pathname.startsWith(item.href.split("?")[0]);
                     }
 
                     const itemUnread =
@@ -672,7 +677,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         {" "}
         <button
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium",
+            "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium cursor-pointer",
             "text-slate-400 hover:bg-slate-900 hover:shadow-lg hover:text-red-400",
           )}
           onClick={handleLogout}

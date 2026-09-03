@@ -2,8 +2,6 @@ import { ReactNode } from "react";
 
 import { Card } from "@/components/ui/card";
 
-// import { formatDate } from "@/lib/date";
-
 import type { KaizenRecord } from "@/lib/employees/kaizen";
 
 import { KaizenStatusBadge } from "./KaizenStatusBadge";
@@ -47,6 +45,19 @@ export function KaizenCard({ kaizen, action }: Props) {
 
           <p className="text-xs text-slate-400">
             Created {formatDate(kaizen.created_at)}
+            {kaizen.status === "Rewarded" && kaizen.rewarded_at && (
+              <>
+                {" • "}
+                <span className="text-emerald-600 font-medium">
+                  Rewarded {formatDate(kaizen.rewarded_at)} (counted in{" "}
+                  {new Date(kaizen.review_month).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                  )
+                </span>
+              </>
+            )}
           </p>
         </div>
 

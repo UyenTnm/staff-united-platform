@@ -58,7 +58,7 @@ export default function ManagerBehaviorReviewPage() {
 
       toast.success("Behavior approved.");
 
-      router.push("/behavior/manager");
+      router.push("/behavior?tab=manager");
 
       router.refresh();
     } catch (error) {

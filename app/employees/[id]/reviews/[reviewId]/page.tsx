@@ -16,6 +16,8 @@ import {
   updateHrNotes,
   updateManagerNotes,
   updateEmployeeComment,
+  employeeAcceptReview,
+  lockReview,
 } from "@/lib/performance/review";
 import { ReviewCard } from "@/components/employees/performance/review-card";
 import { calculateReviewScores } from "@/lib/performance/engine";
@@ -99,6 +101,72 @@ export default function ReviewDetailPage() {
       console.error(err);
 
       toast.error("Unable to approve review.");
+    }
+  }
+
+  async function handleAcceptReview() {
+    if (!review) return;
+
+    try {
+      await employeeAcceptReview(review.id);
+
+      setReview({ ...review, status: "WaitingManager" });
+
+      toast.success("Review accepted — sent to your manager.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to accept review.");
+    }
+  }
+
+  async function handleAppeal() {
+    if (!review) return;
+
+    if (!review.employee_comment?.trim()) {
+      toast.warning("Please write a comment explaining your appeal first.");
+      return;
+    }
+
+    try {
+      await updateEmployeeComment(review.id, review.employee_comment);
+      await updateReviewStatus(review.id, "EmployeeAppealed");
+
+      setReview({ ...review, status: "EmployeeAppealed" });
+
+      toast.success("Appeal submitted — HR will review your comment.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to submit appeal.");
+    }
+  }
+
+  async function handleReturnToHR() {
+    if (!review) return;
+
+    try {
+      await updateReviewStatus(review.id, "Draft");
+
+      setReview({ ...review, status: "Draft" });
+
+      toast.success("Review returned to HR for revision.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to return review to HR.");
+    }
+  }
+
+  async function handleLockReview() {
+    if (!review) return;
+
+    try {
+      await lockReview(review.id);
+
+      setReview({ ...review, status: "Locked" });
+
+      toast.success("Review locked — final for this month.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to lock review.");
     }
   }
 
@@ -316,11 +384,9 @@ export default function ReviewDetailPage() {
 
                   <p>Submitted : {performance?.kaizenSummary.submitted}</p>
 
-                  <p>Under Review : {performance?.kaizenSummary.underReview}</p>
-
                   <p>Approved : {performance?.kaizenSummary.approved}</p>
 
-                  <p>Implemented : {performance?.kaizenSummary.implemented}</p>
+                  <p>In Progress : {performance?.kaizenSummary.inProgress}</p>
 
                   <p>Rewarded : {performance?.kaizenSummary.rewarded}</p>
                 </div>
@@ -330,6 +396,17 @@ export default function ReviewDetailPage() {
 
           <div className="rounded-xl border bg-white p-6 shadow-sm md:col-span-3">
             <h2 className="text-xl font-semibold mb-6">Review Notes</h2>
+
+            {(isAdmin || isHR) && review.employee_comment && (
+              <div className="mb-6 rounded-lg bg-amber-50 border border-amber-200 p-4">
+                <p className="text-sm font-semibold text-amber-800 mb-1">
+                  Employee's appeal comment
+                </p>
+                <p className="text-sm text-amber-900 whitespace-pre-wrap">
+                  {review.employee_comment}
+                </p>
+              </div>
+            )}
 
             {(isAdmin || isHR) && (
               <div>
@@ -430,9 +507,19 @@ export default function ReviewDetailPage() {
             <div className="flex gap-3">
               <div className="flex gap-3 flex-wrap">
                 {/* HR */}
-                {(isAdmin || isHR) && review.status === "Draft" && (
-                  <Button onClick={handleSendToEmployee}>
-                    Send to Employee
+                {(isAdmin || isHR) &&
+                  (review.status === "Draft" ||
+                    review.status === "EmployeeAppealed") && (
+                    <Button onClick={handleSendToEmployee}>
+                      {review.status === "EmployeeAppealed"
+                        ? "Re-send to Employee"
+                        : "Send to Employee"}
+                    </Button>
+                  )}
+
+                {(isAdmin || isHR) && review.status === "Approved" && (
+                  <Button onClick={handleLockReview}>
+                    Lock Review (Final)
                   </Button>
                 )}
 
@@ -443,16 +530,20 @@ export default function ReviewDetailPage() {
                       Approve Review
                     </Button>
 
-                    <Button variant="outline">Return to HR</Button>
+                    <Button variant="outline" onClick={handleReturnToHR}>
+                      Return to HR
+                    </Button>
                   </>
                 )}
 
                 {/* Employee */}
                 {isEmployee && review.status === "WaitingEmployee" && (
                   <>
-                    <Button>Accept Review</Button>
+                    <Button onClick={handleAcceptReview}>Accept Review</Button>
 
-                    <Button variant="outline">Appeal</Button>
+                    <Button variant="outline" onClick={handleAppeal}>
+                      Appeal
+                    </Button>
                   </>
                 )}
 
@@ -468,17 +559,19 @@ export default function ReviewDetailPage() {
                 "This review is still being prepared."}
 
               {review.status === "WaitingEmployee" &&
-                "Review has been sent to the employee."}
+                "Review has been sent to the employee — waiting for them to accept or appeal."}
 
               {review.status === "EmployeeAppealed" &&
-                "Employee has submitted an appeal."}
+                "Employee has submitted an appeal (see their comment below). HR should review it and re-send once addressed."}
 
               {review.status === "WaitingManager" &&
                 "Waiting for manager approval."}
 
-              {review.status === "Approved" && "Review has been approved."}
+              {review.status === "Approved" &&
+                "Review has been approved. HR can lock it once nothing else needs to change."}
 
-              {review.status === "Locked" && "This review has been locked."}
+              {review.status === "Locked" &&
+                "This review is locked — final for this month."}
             </p>
           </div>
         </div>

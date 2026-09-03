@@ -24,7 +24,7 @@ export default function AccessDeniedPage() {
       break;
 
     case "Manager":
-      backUrl = "/reviews/pending";
+      backUrl = "/reviews?tab=pending";
       backText = "Back to Pending Reviews";
       break;
   }

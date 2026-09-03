@@ -115,36 +115,23 @@ export default function NewKaizenPage() {
         review_note: null,
         review_month: getReviewMonth(new Date()),
       });
-      console.log("Notification created.");
-      console.log("========== STEP 1 ==========");
-      console.log(kaizen);
 
-      console.log("Created:", kaizen);
-      console.log("===== START NOTIFICATION =====");
-      const { data: hrs, error } = await supabase
+      // No HR review step — Kaizen submitted on the employee's behalf goes
+      // straight to Manager for approval.
+      const { data: managers } = await supabase
         .from("employees")
         .select("id, full_name, user_role")
-        .eq("user_role", "HR");
+        .eq("user_role", "Manager");
 
-      console.log("HRs:", hrs);
-      console.log("HR Error:", error);
-
-      // Notify all HR users
-      console.log("========== STEP 2 ==========");
-
-      if (hrs) {
-        for (const hr of hrs) {
-          console.log("Sending to:", hr);
-
-          const result = await createNotification(
-            hr.id,
-            "New Kaizen Submitted",
-            `${title} has been submitted and is waiting for HR review.`,
+      if (managers) {
+        for (const manager of managers) {
+          await createNotification(
+            manager.id,
+            "New Kaizen Waiting Approval",
+            `${title} has been submitted and is waiting for your approval.`,
             "kaizen",
             `/employees/${params.id}/kaizen/${kaizen.id}/edit?from=pending`,
           );
-
-          console.log("Notification Result:", result);
         }
       }
 

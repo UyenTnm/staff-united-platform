@@ -21,7 +21,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             collapsed ? "md:ml-20" : "md:ml-64"
           }`}
         >
-          <div className="w-full">{children}</div>
+          {/* <div className="w-full">{children}</div> */}
+          <div className="w-full max-w-[1400px] mx-auto">{children}</div>
         </main>
       </div>
     </AuthGuard>

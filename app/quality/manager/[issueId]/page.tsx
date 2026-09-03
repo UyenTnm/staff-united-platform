@@ -57,7 +57,7 @@ export default function ManagerQualityReviewPage() {
 
       toast.success("Quality approved.");
 
-      router.push("/quality/manager");
+      router.push("/quality?tab=manager");
 
       router.refresh();
     } catch (error) {

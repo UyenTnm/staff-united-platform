@@ -56,8 +56,6 @@ export const IMPACT_POINTS: Record<KaizenImpact, number> = {
 
 export const KAIZEN_STATUSES = [
   { label: "Submitted", value: "Submitted" },
-  { label: "Under Review", value: "Under Review" },
   { label: "Approved", value: "Approved" },
-  { label: "Implemented", value: "Implemented" },
   { label: "Rewarded", value: "Rewarded" },
 ];

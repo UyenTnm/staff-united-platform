@@ -7,6 +7,10 @@ import { useParams } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+import { EmployeeHeader } from "@/components/employees/employee-header";
+import { ScoreBar } from "@/components/performance/score-bar";
 
 import { getEmployee, type Employee } from "@/lib/employees/employees";
 import {
@@ -61,25 +65,108 @@ export default function PerformanceSummaryPage() {
     );
   }
 
+  const reviewMonthLabel = review
+    ? new Date(review.review_month).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      })
+    : new Date().toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
+
   return (
     <AppLayout>
       <div className="space-y-6 max-w-7xl">
-        {/* Header */}
+        <EmployeeHeader
+          employee={employee}
+          title="Performance Summary"
+          backHref={`/employees/${employee.id}`}
+        />
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Performance Summary</h1>
+        {/* Overview */}
+        <Card className="p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-slate-500">Monthly Bonus</p>
 
-            <p className="text-slate-500 mt-2">{employee.full_name}</p>
+              <h2 className="text-2xl font-bold mt-1">{reviewMonthLabel}</h2>
+            </div>
+
+            {review && <Badge className="capitalize">{review.status}</Badge>}
           </div>
 
-          <Button asChild variant="outline">
-            <Link href={`/employees/${employee.id}`}>Back to Employee</Link>
-          </Button>
+          <div className="mt-6">
+            <ScoreBar
+              label="Total Performance"
+              score={performance.total}
+              max={15}
+              size="lg"
+              helper={`${((performance.total / 15) * 100).toFixed(1)}% of the maximum 15% monthly bonus`}
+            />
+          </div>
+        </Card>
+
+        {/* Breakdown */}
+        <div className="grid md:grid-cols-3 gap-5">
+          <Card className="p-6 space-y-4">
+            <ScoreBar
+              label="Quality"
+              score={performance.quality}
+              max={5}
+              helper={
+                performance.qualityIssues === 0
+                  ? "No quality issues recorded"
+                  : `${performance.qualityIssues} issue${performance.qualityIssues !== 1 ? "s" : ""} recorded this month`
+              }
+            />
+
+            <Button asChild variant="outline" className="w-full">
+              <Link href={`/employees/${employee.id}/quality`}>
+                View Quality Issues
+              </Link>
+            </Button>
+          </Card>
+
+          <Card className="p-6 space-y-4">
+            <ScoreBar
+              label="Behavior"
+              score={performance.behavior}
+              max={5}
+              helper={
+                performance.behaviorIssues === 0
+                  ? "No behavior issues recorded"
+                  : `${performance.behaviorIssues} issue${performance.behaviorIssues !== 1 ? "s" : ""} recorded this month`
+              }
+            />
+
+            <Button asChild variant="outline" className="w-full">
+              <Link href={`/employees/${employee.id}/behavior`}>
+                View Behavior Issues
+              </Link>
+            </Button>
+          </Card>
+
+          <Card className="p-6 space-y-4">
+            <ScoreBar
+              label="Kaizen"
+              score={performance.kaizen}
+              max={5}
+              helper={
+                performance.rewardedKaizens === 0
+                  ? "No rewarded kaizens yet"
+                  : `${performance.rewardedKaizens} kaizen${performance.rewardedKaizens !== 1 ? "s" : ""} rewarded this month`
+              }
+            />
+
+            <Button asChild variant="outline" className="w-full">
+              <Link href={`/employees/${employee.id}/kaizen`}>
+                View Kaizens
+              </Link>
+            </Button>
+          </Card>
         </div>
       </div>
     </AppLayout>
   );
 }
-
-//  Backup or Delete later

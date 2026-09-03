@@ -251,7 +251,7 @@ export async function getBehaviorHistory() {
       )
     `,
     )
-    .in("status", ["Approved", "Locked"])
+    .in("status", ["Approved", "Locked", "Resolved by HR"])
     .order("approved_at", {
       ascending: false,
     });

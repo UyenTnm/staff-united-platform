@@ -265,6 +265,32 @@ export async function employeeAcceptReview(reviewId: string) {
   if (error) throw error;
 }
 
+// All reviews still in progress — waiting on the employee to accept/appeal,
+// an appeal HR hasn't re-sent yet, or waiting on the manager — regardless of
+// month. This is what "stuck, needs someone's action" means across the
+// whole cycle, not just the manager-approval step.
+export async function getPendingPerformanceReviews() {
+  const { data, error } = await supabase
+    .from("performance_reviews")
+    .select(
+      `
+      *,
+      employees (
+        id,
+        full_name,
+        department,
+        role
+      )
+    `,
+    )
+    .in("status", ["WaitingEmployee", "EmployeeAppealed", "WaitingManager"])
+    .order("updated_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data as ManagerReview[];
+}
+
 export async function getWaitingManagerReviews() {
   const { data, error } = await supabase
     .from("performance_reviews")

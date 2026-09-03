@@ -239,7 +239,7 @@ export async function getResolvedQualityIssues() {
       )
     `,
     )
-    .in("status", ["Approved", "Locked"])
+    .in("status", ["Approved", "Locked", "Resolved by HR"])
     .order("updated_at", {
       ascending: false,
     });

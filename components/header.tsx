@@ -93,7 +93,7 @@ export function Header({ collapsed }: HeaderProps) {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50"
+                  className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 cursor-pointer"
                 >
                   Logout
                 </button>
