@@ -6,6 +6,16 @@ import { useParams, useRouter } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import {
   getQualityReview,
@@ -23,6 +33,7 @@ export default function QualityReviewPage() {
   const [issue, setIssue] = useState<QualityWithEmployee | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [acceptAppealOpen, setAcceptAppealOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -78,11 +89,6 @@ export default function QualityReviewPage() {
     if (!issue) return;
 
     try {
-      const confirmed = window.confirm(
-        "Accept this appeal?\n\nThe deduction will be removed and this issue will be closed.",
-      );
-
-      if (!confirmed) return;
       await resolveQualityIssue(issue.id);
 
       const updatedIssue = await getQualityReview(issue.id);
@@ -94,6 +100,8 @@ export default function QualityReviewPage() {
       console.error(error);
 
       toast.error("Unable to accept appeal.");
+    } finally {
+      setAcceptAppealOpen(false);
     }
   }
 
@@ -189,7 +197,7 @@ export default function QualityReviewPage() {
                 <Button
                   variant="outline"
                   className="cursor-pointer"
-                  onClick={handleAcceptAppeal}
+                  onClick={() => setAcceptAppealOpen(true)}
                 >
                   Accept Appeal
                 </Button>
@@ -205,6 +213,24 @@ export default function QualityReviewPage() {
           </div>
         </Card>
       </div>
+
+      <AlertDialog open={acceptAppealOpen} onOpenChange={setAcceptAppealOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Accept this appeal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The deduction will be removed and this issue will be closed. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAcceptAppeal}>
+              Accept Appeal
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
