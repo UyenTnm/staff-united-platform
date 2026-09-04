@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 import { calculateReviewScores } from "@/lib/performance/engine";
+import { RoleGuard } from "@/components/auth/role-guard";
 
 interface MonthlyEmployeeReview {
   id: string;
@@ -40,7 +41,7 @@ interface MonthlyEmployeeReview {
   };
 }
 
-export default function MonthlyReviewDetailPage() {
+function MonthlyReviewDetailPageContent() {
   const params = useParams();
 
   const reviewMonth = params.reviewMonth as string;
@@ -223,5 +224,13 @@ export default function MonthlyReviewDetailPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function MonthlyReviewDetailPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <MonthlyReviewDetailPageContent />
+    </RoleGuard>
   );
 }

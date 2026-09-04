@@ -14,8 +14,9 @@ import {
 import { useEffect, useState } from "react";
 import { EmployeeHeader } from "@/components/employees/employee-header";
 import { getEmployee, Employee } from "@/lib/employees/employees";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function BehaviorPage() {
+function BehaviorPageContent() {
   // const summary = calculateBehaviorScore(getBehaviorIssues);
   const [issues, setIssues] = useState<BehaviorIssue[]>([]);
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -140,5 +141,13 @@ export default function BehaviorPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function BehaviorPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <BehaviorPageContent />
+    </RoleGuard>
   );
 }

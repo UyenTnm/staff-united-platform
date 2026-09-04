@@ -20,8 +20,9 @@ import {
   getEmployeeReviews,
   PerformanceReview,
 } from "@/lib/performance/review";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function EmployeeDetailPage() {
+function EmployeeDetailPageContent() {
   const params = useParams();
 
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -250,5 +251,13 @@ export default function EmployeeDetailPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function EmployeeDetailPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <EmployeeDetailPageContent />
+    </RoleGuard>
   );
 }

@@ -25,8 +25,9 @@ import {
 } from "@/lib/employees/quality";
 import { toast } from "sonner";
 import { IssueStatusBadge } from "@/components/issues/IssueStatusBadge";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function QualityReviewPage() {
+function QualityReviewPageContent() {
   const params = useParams();
   const router = useRouter();
 
@@ -232,5 +233,13 @@ export default function QualityReviewPage() {
         </AlertDialogContent>
       </AlertDialog>
     </AppLayout>
+  );
+}
+
+export default function QualityReviewPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <QualityReviewPageContent />
+    </RoleGuard>
   );
 }

@@ -25,8 +25,9 @@ import {
   type BehaviorWithEmployee,
 } from "@/lib/employees/behavior";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function BehaviorReviewPage() {
+function BehaviorReviewPageContent() {
   const params = useParams();
   const router = useRouter();
 
@@ -240,5 +241,13 @@ export default function BehaviorReviewPage() {
         </AlertDialogContent>
       </AlertDialog>
     </AppLayout>
+  );
+}
+
+export default function BehaviorReviewPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <BehaviorReviewPageContent />
+    </RoleGuard>
   );
 }

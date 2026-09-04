@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 
 import { AppLayout } from "@/components/app-layout";
+import { RoleGuard } from "@/components/auth/role-guard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -335,14 +336,16 @@ function MonthlyReviewsContent() {
 
 export default function MonthlyReviewsPage() {
   return (
-    <Suspense
-      fallback={
-        <AppLayout>
-          <div className="p-6 text-slate-500">Loading...</div>
-        </AppLayout>
-      }
-    >
-      <MonthlyReviewsContent />
-    </Suspense>
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <Suspense
+        fallback={
+          <AppLayout>
+            <div className="p-6 text-slate-500">Loading...</div>
+          </AppLayout>
+        }
+      >
+        <MonthlyReviewsContent />
+      </Suspense>
+    </RoleGuard>
   );
 }

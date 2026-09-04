@@ -14,8 +14,9 @@ import { getQualityIssue, updateQualityIssue } from "@/lib/employees/quality";
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function EditQualityIssuePage() {
+function EditQualityIssuePageContent() {
   const params = useParams();
 
   const router = useRouter();
@@ -149,5 +150,13 @@ export default function EditQualityIssuePage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function EditQualityIssuePage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <EditQualityIssuePageContent />
+    </RoleGuard>
   );
 }

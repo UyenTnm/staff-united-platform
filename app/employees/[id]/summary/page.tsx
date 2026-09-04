@@ -21,8 +21,9 @@ import {
   getCurrentReview,
   type PerformanceReview,
 } from "@/lib/performance/review";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function PerformanceSummaryPage() {
+function PerformanceSummaryPageContent() {
   const params = useParams();
 
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -168,5 +169,13 @@ export default function PerformanceSummaryPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function PerformanceSummaryPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <PerformanceSummaryPageContent />
+    </RoleGuard>
   );
 }

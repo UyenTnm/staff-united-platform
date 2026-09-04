@@ -17,8 +17,9 @@ import {
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function EditBehaviorIssuePage() {
+function EditBehaviorIssuePageContent() {
   const params = useParams();
 
   const router = useRouter();
@@ -151,5 +152,13 @@ export default function EditBehaviorIssuePage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function EditBehaviorIssuePage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <EditBehaviorIssuePageContent />
+    </RoleGuard>
   );
 }

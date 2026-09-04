@@ -14,8 +14,9 @@ import {
 } from "@/lib/performance/review";
 import { generateMonthlyReviews } from "@/lib/performance/monthly-review";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function PerformanceReviewsPage() {
+function PerformanceReviewsPageContent() {
   const router = useRouter();
   const params = useParams();
 
@@ -162,5 +163,13 @@ export default function PerformanceReviewsPage() {
         )}
       </div>
     </AppLayout>
+  );
+}
+
+export default function PerformanceReviewsPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <PerformanceReviewsPageContent />
+    </RoleGuard>
   );
 }

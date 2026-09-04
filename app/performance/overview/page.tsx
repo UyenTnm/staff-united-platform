@@ -12,6 +12,8 @@ import {
   getPerformanceOverview,
   type EmployeePerformanceRow,
 } from "@/lib/performance/overview";
+import { getReviewMonth } from "@/lib/employees/bonus";
+import { RoleGuard } from "@/components/auth/role-guard";
 
 type SortKey = "name" | "total" | "quality" | "behavior" | "kaizen";
 
@@ -23,27 +25,107 @@ function scoreColor(score: number, max: number) {
   return "text-red-600";
 }
 
-export default function PerformanceOverviewPage() {
+// 12 tháng gần nhất (tính theo cùng logic chốt lương ngày 25 với getReviewMonth),
+// mới nhất trước, dùng cho dropdown chọn tháng.
+function getRecentReviewMonths(count = 12) {
+  const months: { value: string; label: string }[] = [];
+  const current = getReviewMonth(new Date());
+  const [year, month] = current.split("-").map(Number);
+
+  for (let i = 0; i < count; i++) {
+    const date = new Date(year, month - 1 - i, 1);
+    const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
+    const label = date.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+
+    months.push({ value, label });
+  }
+
+  return months;
+}
+
+function downloadCsv(rows: EmployeePerformanceRow[], monthLabel: string) {
+  const headers = [
+    "Employee",
+    "Department",
+    "Role",
+    "Quality",
+    "Quality Issues",
+    "Behavior",
+    "Behavior Issues",
+    "Kaizen",
+    "Rewarded Kaizens",
+    "Total",
+  ];
+
+  const escapeCell = (value: string | number) => {
+    const str = String(value);
+    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+
+  const lines = [
+    headers.join(","),
+    ...rows.map((r) =>
+      [
+        r.fullName,
+        r.department,
+        r.role,
+        r.quality,
+        r.qualityIssues,
+        r.behavior,
+        r.behaviorIssues,
+        r.kaizen,
+        r.rewardedKaizens,
+        r.total,
+      ]
+        .map(escapeCell)
+        .join(","),
+    ),
+  ];
+
+  // Thêm BOM để Excel đọc đúng tiếng Việt có dấu.
+  const csvContent = "﻿" + lines.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `performance-overview-${monthLabel.replace(/\s+/g, "-").toLowerCase()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function PerformanceOverviewPageContent() {
+  const months = useMemo(() => getRecentReviewMonths(12), []);
+
+  const [selectedMonth, setSelectedMonth] = useState(months[0].value);
   const [rows, setRows] = useState<EmployeePerformanceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("total");
   const [sortAsc, setSortAsc] = useState(false);
 
-  const monthLabel = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+  const monthLabel =
+    months.find((m) => m.value === selectedMonth)?.label ?? selectedMonth;
 
   useEffect(() => {
     async function load() {
-      const data = await getPerformanceOverview();
-      setRows(data);
-      setLoading(false);
+      setLoading(true);
+
+      try {
+        const data = await getPerformanceOverview(selectedMonth);
+        setRows(data);
+      } finally {
+        setLoading(false);
+      }
     }
 
     load();
-  }, []);
+  }, [selectedMonth]);
 
   const filteredRows = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -136,8 +218,20 @@ export default function PerformanceOverviewPage() {
         </div>
 
         <Card className="p-6">
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <h2 className="text-lg font-semibold">All Employees</h2>
+          <h2 className="text-lg font-semibold mb-4">All Employees</h2>
+
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+            >
+              {months.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
 
             <Input
               placeholder="Search name, department, role..."
@@ -145,6 +239,14 @@ export default function PerformanceOverviewPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-xs"
             />
+
+            <Button
+              variant="outline"
+              disabled={filteredRows.length === 0}
+              onClick={() => downloadCsv(filteredRows, monthLabel)}
+            >
+              Export CSV
+            </Button>
           </div>
 
           {loading ? (
@@ -237,6 +339,14 @@ export default function PerformanceOverviewPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function PerformanceOverviewPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <PerformanceOverviewPageContent />
+    </RoleGuard>
   );
 }
 

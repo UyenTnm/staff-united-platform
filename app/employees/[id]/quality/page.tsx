@@ -14,8 +14,9 @@ import {
 import { useEffect, useState } from "react";
 import { EmployeeHeader } from "@/components/employees/employee-header";
 import { getEmployee, Employee } from "@/lib/employees/employees";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function QualityPage() {
+function EmployeeQualityPageContent() {
   const [issues, setIssues] = useState<QualityIssue[]>([]);
   const [employee, setEmployee] = useState<Employee | null>(null);
 
@@ -145,5 +146,13 @@ export default function QualityPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function QualityPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <EmployeeQualityPageContent />
+    </RoleGuard>
   );
 }

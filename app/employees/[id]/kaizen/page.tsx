@@ -10,8 +10,9 @@ import { getEmployeeKaizens, KaizenRecord } from "@/lib/employees/kaizen";
 import { useEffect, useState } from "react";
 import { EmployeeHeader } from "@/components/employees/employee-header";
 import { getEmployee, Employee } from "@/lib/employees/employees";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function QualityPage() {
+function EmployeeKaizenPageContent() {
   // const summary = calculateQualityScore(getQualityIssues);
   const [kaizens, setKaizens] = useState<KaizenRecord[]>([]);
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -115,5 +116,13 @@ export default function QualityPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function QualityPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <EmployeeKaizenPageContent />
+    </RoleGuard>
   );
 }
