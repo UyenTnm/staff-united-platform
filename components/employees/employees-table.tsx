@@ -43,15 +43,16 @@ function getStatusColor(status: string) {
   }
 }
 
+const PAGE_SIZE = 10;
+
 export function EmployeesTable() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     async function loadEmployees() {
       const data = await getEmployees();
-
-      console.log("Loaded Employees:", data);
 
       setEmployees(data);
 
@@ -60,6 +61,14 @@ export function EmployeesTable() {
 
     loadEmployees();
   }, []);
+
+  const totalPages = Math.max(1, Math.ceil(employees.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedEmployees = employees.slice(
+    startIndex,
+    startIndex + PAGE_SIZE,
+  );
 
   async function handleToggleStatus(employee: Employee) {
     const newStatus = employee.status === "Active" ? "Inactive" : "Active";
@@ -86,8 +95,6 @@ export function EmployeesTable() {
   if (loading) {
     return <Card className="p-6">Loading employees...</Card>;
   }
-
-  console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 
   return (
     <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 col-span-1 md:col-span-2">
@@ -128,7 +135,7 @@ export function EmployeesTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.map((employee) => (
+            {paginatedEmployees.map((employee) => (
               <TableRow
                 key={employee.id}
                 className="border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50"
@@ -182,8 +189,6 @@ export function EmployeesTable() {
                           Edit Employee
                         </Link>
                       </DropdownMenuItem>
-                      {/* <DropdownMenuItem>Edit Permissions</DropdownMenuItem> */}
-                      {/* <DropdownMenuItem>Reset Password</DropdownMenuItem> */}
                       <DropdownMenuItem
                         onClick={async () => {
                           await updateEmployeeStatus(
@@ -208,6 +213,40 @@ export function EmployeesTable() {
           </TableBody>
         </Table>
       </div>
+
+      {employees.length > 0 && (
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Showing {startIndex + 1}–
+            {Math.min(startIndex + PAGE_SIZE, employees.length)} of{" "}
+            {employees.length} employees
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Previous
+            </Button>
+
+            <span className="text-sm text-slate-600 dark:text-slate-400 px-2">
+              Page {currentPage} / {totalPages}
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

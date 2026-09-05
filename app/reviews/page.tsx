@@ -181,18 +181,21 @@ function MonthlyReviewsContent() {
               pendingReviews.map((review) => (
                 <Card
                   key={review.id}
-                  className="p-6 flex items-center justify-between"
+                  className="p-5 flex flex-row items-center justify-between gap-4 w-full"
                 >
-                  <div>
-                    <h2 className="text-xl font-semibold">
-                      {review.employees?.full_name}
-                    </h2>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h2 className="text-lg font-semibold">
+                        {review.employees?.full_name}
+                      </h2>
+
+                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                        {formatReviewStatus(review.status)}
+                      </span>
+                    </div>
 
                     <p className="text-sm text-slate-500 mt-1">
-                      {review.employees?.department}
-                    </p>
-
-                    <p className="text-sm text-slate-500 mt-3">
+                      {review.employees?.department} •{" "}
                       {new Date(review.review_month).toLocaleDateString(
                         "en-US",
                         { month: "long", year: "numeric" },
@@ -205,12 +208,11 @@ function MonthlyReviewsContent() {
                         {review.status === "WaitingManager"
                           ? "Manager"
                           : "Employee"}
-                      </span>{" "}
-                      ({formatReviewStatus(review.status)})
+                      </span>
                     </p>
                   </div>
 
-                  <Button asChild>
+                  <Button asChild size="sm" className="shrink-0">
                     <Link
                       href={`/employees/${review.employee_id}/reviews/${review.id}`}
                     >
