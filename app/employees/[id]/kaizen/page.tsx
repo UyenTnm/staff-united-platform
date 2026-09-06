@@ -121,7 +121,7 @@ function EmployeeKaizenPageContent() {
 
 export default function QualityPage() {
   return (
-    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+    <RoleGuard allow={["Admin", "HR", "Manager", "Employee"]}>
       <EmployeeKaizenPageContent />
     </RoleGuard>
   );

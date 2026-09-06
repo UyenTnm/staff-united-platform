@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { createNotification } from "@/lib/notifications";
 
 export type ReviewStatus =
   | "Draft"
@@ -254,6 +255,28 @@ export async function getMonthlyReview(
   return data as MonthlyPerformanceReview;
 }
 
+export async function sendReviewToEmployee(reviewId: string) {
+  const { error } = await supabase
+    .from("performance_reviews")
+    .update({
+      status: "WaitingEmployee",
+    })
+    .eq("id", reviewId);
+
+  if (error) throw error;
+
+  const review = await getReview(reviewId);
+  if (!review) return;
+
+  await createNotification(
+    review.employee_id,
+    "Monthly Review Ready",
+    "Your monthly performance review is ready — please review and accept or appeal.",
+    "review",
+    `/employees/${review.employee_id}/reviews/${reviewId}`,
+  );
+}
+
 export async function employeeAcceptReview(reviewId: string) {
   const { error } = await supabase
     .from("performance_reviews")
@@ -263,6 +286,26 @@ export async function employeeAcceptReview(reviewId: string) {
     .eq("id", reviewId);
 
   if (error) throw error;
+
+  const review = await getReview(reviewId);
+  if (!review) return;
+
+  const { data: managers } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("user_role", "Manager");
+
+  if (managers) {
+    for (const manager of managers) {
+      await createNotification(
+        manager.id,
+        "Monthly Review Waiting",
+        "An employee has accepted their monthly review — waiting for your approval.",
+        "review",
+        `/employees/${review.employee_id}/reviews/${reviewId}`,
+      );
+    }
+  }
 }
 
 // All reviews still in progress — waiting on the employee to accept/appeal,
@@ -334,6 +377,34 @@ export async function approveReview(reviewId: string) {
     .eq("id", reviewId);
 
   if (error) throw error;
+
+  const review = await getReview(reviewId);
+  if (!review) return;
+
+  await createNotification(
+    review.employee_id,
+    "Monthly Review Approved",
+    "Your monthly review has been approved by your manager.",
+    "review",
+    `/employees/${review.employee_id}/reviews/${reviewId}`,
+  );
+
+  const { data: hrStaff } = await supabase
+    .from("employees")
+    .select("id")
+    .in("user_role", ["Admin", "HR"]);
+
+  if (hrStaff) {
+    for (const hr of hrStaff) {
+      await createNotification(
+        hr.id,
+        "Monthly Review Approved",
+        "A manager has approved a monthly review — ready to be locked as final.",
+        "review",
+        `/employees/${review.employee_id}/reviews/${reviewId}`,
+      );
+    }
+  }
 }
 
 export async function lockReview(reviewId: string) {
@@ -345,4 +416,15 @@ export async function lockReview(reviewId: string) {
     .eq("id", reviewId);
 
   if (error) throw error;
+
+  const review = await getReview(reviewId);
+  if (!review) return;
+
+  await createNotification(
+    review.employee_id,
+    "Monthly Review Finalized",
+    "Your monthly review has been locked — final for this month.",
+    "review",
+    `/employees/${review.employee_id}/reviews/${reviewId}`,
+  );
 }

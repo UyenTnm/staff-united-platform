@@ -17,8 +17,11 @@ import {
   updateManagerNotes,
   updateEmployeeComment,
   employeeAcceptReview,
+  approveReview,
   lockReview,
+  sendReviewToEmployee,
 } from "@/lib/performance/review";
+
 import { ReviewCard } from "@/components/employees/performance/review-card";
 import { calculateReviewScores } from "@/lib/performance/engine";
 import type { ReviewScores } from "@/lib/performance/engine";
@@ -63,7 +66,7 @@ export default function ReviewDetailPage() {
     if (!review) return;
 
     try {
-      await updateReviewStatus(review.id, "WaitingEmployee");
+      await sendReviewToEmployee(review.id);
 
       setReview({
         ...review,
@@ -82,7 +85,7 @@ export default function ReviewDetailPage() {
     if (!review) return;
 
     try {
-      await updateReviewStatus(review.id, "Approved");
+      await approveReview(review.id);
 
       const perf = await calculateReviewScores(
         review.employee_id,
@@ -441,6 +444,7 @@ export default function ReviewDetailPage() {
                       await updateHrNotes(review.id, review.hr_notes ?? "");
                       toast.success("HR notes saved.");
                     }}
+                    className="cursor-pointer"
                   >
                     Save HR Notes
                   </Button>
@@ -504,6 +508,7 @@ export default function ReviewDetailPage() {
 
                     toast.success("Manager notes saved.");
                   }}
+                  className="cursor-pointer"
                 >
                   Save Manager Notes
                 </Button>
@@ -528,7 +533,7 @@ export default function ReviewDetailPage() {
                   )}
 
                 {(isAdmin || isHR) && review.status === "Approved" && (
-                  <Button onClick={handleLockReview}>
+                  <Button onClick={handleLockReview} className="cursor-pointer">
                     Lock Review (Final)
                   </Button>
                 )}
@@ -536,11 +541,18 @@ export default function ReviewDetailPage() {
                 {/* Manager */}
                 {isManager && review.status === "WaitingManager" && (
                   <>
-                    <Button onClick={handleApproveReview}>
+                    <Button
+                      onClick={handleApproveReview}
+                      className="cursor-pointer"
+                    >
                       Approve Review
                     </Button>
 
-                    <Button variant="outline" onClick={handleReturnToHR}>
+                    <Button
+                      variant="outline"
+                      onClick={handleReturnToHR}
+                      className="cursor-pointer"
+                    >
                       Return to HR
                     </Button>
                   </>
@@ -559,7 +571,12 @@ export default function ReviewDetailPage() {
 
                 {/* Back */}
                 <Button asChild variant="outline">
-                  <Link href={`/employees/${params.id}`}>Back</Link>
+                  <Link
+                    href={`/employees/${params.id}`}
+                    className="cursor-pointer"
+                  >
+                    Back
+                  </Link>
                 </Button>
               </div>
             </div>

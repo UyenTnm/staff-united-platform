@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
 import { createPerformanceReview } from "./review";
+import { getReviewMonth } from "@/lib/employees/bonus";
 
 export interface ReviewCycle {
   reviewMonth: string;
@@ -50,15 +51,19 @@ export async function createMonthlyReviewCycle(reviewMonth: string) {
 export function getUpcomingReviewMonths() {
   const months: string[] = [];
 
-  const current = new Date();
+  // Bắt đầu từ tháng review hiện tại (theo rule chốt ngày 25) thay vì
+  // chỉ tính từ tháng sau — để HR luôn có chỗ bấm "Continue" đồng bộ
+  // lại cycle hiện tại khi có nhân viên mới được thêm vào giữa chừng.
+  const currentReviewMonth = getReviewMonth(new Date());
+  const [year, month] = currentReviewMonth.split("-").map(Number);
 
-  for (let i = 1; i <= 3; i++) {
-    const next = new Date(current.getFullYear(), current.getMonth() + i, 1);
+  for (let i = 0; i <= 3; i++) {
+    const next = new Date(year, month - 1 + i, 1);
 
-    const year = next.getFullYear();
-    const month = String(next.getMonth() + 1).padStart(2, "0");
+    const y = next.getFullYear();
+    const m = String(next.getMonth() + 1).padStart(2, "0");
 
-    months.push(`${year}-${month}-01`);
+    months.push(`${y}-${m}-01`);
   }
 
   return months;

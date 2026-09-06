@@ -362,7 +362,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           label: "Overview",
           href: "/performance/overview",
         },
-
+        {
+          label: "Monthly Reviews",
+          href: "/reviews",
+        },
         {
           label: "Quality Approval",
           href: "/quality?tab=manager",

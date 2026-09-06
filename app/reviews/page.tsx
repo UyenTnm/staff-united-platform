@@ -53,6 +53,7 @@ function MonthlyReviewsContent() {
     initialTab && VALID_TABS.includes(initialTab) ? initialTab : "cycles",
   );
   const [loading, setLoading] = useState(false);
+  const [syncingMonth, setSyncingMonth] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<MonthlyDashboard | null>(null);
   const [cycles, setCycles] = useState<ReviewCycle[]>([]);
   const [upcomingMonths, setUpcomingMonths] = useState<string[]>([]);
@@ -108,31 +109,25 @@ function MonthlyReviewsContent() {
   }
 
   async function handleCycle(reviewMonth: string, cycle?: ReviewCycle) {
-    if (!cycle) {
-      setLoading(true);
+    // Luôn đồng bộ trước khi vào xem — tự tạo thêm review cho bất kỳ
+    // nhân viên nào chưa có (nhân viên mới thêm giữa tháng), bỏ qua ai
+    // đã có sẵn. An toàn kể cả khi cycle đã hoàn tất 100%.
+    setSyncingMonth(reviewMonth);
 
-      try {
-        const result = await createMonthlyReviewCycle(reviewMonth);
+    try {
+      const result = await createMonthlyReviewCycle(reviewMonth);
 
-        toast.success(
-          `${result.created} reviews created • ${result.skipped} already existed`,
-        );
-
-        const dashboard = await getMonthlyDashboard();
-        setDashboard(dashboard);
-
-        const reviewCycles = await getReviewCycles();
-        setCycles(reviewCycles);
-      } finally {
-        setLoading(false);
+      if (result.created > 0) {
+        toast.success(`Synced — ${result.created} new review(s) created.`);
       }
 
-      return;
-    }
+      const dashboard = await getMonthlyDashboard();
+      setDashboard(dashboard);
 
-    if (cycle.completed) {
-      router.push(`/reviews/${reviewMonth}`);
-      return;
+      const reviewCycles = await getReviewCycles();
+      setCycles(reviewCycles);
+    } finally {
+      setSyncingMonth(null);
     }
 
     router.push(`/reviews/${reviewMonth}`);
@@ -312,17 +307,21 @@ function MonthlyReviewsContent() {
 
                       <Button
                         variant="outline"
-                        disabled={!existing && !canCreate}
+                        disabled={
+                          (!existing && !canCreate) || syncingMonth === month
+                        }
                         onClick={() => handleCycle(month, existing)}
                         className="cursor-pointer"
                       >
-                        {!existing
-                          ? canCreate
-                            ? "Create"
-                            : "Locked"
-                          : existing.completed
-                            ? "Open"
-                            : "Continue"}
+                        {syncingMonth === month
+                          ? "Syncing..."
+                          : !existing
+                            ? canCreate
+                              ? "Create"
+                              : "Locked"
+                            : existing.completed
+                              ? "Open"
+                              : "Continue"}
                       </Button>
                     </div>
                   );

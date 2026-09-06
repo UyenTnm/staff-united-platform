@@ -23,6 +23,19 @@ import {
 } from "@/lib/performance/review";
 import { RoleGuard } from "@/components/auth/role-guard";
 
+function formatReviewStatus(status: string) {
+  switch (status) {
+    case "WaitingEmployee":
+      return "Waiting Employee";
+    case "EmployeeAppealed":
+      return "Employee Appealed";
+    case "WaitingManager":
+      return "Waiting Manager";
+    default:
+      return status;
+  }
+}
+
 function PerformanceSummaryPageContent() {
   const params = useParams();
 
@@ -94,7 +107,7 @@ function PerformanceSummaryPageContent() {
               <h2 className="text-2xl font-bold mt-1">{reviewMonthLabel}</h2>
             </div>
 
-            {review && <Badge className="capitalize">{review.status}</Badge>}
+            {review && <Badge>{formatReviewStatus(review.status)}</Badge>}
           </div>
 
           <div className="mt-6">

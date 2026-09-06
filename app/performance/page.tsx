@@ -217,11 +217,14 @@ export default function MyPerformancePage() {
               <Button
                 onClick={handleAcceptReview}
                 disabled={review.status !== "WaitingEmployee"}
+                className="cursor-pointer"
               >
                 Accept Review
               </Button>
 
-              <Button variant="outline">Appeal</Button>
+              <Button className="cursor-pointer" variant="outline">
+                Appeal
+              </Button>
             </div>
           </Card>
         </div>

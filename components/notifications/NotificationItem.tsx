@@ -23,7 +23,7 @@ export function NotificationItem({
           <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
         )}
 
-        <div className="flex-1">
+        <div className="flex-1 cursor-pointer">
           <p className="font-medium text-sm">{notification.title}</p>
 
           <p className="text-xs text-slate-500 mt-1">{notification.message}</p>

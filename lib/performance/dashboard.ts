@@ -1,6 +1,7 @@
 import { getReview, PerformanceReview } from "./review";
 import { calculateReviewScores } from "./engine";
 import { supabase } from "../supabase";
+import { getReviewMonth } from "@/lib/employees/bonus";
 
 export interface ReviewDashboard {
   review: PerformanceReview;
@@ -61,11 +62,7 @@ export async function getReviewDashboard(
 }
 
 export async function getMonthlyDashboard(): Promise<MonthlyDashboard> {
-  const now = new Date();
-
-  const reviewMonth = `${now.getFullYear()}-${String(
-    now.getMonth() + 1,
-  ).padStart(2, "0")}-01`;
+  const reviewMonth = getReviewMonth(new Date());
 
   const [{ count: employeeCount }, { data: reviews }] = await Promise.all([
     supabase
