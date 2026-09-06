@@ -123,7 +123,7 @@ function SidebarContent({
   return (
     <>
       <div className="border-b border-slate-100 px-6 py-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600">
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">
           STAFF United
         </p>
         <p className="mt-1 text-sm font-bold text-slate-900">Client Portal</p>
@@ -134,7 +134,7 @@ function SidebarContent({
           href="/portal"
           className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
             pathname === "/portal"
-              ? "bg-emerald-50 text-emerald-700"
+              ? "bg-brand-50 text-brand-700"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -145,7 +145,7 @@ function SidebarContent({
           href="/portal/projects"
           className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
             pathname === "/portal/projects"
-              ? "bg-emerald-50 text-emerald-700"
+              ? "bg-brand-50 text-brand-700"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -156,7 +156,7 @@ function SidebarContent({
           href="/portal/profile"
           className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
             pathname === "/portal/profile"
-              ? "bg-emerald-50 text-emerald-700"
+              ? "bg-brand-50 text-brand-700"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -167,7 +167,7 @@ function SidebarContent({
           href="/portal/request-services"
           className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
             pathname === "/portal/request-services"
-              ? "bg-emerald-50 text-emerald-700"
+              ? "bg-brand-50 text-brand-700"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -178,7 +178,7 @@ function SidebarContent({
           href="/portal/documents"
           className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
             pathname === "/portal/documents"
-              ? "bg-emerald-50 text-emerald-700"
+              ? "bg-brand-50 text-brand-700"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -189,7 +189,7 @@ function SidebarContent({
           href="/portal/support"
           className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
             pathname === "/portal/support"
-              ? "bg-emerald-50 text-emerald-700"
+              ? "bg-brand-50 text-brand-700"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >

@@ -139,7 +139,7 @@ export default function SupportThreadPage() {
               <p className="mt-1 font-mono text-xs text-slate-400">
                 {session.ticket_number}
                 {session.quotes && (
-                  <span className="ml-2 text-emerald-600">
+                  <span className="ml-2 text-brand-600">
                     · Re: {session.quotes.title || session.quotes.quote_number}
                   </span>
                 )}
@@ -171,7 +171,7 @@ export default function SupportThreadPage() {
             onClick={() => setTab("chat")}
             className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-medium ${
               tab === "chat"
-                ? "border-emerald-600 text-emerald-700"
+                ? "border-brand-600 text-brand-700"
                 : "border-transparent text-slate-500"
             }`}
           >
@@ -181,7 +181,7 @@ export default function SupportThreadPage() {
             onClick={() => setTab("history")}
             className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-medium ${
               tab === "history"
-                ? "border-emerald-600 text-emerald-700"
+                ? "border-brand-600 text-brand-700"
                 : "border-transparent text-slate-500"
             }`}
           >
@@ -206,7 +206,7 @@ export default function SupportThreadPage() {
                       {s.ticket_number}
                     </p>
                     {s.quotes && (
-                      <p className="text-xs text-emerald-600">
+                      <p className="text-xs text-brand-600">
                         Re: {s.quotes.title || s.quotes.quote_number}
                       </p>
                     )}
@@ -256,7 +256,7 @@ export default function SupportThreadPage() {
                   <div
                     className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
                       msg.sender_type === "staff"
-                        ? "bg-emerald-600 text-white"
+                        ? "bg-brand-600 text-white"
                         : "bg-slate-100 text-slate-800"
                     }`}
                   >
@@ -269,7 +269,7 @@ export default function SupportThreadPage() {
                     <p
                       className={`mt-1 text-[10px] ${
                         msg.sender_type === "staff"
-                          ? "text-emerald-100"
+                          ? "text-brand-100"
                           : "text-slate-400"
                       }`}
                     >
@@ -300,7 +300,7 @@ export default function SupportThreadPage() {
               <button
                 onClick={handleSend}
                 disabled={sending || !input.trim()}
-                className="flex cursor-pointer items-center justify-center rounded-xl bg-emerald-600 px-4 text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="flex cursor-pointer items-center justify-center rounded-xl bg-brand-600 px-4 text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
               </button>

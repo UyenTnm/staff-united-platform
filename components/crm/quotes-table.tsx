@@ -30,9 +30,9 @@ function getStatusColor(status: string) {
     case "Viewed":
       return "bg-amber-100 text-amber-700 border border-amber-200";
     case "Accepted":
-      return "bg-emerald-100 text-emerald-700 border border-emerald-200";
+      return "bg-brand-100 text-brand-700 border border-brand-200";
     case "Paid":
-      return "bg-emerald-100 text-emerald-800 border border-emerald-300";
+      return "bg-brand-100 text-brand-800 border border-brand-300";
     case "Rejected":
       return "bg-red-100 text-red-700 border border-red-200";
     default:
@@ -43,7 +43,7 @@ function getStatusColor(status: string) {
 function CompanyAvatar({ name }: { name: string }) {
   const initial = name?.trim()?.charAt(0)?.toUpperCase() || "?";
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-400">
       {initial}
     </div>
   );

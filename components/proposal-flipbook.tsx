@@ -147,7 +147,7 @@ export function ProposalFlipbook({ pdfUrl }: ProposalFlipbookProps) {
         download
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800"
+        className="text-sm font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800"
       >
         Download PDF
       </a>
@@ -324,7 +324,7 @@ export function ProposalFlipbook({ pdfUrl }: ProposalFlipbookProps) {
 //         download
 //         target="_blank"
 //         rel="noopener noreferrer"
-//         className="text-sm font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800"
+//         className="text-sm font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800"
 //       >
 //         Download PDF
 //       </a>

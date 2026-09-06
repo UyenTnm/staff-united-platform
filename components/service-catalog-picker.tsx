@@ -27,7 +27,7 @@ function TriStateBox({ state }: { state: "empty" | "full" | "partial" }) {
       className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border ${
         state === "empty"
           ? "border-slate-300 bg-white"
-          : "border-emerald-600 bg-emerald-600"
+          : "border-brand-600 bg-brand-600"
       }`}
     >
       {state === "full" && <Check className="h-3 w-3 text-white" />}
@@ -202,7 +202,7 @@ export function ServiceCatalogPicker({
                 }
               }}
               onChange={toggleSelectAll}
-              className="h-4 w-4 rounded accent-emerald-600"
+              className="h-4 w-4 rounded accent-brand-600"
             />
             Select All ({totalSelected} services selected)
           </label>
@@ -246,7 +246,7 @@ export function ServiceCatalogPicker({
                           {dept.name}
                         </span>
                         {alreadyAdded && (
-                          <span className="flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                          <span className="flex items-center gap-0.5 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
                             <Check className="h-2.5 w-2.5" />
                             Already added
                           </span>
@@ -307,7 +307,7 @@ export function ServiceCatalogPicker({
                                         svc.name,
                                       )
                                     }
-                                    className="h-3.5 w-3.5 rounded accent-emerald-600"
+                                    className="h-3.5 w-3.5 rounded accent-brand-600"
                                   />
                                   {svc.name}
                                 </label>

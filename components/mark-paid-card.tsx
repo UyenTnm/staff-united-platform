@@ -24,7 +24,7 @@ export function MarkPaidCard({
 
   if (proposalStatus === "paid") {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">
+      <div className="flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-700">
         <CheckCircle2 className="h-5 w-5" />
         <span className="text-sm font-medium">
           Payment confirmed — this deal is marked as Won.

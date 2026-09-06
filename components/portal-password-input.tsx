@@ -29,7 +29,7 @@ export function PasswordInput({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-white/20 bg-white/10 p-3.5 pr-11 text-sm text-white placeholder-white/40 outline-none backdrop-blur-md transition focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/60"
+        className="w-full rounded-xl border border-white/20 bg-white/10 p-3.5 pr-11 text-sm text-white placeholder-white/40 outline-none backdrop-blur-md transition focus:border-brand-400/60 focus:ring-1 focus:ring-brand-400/60"
       />
       <button
         type="button"

@@ -39,7 +39,7 @@ export function KaizenStatusBadge({ status }: Props) {
 
     case "Rewarded":
       return (
-        <Badge className="bg-emerald-100 text-emerald-700">Rewarded</Badge>
+        <Badge className="bg-brand-100 text-brand-700">Rewarded</Badge>
       );
 
     default:

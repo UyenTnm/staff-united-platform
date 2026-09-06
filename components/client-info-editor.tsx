@@ -88,7 +88,7 @@ export function ClientInfoEditor({
         ) : !editing ? (
           <button
             onClick={() => setEditing(true)}
-            className="flex cursor-pointer items-center gap-1 text-xs text-slate-500 hover:text-emerald-600"
+            className="flex cursor-pointer items-center gap-1 text-xs text-slate-500 hover:text-brand-600"
           >
             <Pencil className="h-3.5 w-3.5" />
             Edit
@@ -104,7 +104,7 @@ export function ClientInfoEditor({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="cursor-pointer text-emerald-600 hover:text-emerald-700"
+              className="cursor-pointer text-brand-600 hover:text-brand-700"
             >
               <Check className="h-4 w-4" />
             </button>

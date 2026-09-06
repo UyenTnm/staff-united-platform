@@ -20,7 +20,7 @@ type SortKey = "name" | "total" | "quality" | "behavior" | "kaizen";
 function scoreColor(score: number, max: number) {
   const ratio = max > 0 ? score / max : 0;
 
-  if (ratio >= 0.8) return "text-emerald-600";
+  if (ratio >= 0.8) return "text-brand-600";
   if (ratio >= 0.5) return "text-amber-600";
   return "text-red-600";
 }

@@ -15,8 +15,8 @@ const STATUS_COLOR: Record<string, string> = {
   Draft: "bg-slate-100 text-slate-700",
   Sent: "bg-blue-100 text-blue-700",
   Viewed: "bg-amber-100 text-amber-700",
-  Accepted: "bg-emerald-100 text-emerald-700",
-  Paid: "bg-emerald-100 text-emerald-800",
+  Accepted: "bg-brand-100 text-brand-700",
+  Paid: "bg-brand-100 text-brand-800",
   Rejected: "bg-red-100 text-red-700",
 };
 
@@ -73,8 +73,8 @@ export default function ClientHistoryPage() {
         </Button>
 
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
-            <Building2 className="h-6 w-6 text-emerald-700" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100">
+            <Building2 className="h-6 w-6 text-brand-700" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">

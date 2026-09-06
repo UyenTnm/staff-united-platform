@@ -17,7 +17,7 @@ export function MetricCards() {
       value: '48',
       change: '+2',
       icon: Shield,
-      color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+      color: 'bg-brand-500/10 text-brand-600 dark:text-brand-400',
       trend: 'up',
     },
     {
@@ -65,8 +65,8 @@ export function MetricCards() {
               </div>
 
               <div className="flex items-center gap-2">
-                <TrendingUp className={`w-4 h-4 ${isNegative ? 'text-red-500' : 'text-emerald-500'}`} />
-                <span className={`text-sm font-medium ${isNegative ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                <TrendingUp className={`w-4 h-4 ${isNegative ? 'text-red-500' : 'text-brand-500'}`} />
+                <span className={`text-sm font-medium ${isNegative ? 'text-red-600 dark:text-red-400' : 'text-brand-600 dark:text-brand-400'}`}>
                   {metric.change}
                 </span>
                 <span className="text-xs text-slate-500 dark:text-slate-500">from last month</span>

@@ -91,10 +91,10 @@ function EmployeeKaizenPageContent() {
                     </div>
 
                     <div className="text-right space-y-3">
-                      {/* <p className="font-bold text-emerald-600 text-lg">
+                      {/* <p className="font-bold text-brand-600 text-lg">
                         +{kaizen.performance_points}
                       </p> */}
-                      <p className="font-bold text-emerald-600 text-lg">
+                      <p className="font-bold text-brand-600 text-lg">
                         {kaizen.performance_points > 0
                           ? `+${kaizen.performance_points}`
                           : "--"}

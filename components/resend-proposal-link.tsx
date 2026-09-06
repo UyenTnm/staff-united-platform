@@ -56,7 +56,7 @@ export function ResendProposalLink({ token }: ResendProposalLinkProps) {
 
   if (sent) {
     return (
-      <div className="mx-auto flex max-w-sm items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+      <div className="mx-auto flex max-w-sm items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-700">
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
         Link sent to your email — check your inbox.
       </div>
@@ -67,7 +67,7 @@ export function ResendProposalLink({ token }: ResendProposalLinkProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mx-auto flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700"
+        className="mx-auto flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-brand-300 hover:text-brand-700"
       >
         <Mail className="h-4 w-4" />
         Email me this link
@@ -78,7 +78,7 @@ export function ResendProposalLink({ token }: ResendProposalLinkProps) {
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <p className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
-        <Mail className="h-4 w-4 text-emerald-600" />
+        <Mail className="h-4 w-4 text-brand-600" />
         Get this link by email
       </p>
       <p className="text-xs text-slate-500">
@@ -91,7 +91,7 @@ export function ResendProposalLink({ token }: ResendProposalLinkProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          className="flex-1 rounded-lg border border-slate-200 p-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          className="flex-1 rounded-lg border border-slate-200 p-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
         <Button
           size="sm"

@@ -92,7 +92,7 @@ export function BillingInfoForm({
 
   if (saved) {
     return (
-      <div className="space-y-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+      <div className="space-y-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-700">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
           Billing information confirmed.
@@ -110,7 +110,7 @@ export function BillingInfoForm({
   return (
     <div className="rounded-xl bg-white p-6 shadow-sm space-y-4">
       <div className="flex items-center gap-2">
-        <FileText className="h-5 w-5 text-emerald-600" />
+        <FileText className="h-5 w-5 text-brand-600" />
         <h2 className="font-semibold text-slate-900">
           {prefilledBySale
             ? "Confirm invoice details"

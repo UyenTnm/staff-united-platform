@@ -96,7 +96,7 @@ export function DocumentsManager({ quoteId }: DocumentsManagerProps) {
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+          className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100"
         >
           <Upload className="h-4 w-4" />
           {uploading ? "Uploading..." : "Upload File"}
@@ -137,7 +137,7 @@ export function DocumentsManager({ quoteId }: DocumentsManagerProps) {
                   href={doc.file_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-lg p-2 text-slate-400 hover:bg-slate-50 hover:text-emerald-600"
+                  className="rounded-lg p-2 text-slate-400 hover:bg-slate-50 hover:text-brand-600"
                 >
                   <Download className="h-4 w-4" />
                 </a>

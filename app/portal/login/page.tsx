@@ -52,7 +52,7 @@ export default function PortalLoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@company.com"
-            className="w-full rounded-xl border border-white/20 bg-white/10 p-3.5 text-sm text-white placeholder-white/40 outline-none backdrop-blur-md transition focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/60"
+            className="w-full rounded-xl border border-white/20 bg-white/10 p-3.5 text-sm text-white placeholder-white/40 outline-none backdrop-blur-md transition focus:border-brand-400/60 focus:ring-1 focus:ring-brand-400/60"
           />
         </div>
 
@@ -76,14 +76,14 @@ export default function PortalLoginPage() {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full cursor-pointer rounded-xl bg-emerald-500 p-3.5 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+          className="w-full cursor-pointer rounded-xl bg-brand-500 p-3.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
 
         <Link
           href="/portal/forgot-password"
-          className="block text-center text-xs font-medium text-slate-300 hover:text-emerald-400"
+          className="block text-center text-xs font-medium text-slate-300 hover:text-brand-400"
         >
           Forgot password?
         </Link>

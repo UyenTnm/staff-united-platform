@@ -206,6 +206,16 @@ export default function ReviewDetailPage() {
   const isManager = employee?.user_role === "Manager";
   const isEmployee = employee?.user_role === "Employee";
 
+  if (isEmployee && employee?.id !== review.employee_id) {
+    return (
+      <AppLayout>
+        <div className="p-10 text-center text-slate-500">
+          You don't have permission to view this review.
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -319,7 +329,7 @@ export default function ReviewDetailPage() {
             count={performance?.rewardedKaizens ?? 0}
             countLabel="Kaizen"
             href={`/employees/${params.id}/kaizen?reviewId=${review.id}&reviewMonth=${review.review_month}`}
-            color="text-emerald-600"
+            color="text-brand-600"
           />
 
           <Card className="p-6 md:col-span-3">

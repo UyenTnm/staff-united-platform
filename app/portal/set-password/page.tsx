@@ -137,7 +137,7 @@ export default function SetPasswordPage() {
         <button
           onClick={handleSetPassword}
           disabled={saving}
-          className="w-full cursor-pointer rounded-xl bg-emerald-500 p-3.5 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+          className="w-full cursor-pointer rounded-xl bg-brand-500 p-3.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
         >
           {saving ? "Saving..." : "Set password & continue"}
         </button>

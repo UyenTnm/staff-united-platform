@@ -80,7 +80,7 @@ function BehaviorPageContent() {
           <Card className="p-5">
             <p className="text-sm text-slate-500">Current Score</p>
 
-            <h2 className="text-3xl font-bold text-emerald-600 mt-2">
+            <h2 className="text-3xl font-bold text-brand-600 mt-2">
               {summary.currentScore}%
             </h2>
           </Card>

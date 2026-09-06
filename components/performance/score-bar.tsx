@@ -32,14 +32,14 @@ export function ScoreBar({
 
   const barColor =
     ratio >= 0.8
-      ? "bg-emerald-500"
+      ? "bg-brand-500"
       : ratio >= 0.5
         ? "bg-amber-500"
         : "bg-red-500";
 
   const textColor =
     ratio >= 0.8
-      ? "text-emerald-600"
+      ? "text-brand-600"
       : ratio >= 0.5
         ? "text-amber-600"
         : "text-red-600";

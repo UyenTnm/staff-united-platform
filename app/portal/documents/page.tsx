@@ -90,8 +90,8 @@ export default function PortalDocumentsPage() {
                 className="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-50">
-                    <FileText className="h-5 w-5 text-emerald-600" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-50">
+                    <FileText className="h-5 w-5 text-brand-600" />
                   </div>
                   <div className="min-w-0">
                     <p className="truncate font-medium text-slate-900">

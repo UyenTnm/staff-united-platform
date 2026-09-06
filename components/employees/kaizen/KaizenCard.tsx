@@ -48,7 +48,7 @@ export function KaizenCard({ kaizen, action }: Props) {
             {kaizen.status === "Rewarded" && kaizen.rewarded_at && (
               <>
                 {" • "}
-                <span className="text-emerald-600 font-medium">
+                <span className="text-brand-600 font-medium">
                   Rewarded {formatDate(kaizen.rewarded_at)} (counted in{" "}
                   {new Date(kaizen.review_month).toLocaleDateString("en-US", {
                     month: "long",

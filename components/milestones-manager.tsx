@@ -70,12 +70,12 @@ export function MilestonesManager({ quoteId }: MilestonesManagerProps) {
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
           Project Progress
         </h2>
-        <span className="text-sm font-bold text-emerald-600">{progress}%</span>
+        <span className="text-sm font-bold text-brand-600">{progress}%</span>
       </div>
 
       <div className="mb-5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
         <div
-          className="h-full bg-emerald-500 transition-all duration-500"
+          className="h-full bg-brand-500 transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -101,7 +101,7 @@ export function MilestonesManager({ quoteId }: MilestonesManagerProps) {
                   <p className="text-sm font-bold text-slate-900 dark:text-white">
                     {serviceGroup.serviceName}
                   </p>
-                  <span className="text-xs font-semibold text-emerald-600">
+                  <span className="text-xs font-semibold text-brand-600">
                     {serviceProgress}%
                   </span>
                 </div>
@@ -145,7 +145,7 @@ export function MilestonesManager({ quoteId }: MilestonesManagerProps) {
                                     className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
                                   >
                                     {m.is_completed ? (
-                                      <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-emerald-600" />
+                                      <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-brand-600" />
                                     ) : (
                                       <Circle className="h-3.5 w-3.5 flex-shrink-0 text-slate-300" />
                                     )}
@@ -176,7 +176,7 @@ export function MilestonesManager({ quoteId }: MilestonesManagerProps) {
                                 className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
                               >
                                 {m.is_completed ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-emerald-600" />
+                                  <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-brand-600" />
                                 ) : (
                                   <Circle className="h-3.5 w-3.5 flex-shrink-0 text-slate-300" />
                                 )}

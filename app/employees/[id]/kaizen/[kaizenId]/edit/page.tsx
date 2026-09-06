@@ -753,7 +753,7 @@ export default function EditKaizenPage() {
             {status === "Verified" && employee?.user_role === "Manager" && (
               <Button
                 onClick={handleRewarded}
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-brand-600 hover:bg-brand-700"
               >
                 Reward Employee
               </Button>
