@@ -39,7 +39,7 @@ export default function PortalForgotPasswordPage() {
       </p>
 
       {sent ? (
-        <div className="mt-8 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-center text-sm text-emerald-200">
+        <div className="mt-8 rounded-xl border border-brand-400/30 bg-brand-500/10 p-4 text-center text-sm text-brand-200">
           Check your inbox — a reset link has been sent to{" "}
           <strong>{email}</strong>.
         </div>
@@ -55,7 +55,7 @@ export default function PortalForgotPasswordPage() {
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleReset()}
               placeholder="you@company.com"
-              className="w-full rounded-xl border border-white/20 bg-white/10 p-3.5 text-sm text-white placeholder-white/40 outline-none backdrop-blur-md transition focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/60"
+              className="w-full rounded-xl border border-white/20 bg-white/10 p-3.5 text-sm text-white placeholder-white/40 outline-none backdrop-blur-md transition focus:border-brand-400/60 focus:ring-1 focus:ring-brand-400/60"
             />
           </div>
 
@@ -68,7 +68,7 @@ export default function PortalForgotPasswordPage() {
           <button
             onClick={handleReset}
             disabled={sending}
-            className="w-full cursor-pointer rounded-xl bg-emerald-500 p-3.5 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+            className="w-full cursor-pointer rounded-xl bg-brand-500 p-3.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             {sending ? "Sending..." : "Send reset link"}
           </button>

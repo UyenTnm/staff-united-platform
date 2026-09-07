@@ -329,15 +329,15 @@ export function QuoteItemsEditor({
                     <p className="mt-1 text-sm text-slate-500">
                       {item.quantity} × {currencySymbol}
                       {Number(item.unit_price).toLocaleString()} ={" "}
-                      <span className="font-semibold text-emerald-700">
+                      <span className="font-semibold text-brand-700">
                         {currencySymbol}
                         {getItemTotal(item).toLocaleString()}
                       </span>
                     </p>
 
                     {item.discount_enabled && (
-                      <div className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs">
-                        <div className="flex justify-between text-emerald-700">
+                      <div className="mt-2 rounded-lg bg-brand-50 px-3 py-2 text-xs">
+                        <div className="flex justify-between text-brand-700">
                           <span>Discount ({item.discount_percent}%)</span>
 
                           <span>
@@ -346,7 +346,7 @@ export function QuoteItemsEditor({
                           </span>
                         </div>
 
-                        <div className="mt-1 flex justify-between border-t border-emerald-200 pt-1 font-semibold text-emerald-800">
+                        <div className="mt-1 flex justify-between border-t border-brand-200 pt-1 font-semibold text-brand-800">
                           <span>Final price</span>
 
                           <span>
@@ -380,7 +380,7 @@ export function QuoteItemsEditor({
                                 toast.error("Failed to update discount.");
                               }
                             }}
-                            className="h-4 w-4 rounded accent-emerald-600"
+                            className="h-4 w-4 rounded accent-brand-600"
                           />
                           Apply Service Discount
                         </label>
@@ -535,7 +535,7 @@ export function QuoteItemsEditor({
                     </div>
 
                     {discountEnabled && safeDiscountPercent > 0 && (
-                      <div className="flex justify-between text-emerald-600">
+                      <div className="flex justify-between text-brand-600">
                         <span>Package Discount ({safeDiscountPercent}%)</span>
                         <span>
                           -{currencySymbol}
@@ -600,14 +600,14 @@ export function QuoteItemsEditor({
           {!isLocked && (
             <div className="space-y-3 rounded-lg border border-dashed border-slate-300 p-4 dark:border-slate-700">
               {pendingGroups.length > 0 && (
-                <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-                  <p className="text-xs font-semibold uppercase text-emerald-700">
+                <div className="space-y-3 rounded-lg border border-brand-200 bg-brand-50 p-3">
+                  <p className="text-xs font-semibold uppercase text-brand-700">
                     Selected from Catalog — set price for each
                   </p>
                   {pendingGroups.map((g, index) => (
                     <div
                       key={g.departmentName}
-                      className="rounded-lg border border-emerald-200 bg-white p-3"
+                      className="rounded-lg border border-brand-200 bg-white p-3"
                     >
                       <div className="mb-2 flex items-center justify-between">
                         <p className="text-sm font-medium text-slate-900">
@@ -621,7 +621,7 @@ export function QuoteItemsEditor({
                         </button>
                       </div>
                       <details className="mb-2">
-                        <summary className="cursor-pointer text-xs font-medium text-emerald-700">
+                        <summary className="cursor-pointer text-xs font-medium text-brand-700">
                           View included services
                         </summary>
                         <p className="mt-1 whitespace-pre-line text-xs text-slate-500">
@@ -658,7 +658,7 @@ export function QuoteItemsEditor({
                         />
                       </div>
                       {g.unitPrice && Number(g.unitPrice) > 0 && (
-                        <p className="mt-1 text-xs italic text-emerald-700">
+                        <p className="mt-1 text-xs italic text-brand-700">
                           = {amountToWords(Number(g.unitPrice), isVietnam)}
                         </p>
                       )}
@@ -673,7 +673,7 @@ export function QuoteItemsEditor({
                               e.target.checked,
                             )
                           }
-                          className="h-3.5 w-3.5 rounded accent-emerald-600"
+                          className="h-3.5 w-3.5 rounded accent-brand-600"
                         />
                         Optional — client can select/deselect
                       </label>
@@ -695,7 +695,7 @@ export function QuoteItemsEditor({
               <button
                 type="button"
                 onClick={() => setShowCatalog(true)}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-brand-300 bg-brand-50 p-2.5 text-sm font-medium text-brand-700 hover:bg-brand-100"
               >
                 <ListPlus className="h-4 w-4" />
                 Choose from Service Catalog
@@ -758,7 +758,7 @@ export function QuoteItemsEditor({
                         Price for ONE unit, in <strong>{currencyLabel}</strong>.
                       </p>
                       {unitPrice && Number(unitPrice) > 0 && (
-                        <p className="mt-1 text-xs italic text-emerald-700">
+                        <p className="mt-1 text-xs italic text-brand-700">
                           = {amountToWords(Number(unitPrice), isVietnam)}
                         </p>
                       )}
@@ -783,7 +783,7 @@ export function QuoteItemsEditor({
                       type="checkbox"
                       checked={isOptional}
                       onChange={(e) => setIsOptional(e.target.checked)}
-                      className="h-4 w-4 rounded accent-emerald-600"
+                      className="h-4 w-4 rounded accent-brand-600"
                     />
                     Optional — client can select/deselect this on the proposal
                   </label>

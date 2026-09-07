@@ -8,7 +8,7 @@ const ACCENT_STYLES: Record<string, string> = {
   slate: "border-l-slate-400",
   blue: "border-l-blue-500",
   amber: "border-l-amber-500",
-  emerald: "border-l-emerald-500",
+  emerald: "border-l-brand-500",
   red: "border-l-red-500",
 };
 

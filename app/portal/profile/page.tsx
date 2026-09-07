@@ -95,7 +95,7 @@ export default function PortalProfilePage() {
           <div className="mt-6 space-y-4">
             <div className="rounded-xl bg-white p-6 shadow-sm">
               <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <Building2 className="h-4 w-4 text-emerald-600" />
+                <Building2 className="h-4 w-4 text-brand-600" />
                 Company Details
               </h2>
               <dl className="space-y-3 text-sm">
@@ -124,7 +124,7 @@ export default function PortalProfilePage() {
 
             <div className="rounded-xl bg-white p-6 shadow-sm">
               <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <User className="h-4 w-4 text-emerald-600" />
+                <User className="h-4 w-4 text-brand-600" />
                 Contact Person
               </h2>
               <dl className="space-y-3 text-sm">

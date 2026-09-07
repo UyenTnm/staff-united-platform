@@ -6,6 +6,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
 import {
   calculateBehaviorScore,
   getBehaviorIssues,
@@ -14,8 +16,26 @@ import {
 import { useEffect, useState } from "react";
 import { EmployeeHeader } from "@/components/employees/employee-header";
 import { getEmployee, Employee } from "@/lib/employees/employees";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function BehaviorPage() {
+function getStatusBadgeClass(status: string) {
+  switch (status) {
+    case "Waiting Employee":
+    case "Returned to HR":
+      return "bg-amber-100 text-amber-700";
+    case "Waiting Manager":
+      return "bg-blue-100 text-blue-700";
+    case "Approved":
+    case "Locked":
+      return "bg-emerald-100 text-emerald-700";
+    case "Resolved by HR":
+      return "bg-slate-100 text-slate-700";
+    default:
+      return "bg-slate-100 text-slate-700";
+  }
+}
+
+function BehaviorPageContent() {
   // const summary = calculateBehaviorScore(getBehaviorIssues);
   const [issues, setIssues] = useState<BehaviorIssue[]>([]);
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -79,7 +99,7 @@ export default function BehaviorPage() {
           <Card className="p-5">
             <p className="text-sm text-slate-500">Current Score</p>
 
-            <h2 className="text-3xl font-bold text-emerald-600 mt-2">
+            <h2 className="text-3xl font-bold text-brand-600 mt-2">
               {summary.currentScore}%
             </h2>
           </Card>
@@ -106,31 +126,51 @@ export default function BehaviorPage() {
                 <div key={issue.id} className="border rounded-lg p-4">
                   <div className="flex justify-between">
                     <div>
-                      <p className="font-semibold">{issue.issue_type}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold">{issue.issue_type}</p>
+
+                        <Badge className={getStatusBadgeClass(issue.status)}>
+                          {issue.status}
+                        </Badge>
+                      </div>
 
                       <p className="text-sm text-slate-500 mt-1">
-                        {new Date(issue.issue_date).toLocaleDateString()}
+                        {new Date(issue.issue_date).toLocaleDateString()} •{" "}
+                        {new Date(issue.review_month).toLocaleDateString(
+                          "en-US",
+                          { month: "long", year: "numeric" },
+                        )}
                       </p>
 
                       <p className="text-sm mt-3">{issue.description}</p>
+
+                      {issue.employee_comment && (
+                        <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
+                          <p className="text-xs font-semibold text-amber-800 mb-1">
+                            Employee's response
+                          </p>
+                          <p className="text-sm text-amber-900 whitespace-pre-wrap">
+                            {issue.employee_comment}
+                          </p>
+                        </div>
+                      )}
+
+                      {issue.hr_note && (
+                        <div className="mt-3 rounded-lg bg-slate-50 border p-3">
+                          <p className="text-xs font-semibold text-slate-600 mb-1">
+                            HR note
+                          </p>
+                          <p className="text-sm text-slate-700 whitespace-pre-wrap">
+                            {issue.hr_note}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="text-right space-y-2">
+                    <div className="text-right space-y-2 shrink-0 pl-4">
                       <p className="text-red-600 font-bold">
-                        -{issue.deduction}%
+                        -{issue.deduction} pts
                       </p>
-
-                      <p className="text-xs text-slate-500 mt-2">
-                        {issue.evaluator_id ?? "-"}
-                      </p>
-
-                      <Button asChild size="sm" variant="outline">
-                        <Link
-                          href={`/employees/${params.id}/behavior/edit/${issue.id}`}
-                        >
-                          Edit
-                        </Link>
-                      </Button>
                     </div>
                   </div>
                 </div>
@@ -140,5 +180,13 @@ export default function BehaviorPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function BehaviorPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager", "Employee"]}>
+      <BehaviorPageContent />
+    </RoleGuard>
   );
 }

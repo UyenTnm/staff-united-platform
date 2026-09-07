@@ -1,79 +1,116 @@
 "use client";
 
-import Link from "next/link";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+
+import { getCurrentEmployee } from "@/lib/auth";
+import { IssueCard } from "@/components/issues/IssueCard";
+
 import {
-  BehaviorWithEmployee,
   getBehaviorIssuesByStatus,
+  getBehaviorHistory,
+  type BehaviorWithEmployee,
 } from "@/lib/employees/behavior";
-import { useAuth } from "@/components/auth/auth-provider";
-import { useRouter } from "next/navigation";
 
-export default function BehaviorManagementPage() {
+type Tab = "overview" | "pending" | "manager" | "appeals" | "history";
+
+const VALID_TABS: Tab[] = [
+  "overview",
+  "pending",
+  "manager",
+  "appeals",
+  "history",
+];
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "pending", label: "Pending" },
+  { key: "manager", label: "Manager Approval" },
+  { key: "appeals", label: "Appeals" },
+  { key: "history", label: "History" },
+];
+
+function BehaviorManagementContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const { employee } = useAuth();
+  const initialTab = searchParams.get("tab") as Tab | null;
+
+  const [tab, setTab] = useState<Tab>(
+    initialTab && VALID_TABS.includes(initialTab) ? initialTab : "overview",
+  );
+
+  const [loading, setLoading] = useState(true);
 
   const [waitingEmployee, setWaitingEmployee] = useState<
     BehaviorWithEmployee[]
   >([]);
-
   const [returnedToHR, setReturnedToHR] = useState<BehaviorWithEmployee[]>([]);
-
   const [resolvedByHR, setResolvedByHR] = useState<BehaviorWithEmployee[]>([]);
-
   const [waitingManager, setWaitingManager] = useState<BehaviorWithEmployee[]>(
     [],
   );
-
   const [approved, setApproved] = useState<BehaviorWithEmployee[]>([]);
-
   const [locked, setLocked] = useState<BehaviorWithEmployee[]>([]);
-
-  useEffect(() => {
-    if (employee?.user_role === "Manager") {
-      router.replace("/behavior/manager");
-    }
-  }, [employee, router]);
+  const [history, setHistory] = useState<BehaviorWithEmployee[]>([]);
 
   useEffect(() => {
     async function loadData() {
-      const [
-        waitingEmployeeData,
-        returnedToHRData,
-        resolvedByHRData,
-        waitingManagerData,
-        approvedData,
-        lockedData,
-      ] = await Promise.all([
-        getBehaviorIssuesByStatus("Waiting Employee"),
-        getBehaviorIssuesByStatus("Returned to HR"),
-        getBehaviorIssuesByStatus("Resolved by HR"),
-        getBehaviorIssuesByStatus("Waiting Manager"),
-        getBehaviorIssuesByStatus("Approved"),
-        getBehaviorIssuesByStatus("Locked"),
-      ]);
+      try {
+        const employee = await getCurrentEmployee();
 
-      setWaitingEmployee(waitingEmployeeData);
-      setReturnedToHR(returnedToHRData);
-      setResolvedByHR(resolvedByHRData);
-      setWaitingManager(waitingManagerData);
-      setApproved(approvedData);
-      setLocked(lockedData);
+        if (!employee) {
+          router.push("/login");
+          return;
+        }
+
+        if (!["Admin", "HR", "Manager"].includes(employee.user_role)) {
+          router.push("/403");
+          return;
+        }
+
+        const [
+          waitingEmployeeData,
+          returnedToHRData,
+          resolvedByHRData,
+          waitingManagerData,
+          approvedData,
+          lockedData,
+          historyData,
+        ] = await Promise.all([
+          getBehaviorIssuesByStatus("Waiting Employee"),
+          getBehaviorIssuesByStatus("Returned to HR"),
+          getBehaviorIssuesByStatus("Resolved by HR"),
+          getBehaviorIssuesByStatus("Waiting Manager"),
+          getBehaviorIssuesByStatus("Approved"),
+          getBehaviorIssuesByStatus("Locked"),
+          getBehaviorHistory(),
+        ]);
+
+        setWaitingEmployee(waitingEmployeeData);
+        setReturnedToHR(returnedToHRData);
+        setResolvedByHR(resolvedByHRData);
+        setWaitingManager(waitingManagerData);
+        setApproved(approvedData);
+        setLocked(lockedData);
+        setHistory(historyData);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadData();
-  }, []);
+  }, [router]);
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Header */}
-
         <div>
           <h1 className="text-3xl font-bold">Behavior Management</h1>
 
@@ -82,65 +119,164 @@ export default function BehaviorManagementPage() {
           </p>
         </div>
 
-        {/* Dashboard */}
-
-        {/* <div className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4"> */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <Card className="p-6">
-            <p className="text-sm text-slate-500">Waiting Employee</p>
-
-            <h2 className="text-4xl font-bold mt-3">
-              {waitingEmployee.length}
-            </h2>
-          </Card>
-
-          <Card className="p-6">
-            <p className="text-sm text-slate-500">Returned to HR</p>
-
-            <h2 className="text-4xl font-bold mt-3">{returnedToHR.length}</h2>
-          </Card>
-
-          <Card className="p-6">
-            <p className="text-sm text-slate-500">Resolved by HR</p>
-
-            <h2 className="text-4xl font-bold mt-3">{resolvedByHR.length}</h2>
-          </Card>
-
-          <Card className="p-6">
-            <p className="text-sm text-slate-500">Waiting Manager</p>
-
-            <h2 className="text-4xl font-bold mt-3">{waitingManager.length}</h2>
-          </Card>
-
-          <Card className="p-6">
-            <p className="text-sm text-slate-500">Approved</p>
-
-            <h2 className="text-4xl font-bold mt-3">{approved.length}</h2>
-          </Card>
-
-          <Card className="p-6">
-            <p className="text-sm text-slate-500">Locked</p>
-
-            <h2 className="text-4xl font-bold mt-3">{locked.length}</h2>
-          </Card>
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-3">
+          {TABS.map((t) => (
+            <Button
+              key={t.key}
+              variant={tab === t.key ? "default" : "outline"}
+              onClick={() => setTab(t.key)}
+            >
+              {t.label}
+              {t.key === "pending" && ` (${waitingEmployee.length})`}
+              {t.key === "manager" && ` (${waitingManager.length})`}
+              {t.key === "appeals" && ` (${returnedToHR.length})`}
+            </Button>
+          ))}
         </div>
 
-        {/* Quick Actions */}
+        {loading ? (
+          <Card className="p-8 text-center text-slate-500">Loading...</Card>
+        ) : (
+          <>
+            {tab === "overview" && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <StatCard
+                  label="Waiting Employee"
+                  value={waitingEmployee.length}
+                  onClick={() => setTab("pending")}
+                />
+                <StatCard
+                  label="Returned to HR"
+                  value={returnedToHR.length}
+                  onClick={() => setTab("appeals")}
+                />
+                <StatCard
+                  label="Resolved by HR"
+                  value={resolvedByHR.length}
+                  onClick={() => setTab("history")}
+                />
+                <StatCard
+                  label="Waiting Manager"
+                  value={waitingManager.length}
+                  onClick={() => setTab("manager")}
+                />
+                <StatCard
+                  label="Approved"
+                  value={approved.length}
+                  onClick={() => setTab("history")}
+                />
+                <StatCard
+                  label="Locked"
+                  value={locked.length}
+                  onClick={() => setTab("history")}
+                />
+              </div>
+            )}
 
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold">Quick Actions</h2>
+            {tab === "pending" && (
+              <IssueList
+                issues={waitingEmployee}
+                emptyText="No pending behavior issues."
+                hrefFor={(id) => `/behavior/review/${id}`}
+              />
+            )}
 
-          <div className="grid md:grid-cols-2 gap-4 mt-6">
-            <Button asChild>
-              <Link href="/behavior/pending">Open Pending Issues</Link>
-            </Button>
+            {tab === "manager" && (
+              <IssueList
+                issues={waitingManager}
+                emptyText="No behavior issues waiting for manager approval."
+                hrefFor={(id) => `/behavior/manager/${id}`}
+              />
+            )}
 
-            <Button asChild variant="outline">
-              <Link href="/behavior/history">View History</Link>
-            </Button>
-          </div>
-        </Card>
+            {tab === "appeals" && (
+              <IssueList
+                issues={returnedToHR}
+                emptyText="No behavior appeals waiting for HR review."
+                hrefFor={(id) => `/behavior/review/${id}`}
+              />
+            )}
+
+            {tab === "history" && (
+              <IssueList
+                issues={history}
+                emptyText="No completed reviews."
+                hrefFor={(id) => `/behavior/review/${id}`}
+              />
+            )}
+          </>
+        )}
       </div>
     </AppLayout>
+  );
+}
+
+export default function BehaviorManagementPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <Card className="p-8 text-center text-slate-500">Loading...</Card>
+        </AppLayout>
+      }
+    >
+      <BehaviorManagementContent />
+    </Suspense>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  onClick?: () => void;
+}) {
+  return (
+    <Card
+      className={`p-6 ${onClick ? "cursor-pointer hover:border-slate-400 transition" : ""}`}
+      onClick={onClick}
+    >
+      <p className="text-sm text-slate-500">{label}</p>
+      <h2 className="text-4xl font-bold mt-3">{value}</h2>
+      {onClick && (
+        <p className="text-xs text-slate-400 mt-1">Click to see who</p>
+      )}
+    </Card>
+  );
+}
+
+function IssueList({
+  issues,
+  emptyText,
+  hrefFor,
+}: {
+  issues: BehaviorWithEmployee[];
+  emptyText: string;
+  hrefFor: (id: string) => string;
+}) {
+  if (issues.length === 0) {
+    return <Card className="p-10 text-center text-slate-500">{emptyText}</Card>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {issues.map((issue) => (
+        <IssueCard
+          key={issue.id}
+          id={issue.id}
+          title={issue.issue_type}
+          employee={issue.employees.full_name}
+          department={issue.employees.department}
+          description={issue.description}
+          deduction={issue.deduction}
+          status={issue.status}
+          openUrl={hrefFor(issue.id)}
+        />
+      ))}
+    </div>
   );
 }

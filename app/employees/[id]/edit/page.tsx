@@ -15,8 +15,9 @@ import {
 } from "@/lib/employees/employees";
 import type { UserRole } from "@/lib/auth";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function EditEmployeePage() {
+function EditEmployeePageContent() {
   const params = useParams();
   const router = useRouter();
 
@@ -157,5 +158,13 @@ export default function EditEmployeePage() {
         />
       </div>
     </AppLayout>
+  );
+}
+
+export default function EditEmployeePage() {
+  return (
+    <RoleGuard allow={["Admin", "HR"]}>
+      <EditEmployeePageContent />
+    </RoleGuard>
   );
 }

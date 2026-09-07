@@ -6,6 +6,16 @@ import { useParams, useRouter } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import {
   getBehaviorReview,
@@ -15,14 +25,16 @@ import {
   type BehaviorWithEmployee,
 } from "@/lib/employees/behavior";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function BehaviorReviewPage() {
+function BehaviorReviewPageContent() {
   const params = useParams();
   const router = useRouter();
 
   const [issue, setIssue] = useState<BehaviorWithEmployee | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [acceptAppealOpen, setAcceptAppealOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -100,32 +112,23 @@ export default function BehaviorReviewPage() {
     if (!issue) return;
 
     try {
-      const confirmed = window.confirm(
-        "Accept this appeal?\n\nThe deduction will be removed and this issue will be closed.",
-      );
-      if (!confirmed) return;
-
       await resolveBehaviorByHR(issue.id);
       const updatedIssue = await getBehaviorReview(issue.id);
       setIssue(updatedIssue);
-
-      // setIssue({
-      //   ...issue,
-      //   status: "Resolved by HR",
-      //   deduction: 0,
-      // });
 
       toast.success("Appeal accepted successfully.");
     } catch (error) {
       console.error(error);
 
       toast.error("Unable to accept appeal.");
+    } finally {
+      setAcceptAppealOpen(false);
     }
   }
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Behavior Review</h1>
@@ -204,7 +207,10 @@ export default function BehaviorReviewPage() {
 
             {issue.status === "Returned to HR" && (
               <>
-                <Button variant="outline" onClick={handleAcceptAppeal}>
+                <Button
+                  variant="outline"
+                  onClick={() => setAcceptAppealOpen(true)}
+                >
                   Accept Appeal
                 </Button>
 
@@ -216,6 +222,32 @@ export default function BehaviorReviewPage() {
           </div>
         </Card>
       </div>
+
+      <AlertDialog open={acceptAppealOpen} onOpenChange={setAcceptAppealOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Accept this appeal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The deduction will be removed and this issue will be closed. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAcceptAppeal}>
+              Accept Appeal
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
+  );
+}
+
+export default function BehaviorReviewPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <BehaviorReviewPageContent />
+    </RoleGuard>
   );
 }

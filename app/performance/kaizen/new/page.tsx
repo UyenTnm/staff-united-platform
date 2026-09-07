@@ -117,49 +117,25 @@ export default function NewKaizenPage() {
         review_note: null,
         review_month: getReviewMonth(new Date()),
       });
-      // Chỉ gửi notification khi nhân viên SUBMIT (không gửi khi Save Draft)
+      // Chỉ gửi notification khi nhân viên SUBMIT (không gửi khi Save Draft).
+      // Không còn bước HR review — mọi Kaizen submit xong đi thẳng tới Manager.
       if (submitStatus === "Submitted") {
-        if (employee.user_role === "HR") {
-          // HR submit -> Notify Manager
+        const { data: managers, error } = await supabase
+          .from("employees")
+          .select("id")
+          .eq("user_role", "Manager");
 
-          const { data: managers, error } = await supabase
-            .from("employees")
-            .select("id")
-            .eq("user_role", "Manager");
-
-          if (error) {
-            console.error(error);
-          } else if (managers) {
-            for (const manager of managers) {
-              await createNotification(
-                manager.id,
-                "New HR Kaizen Submitted",
-                `${employee.full_name} submitted a new Kaizen: "${title}"`,
-                "kaizen",
-                `/employees/${employee.id}/kaizen/${kaizen.id}/edit?from=pending`,
-              );
-            }
-          }
-        } else {
-          // Employee submit -> Notify HR
-
-          const { data: hrUsers, error } = await supabase
-            .from("employees")
-            .select("id")
-            .eq("user_role", "HR");
-
-          if (error) {
-            console.error(error);
-          } else if (hrUsers) {
-            for (const hr of hrUsers) {
-              await createNotification(
-                hr.id,
-                "New Kaizen Submitted",
-                `${employee.full_name} submitted a new Kaizen: "${title}"`,
-                "kaizen",
-                `/employees/${employee.id}/kaizen/${kaizen.id}/edit?from=pending`,
-              );
-            }
+        if (error) {
+          console.error(error);
+        } else if (managers) {
+          for (const manager of managers) {
+            await createNotification(
+              manager.id,
+              "New Kaizen Waiting Approval",
+              `${employee.full_name} submitted a new Kaizen: "${title}"`,
+              "kaizen",
+              `/employees/${employee.id}/kaizen/${kaizen.id}/edit?from=pending`,
+            );
           }
         }
       }

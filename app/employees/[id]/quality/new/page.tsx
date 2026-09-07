@@ -18,8 +18,9 @@ import {
 import { getReviewMonth } from "@/lib/employees/bonus";
 import { SCORE_DEDUCTION_OPTIONS } from "@/lib/employees/deduction-options";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function NewQualityIssuePage() {
+function NewQualityIssuePageContent() {
   const params = useParams();
 
   const router = useRouter();
@@ -138,5 +139,13 @@ export default function NewQualityIssuePage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function NewQualityIssuePage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <NewQualityIssuePageContent />
+    </RoleGuard>
   );
 }

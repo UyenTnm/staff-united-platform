@@ -32,9 +32,9 @@ function getStatusColor(status: string) {
     case "Viewed":
       return "bg-amber-100 text-amber-700 border border-amber-200";
     case "Accepted":
-      return "bg-emerald-100 text-emerald-700 border border-emerald-200";
+      return "bg-brand-100 text-brand-700 border border-brand-200";
     case "Paid":
-      return "bg-emerald-100 text-emerald-800 border border-emerald-300";
+      return "bg-brand-100 text-brand-800 border border-brand-300";
     case "Rejected":
       return "bg-red-100 text-red-700 border border-red-200";
     default:
@@ -175,7 +175,7 @@ export default function QuoteDetailPage() {
             <p className="text-slate-500 mt-1">{quote.company_name}</p>
 
             {quote.client_notes && (
-              <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+              <p className="mt-2 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">
                 📋 {quote.client_notes}
               </p>
             )}
@@ -209,11 +209,11 @@ export default function QuoteDetailPage() {
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition ${
                         stepStatus === "done"
-                          ? "bg-emerald-600 text-white"
+                          ? "bg-brand-600 text-white"
                           : stepStatus === "current"
-                            ? "border-2 border-emerald-600 bg-white text-emerald-600"
+                            ? "border-2 border-brand-600 bg-white text-brand-600"
                             : "border-2 border-slate-200 bg-white text-slate-400"
-                      } ${activeTab === tab.id ? "ring-2 ring-emerald-200 ring-offset-2" : ""}`}
+                      } ${activeTab === tab.id ? "ring-2 ring-brand-200 ring-offset-2" : ""}`}
                     >
                       {stepStatus === "done" ? "✓" : index + 1}
                     </div>
@@ -232,7 +232,7 @@ export default function QuoteDetailPage() {
                     <div
                       className={`mx-2 h-0.5 flex-1 ${
                         stepStatus === "done"
-                          ? "bg-emerald-600"
+                          ? "bg-brand-600"
                           : "bg-slate-200"
                       }`}
                     />
@@ -252,7 +252,7 @@ export default function QuoteDetailPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-shrink-0 cursor-pointer border-b-2 px-4 py-2.5 text-sm font-medium transition ${
                 activeTab === tab.id
-                  ? "border-emerald-600 text-emerald-700"
+                  ? "border-brand-600 text-brand-700"
                   : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -287,7 +287,7 @@ export default function QuoteDetailPage() {
                     href={`/crm/clients/${encodeURIComponent(
                       quote.billing_email || quote.contact_email || "",
                     )}`}
-                    className="text-xs font-medium text-emerald-600 hover:underline"
+                    className="text-xs font-medium text-brand-600 hover:underline"
                   >
                     View Client History →
                   </Link>

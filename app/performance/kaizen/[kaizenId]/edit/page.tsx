@@ -26,6 +26,8 @@ import {
 } from "@/lib/employees/kaizen-options";
 import { useAuth } from "@/components/auth/auth-provider";
 import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
+import { supabase } from "@/lib/supabase";
 
 export default function NewKaizenPage() {
   const router = useRouter();
@@ -139,6 +141,29 @@ export default function NewKaizenPage() {
 
         status: isManager ? status : submitStatus,
       });
+
+      // Submitting (not just saving a draft) is the same event as creating
+      // a brand-new Kaizen — Manager needs to know it's waiting for approval
+      // either way, so notify them here too (this path was previously
+      // silent). No HR review step anymore — goes straight to Manager.
+      if (!isManager && submitStatus === "Submitted") {
+        const { data: managers } = await supabase
+          .from("employees")
+          .select("id")
+          .eq("user_role", "Manager");
+
+        if (managers) {
+          for (const manager of managers) {
+            await createNotification(
+              manager.id,
+              "New Kaizen Waiting Approval",
+              `${employee.full_name} submitted "${title}".`,
+              "kaizen",
+              `/employees/${employee.id}/kaizen/${params.kaizenId}/edit`,
+            );
+          }
+        }
+      }
 
       toast.success(
         submitStatus === "Draft"

@@ -68,6 +68,18 @@ export async function getEmployee(id: string) {
 }
 
 export async function createEmployee(employee: CreateEmployeeInput) {
+  const { data: existing, error: checkError } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("email", employee.email)
+    .maybeSingle();
+
+  if (checkError) throw checkError;
+
+  if (existing) {
+    throw new Error("This email is already used by another employee.");
+  }
+
   const { data, error } = await supabase
     .from("employees")
     .insert(employee)

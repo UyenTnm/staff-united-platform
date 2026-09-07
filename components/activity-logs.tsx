@@ -116,13 +116,13 @@ function getActivityColor(type: string) {
     case 'logout':
       return 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800';
     case 'access':
-      return 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30';
+      return 'text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-900/30';
     case 'change':
       return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30';
     case 'alert':
       return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
     case 'success':
-      return 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30';
+      return 'text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-900/30';
     default:
       return '';
   }

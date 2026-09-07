@@ -57,18 +57,18 @@ export function ProposalPdfUpload({
       </p>
 
       {currentPdfUrl ? (
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+        <div className="mt-4 flex items-center justify-between rounded-lg border border-brand-200 bg-brand-50 p-4">
           <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-emerald-600" />
+            <FileText className="h-5 w-5 text-brand-600" />
             <div>
-              <p className="text-sm font-medium text-emerald-800">
+              <p className="text-sm font-medium text-brand-800">
                 PDF uploaded
               </p>
               <a
                 href={currentPdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-emerald-700 underline"
+                className="text-xs text-brand-700 underline"
               >
                 View current PDF
               </a>
@@ -78,7 +78,7 @@ export function ProposalPdfUpload({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="cursor-pointer rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+              className="cursor-pointer rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-xs font-medium text-brand-700 hover:bg-brand-50"
             >
               Replace
             </button>
@@ -108,8 +108,8 @@ export function ProposalPdfUpload({
           disabled={uploading}
           className={`cursor-pointer mt-4 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition ${
             dragOver
-              ? "border-emerald-500 bg-emerald-50"
-              : "border-slate-300 hover:border-emerald-400 hover:bg-slate-50"
+              ? "border-brand-500 bg-brand-50"
+              : "border-slate-300 hover:border-brand-400 hover:bg-slate-50"
           }`}
         >
           <Upload className="h-8 w-8 text-slate-400" />

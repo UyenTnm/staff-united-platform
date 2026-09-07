@@ -177,7 +177,7 @@ export default function PortalSupportPage() {
             onClick={() => setTab("chat")}
             className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-medium ${
               tab === "chat"
-                ? "border-emerald-600 text-emerald-700"
+                ? "border-brand-600 text-brand-700"
                 : "border-transparent text-slate-500"
             }`}
           >
@@ -187,7 +187,7 @@ export default function PortalSupportPage() {
             onClick={() => setTab("history")}
             className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-medium ${
               tab === "history"
-                ? "border-emerald-600 text-emerald-700"
+                ? "border-brand-600 text-brand-700"
                 : "border-transparent text-slate-500"
             }`}
           >
@@ -210,7 +210,7 @@ export default function PortalSupportPage() {
                         {s.ticket_number}
                       </p>
                       {s.quotes && (
-                        <p className="mt-0.5 text-xs text-emerald-600">
+                        <p className="mt-0.5 text-xs text-brand-600">
                           Re: {s.quotes.title || s.quotes.quote_number}
                         </p>
                       )}
@@ -281,7 +281,7 @@ export default function PortalSupportPage() {
                     {session.ticket_number}
                   </p>
                   {session.quotes && (
-                    <p className="text-xs text-emerald-600">
+                    <p className="text-xs text-brand-600">
                       Re: {session.quotes.title || session.quotes.quote_number}
                     </p>
                   )}
@@ -335,7 +335,7 @@ export default function PortalSupportPage() {
                     <div
                       className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
                         msg.sender_type === "client"
-                          ? "bg-emerald-600 text-white"
+                          ? "bg-brand-600 text-white"
                           : "bg-slate-100 text-slate-800"
                       }`}
                     >
@@ -348,7 +348,7 @@ export default function PortalSupportPage() {
                       <p
                         className={`mt-1 text-[10px] ${
                           msg.sender_type === "client"
-                            ? "text-emerald-100"
+                            ? "text-brand-100"
                             : "text-slate-400"
                         }`}
                       >
@@ -382,7 +382,7 @@ export default function PortalSupportPage() {
               <button
                 onClick={handleSend}
                 disabled={sending || !input.trim()}
-                className="flex cursor-pointer items-center justify-center rounded-xl bg-emerald-600 px-4 text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="flex cursor-pointer items-center justify-center rounded-xl bg-brand-600 px-4 text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
               </button>

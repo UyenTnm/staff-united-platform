@@ -13,8 +13,9 @@ import {
   getQualityReview,
 } from "@/lib/employees/quality";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function ManagerQualityReviewPage() {
+function ManagerQualityReviewPageContent() {
   const params = useParams();
   const router = useRouter();
 
@@ -57,7 +58,7 @@ export default function ManagerQualityReviewPage() {
 
       toast.success("Quality approved.");
 
-      router.push("/quality/manager");
+      router.push("/quality?tab=manager");
 
       router.refresh();
     } catch (error) {
@@ -158,5 +159,13 @@ export default function ManagerQualityReviewPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function ManagerQualityReviewPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <ManagerQualityReviewPageContent />
+    </RoleGuard>
   );
 }

@@ -70,7 +70,7 @@ export function CustomerMarketSelector({
             isLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
           } ${
             currentMarket === "vietnam"
-              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+              ? "border-brand-500 bg-brand-50 text-brand-700"
               : "border-slate-200 text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -83,7 +83,7 @@ export function CustomerMarketSelector({
             isLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
           } ${
             currentMarket === "international"
-              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+              ? "border-brand-500 bg-brand-50 text-brand-700"
               : "border-slate-200 text-slate-600 hover:bg-slate-50"
           }`}
         >

@@ -35,35 +35,36 @@ export function IssueCard({
   openUrl,
 }: IssueCardProps) {
   return (
-    <Card className="p-6">
-      <div className="flex items-start justify-between gap-6">
-        <div className="flex-1">
-          <h2 className="text-xl font-semibold">{title}</h2>
+    <Card className="p-5 hover:border-slate-300 transition">
+      <div className="flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-900">{title}</h2>
 
-          <p className="text-slate-500 mt-1">
+            <IssueStatusBadge status={status} />
+          </div>
+
+          <p className="text-sm text-slate-500 mt-1">
             {employee} • {department}
           </p>
 
-          <p className="mt-4 text-slate-700">{description}</p>
-
-          <div className="flex items-center gap-6 mt-5">
-            <div>
-              <p className="text-xs text-slate-500">Deduction</p>
-
-              <p className="text-red-600 font-bold">-{deduction} Point</p>
-            </div>
-
-            <div>
-              <p className="text-xs text-slate-500">Status</p>
-
-              <IssueStatusBadge status={status} />
-            </div>
-          </div>
+          {description && (
+            <p className="mt-2 text-sm text-slate-600 line-clamp-2">
+              {description}
+            </p>
+          )}
         </div>
 
-        <Button asChild>
-          <Link href={openUrl}>Open</Link>
-        </Button>
+        <div className="flex items-center justify-between md:justify-end gap-4 md:gap-6 md:shrink-0">
+          <div className="text-right">
+            <p className="text-xs text-slate-400">Deduction</p>
+            <p className="text-red-600 font-bold">-{deduction} pt</p>
+          </div>
+
+          <Button asChild size="sm">
+            <Link href={openUrl}>Open</Link>
+          </Button>
+        </div>
       </div>
     </Card>
   );

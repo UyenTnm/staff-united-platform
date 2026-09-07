@@ -58,6 +58,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const searchParams = useSearchParams();
 
   const from = searchParams.get("from");
+  const currentTab = searchParams.get("tab");
   const router = useRouter();
   const { employee } = useAuth();
 
@@ -91,10 +92,35 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   // qua localStorage.
   // ============================================================
   const asideRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const draggingRef = useRef(false);
   const movedRef = useRef(false);
 
   const [buttonY, setButtonY] = useState<number>(32);
+
+  // Sidebar bị unmount/mount lại mỗi lần chuyển trang (mỗi page tự gọi
+  // AppLayout riêng, không dùng layout chung), khiến vị trí cuộn của
+  // menu luôn bị reset về đầu — với role có menu dài (Admin/HR) thì
+  // cảm giác như sidebar "tự nhảy lên trên". Lưu lại vị trí cuộn vào
+  // sessionStorage và khôi phục ngay khi mount để giữ đúng chỗ đang đứng.
+  const NAV_SCROLL_KEY = "staff_platform_sidebar_scroll_y";
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const saved = sessionStorage.getItem(NAV_SCROLL_KEY);
+    if (saved) {
+      nav.scrollTop = Number(saved);
+    }
+
+    const handleScroll = () => {
+      sessionStorage.setItem(NAV_SCROLL_KEY, String(nav.scrollTop));
+    };
+
+    nav.addEventListener("scroll", handleScroll);
+    return () => nav.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const clampY = (y: number) => {
     const asideHeight = asideRef.current?.offsetHeight ?? 800;
@@ -199,9 +225,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       icon: ClipboardCheck,
       items: [
         {
-          label: "Pending Reviews",
-          href: "/reviews/pending",
+          label: "Overview",
+          href: "/performance/overview",
         },
+
         {
           label: "Monthly Reviews",
           href: "/reviews",
@@ -214,10 +241,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           label: "Behavior",
           href: "/behavior",
         },
-        {
-          label: "Returned Reviews",
-          href: "/performance/returned",
-        },
       ],
     },
 
@@ -227,19 +250,19 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       items: [
         {
           label: "Pending",
-          href: "/kaizens/pending",
+          href: "/kaizens?tab=pending",
         },
         {
           label: "Waiting Verification",
-          href: "/kaizens/waiting-verification",
+          href: "/kaizens?tab=verification",
         },
         {
           label: "Approved",
-          href: "/kaizens/approved",
+          href: "/kaizens?tab=approved",
         },
         {
           label: "Rewarded",
-          href: "/kaizens/rewarded",
+          href: "/kaizens?tab=rewarded",
         },
       ],
     },
@@ -276,9 +299,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       icon: ClipboardCheck,
       items: [
         {
-          label: "Pending Reviews",
-          href: "/reviews/pending",
+          label: "Overview",
+          href: "/performance/overview",
         },
+
         {
           label: "Monthly Reviews",
           href: "/reviews",
@@ -291,10 +315,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           label: "Behavior",
           href: "/behavior",
         },
-        {
-          label: "Returned Reviews",
-          href: "/performance/returned",
-        },
       ],
     },
 
@@ -304,20 +324,19 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       items: [
         {
           label: "Pending",
-          href: "/kaizens/pending",
+          href: "/kaizens?tab=pending",
         },
-
         {
           label: "Waiting Verification",
-          href: "/kaizens/waiting-verification",
+          href: "/kaizens?tab=verification",
         },
         {
           label: "Approved",
-          href: "/kaizens/approved",
+          href: "/kaizens?tab=approved",
         },
         {
           label: "Rewarded",
-          href: "/kaizens/rewarded",
+          href: "/kaizens?tab=rewarded",
         },
       ],
     },
@@ -340,16 +359,20 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       icon: ClipboardCheck,
       items: [
         {
-          label: "Pending Reviews",
-          href: "/reviews/pending",
+          label: "Overview",
+          href: "/performance/overview",
+        },
+        {
+          label: "Monthly Reviews",
+          href: "/reviews",
         },
         {
           label: "Quality Approval",
-          href: "/quality/manager",
+          href: "/quality?tab=manager",
         },
         {
           label: "Behavior Approval",
-          href: "/behavior/manager",
+          href: "/behavior?tab=manager",
         },
       ],
     },
@@ -360,19 +383,19 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       items: [
         {
           label: "Pending",
-          href: "/kaizens/pending",
+          href: "/kaizens?tab=pending",
         },
         {
           label: "Waiting Verification",
-          href: "/kaizens/waiting-verification",
+          href: "/kaizens?tab=verification",
         },
         {
           label: "Approved",
-          href: "/kaizens/approved",
+          href: "/kaizens?tab=approved",
         },
         {
           label: "Rewarded",
-          href: "/kaizens/rewarded",
+          href: "/kaizens?tab=rewarded",
         },
       ],
     },
@@ -452,6 +475,55 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   function getSectionHref(section: SidebarSection) {
     return section.items[0]?.href ?? "/";
   }
+
+  function isItemActive(href: string) {
+    if (href === "/kaizens?tab=pending") {
+      return (
+        (pathname === "/kaizens" &&
+          (currentTab === "pending" || !currentTab)) ||
+        from === "pending"
+      );
+    } else if (href === "/kaizens?tab=verification") {
+      return (
+        (pathname === "/kaizens" && currentTab === "verification") ||
+        from === "verification"
+      );
+    } else if (href === "/kaizens?tab=approved") {
+      return (
+        (pathname === "/kaizens" && currentTab === "approved") ||
+        from === "approved"
+      );
+    } else if (href === "/kaizens?tab=rewarded") {
+      return (
+        (pathname === "/kaizens" && currentTab === "rewarded") ||
+        from === "reward"
+      );
+    } else if (href === "/quality?tab=manager") {
+      return pathname === "/quality" && currentTab === "manager";
+    } else if (href === "/behavior?tab=manager") {
+      return pathname === "/behavior" && currentTab === "manager";
+    } else if (href === "/employees") {
+      return (
+        pathname.startsWith("/employees") && !pathname.includes("/kaizen/")
+      );
+    } else if (href === "/performance") {
+      return pathname === "/performance";
+    } else if (href === "/reviews") {
+      return pathname === "/reviews";
+    } else if (href === "/crm") {
+      return pathname === "/crm" || pathname.startsWith("/crm/leads");
+    } else if (href === "/crm/quotes") {
+      return pathname.startsWith("/crm/quotes");
+    } else if (href === "/crm/support") {
+      return pathname.startsWith("/crm/support");
+    }
+
+    return pathname.startsWith(href.split("?")[0]);
+  }
+
+  function isSectionActive(section: SidebarSection) {
+    return section.items.some((item) => isItemActive(item.href));
+  }
   async function handleLogout() {
     try {
       await signOut();
@@ -480,7 +552,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         onClick={handleToggleClick}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         style={{ top: buttonY }}
-        className="absolute -right-3 z-20 flex h-7 w-7 cursor-ns-resize touch-none items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-300 shadow-md transition-colors hover:bg-emerald-600 hover:text-white"
+        className="absolute -right-3 z-20 flex h-7 w-7 cursor-ns-resize touch-none items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-300 shadow-md transition-colors hover:bg-brand-600 hover:text-white"
       >
         {collapsed ? (
           <ChevronRight className="h-3.5 w-3.5" />
@@ -539,12 +611,14 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="sidebar-scroll flex-1 overflow-y-auto overscroll-contain px-4 py-5">
-        {" "}
+      <nav
+        ref={navRef}
+        className="sidebar-scroll flex-1 overflow-y-auto overscroll-contain px-4 py-5"
+      >
         {collapsed ? (
           <div className="flex flex-col items-center gap-4 px-0">
             {menuItems.map((section) => {
-              const active = pathname.startsWith(getSectionHref(section));
+              const active = isSectionActive(section);
               const showBadge = section.title === "CRM" && unreadSupport > 0;
 
               return (
@@ -555,7 +629,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                         className={cn(
                           "relative flex h-20 w-16 items-center justify-center flex-col rounded-2xl border transition-all duration-300",
                           active
-                            ? "border-emerald-500 bg-emerald-600 shadow-xl shadow-emerald-600/30 text-white "
+                            ? "border-brand-500 bg-brand-600 shadow-xl shadow-brand-600/30 text-white "
                             : "border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900 hover:shadow-lg",
                         )}
                       >
@@ -585,8 +659,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             {menuItems.map((section, index) => (
               <div key={section.title}>
                 <div className="mb-3 flex items-center gap-3 px-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/10">
-                    <section.icon className="h-4 w-4 text-emerald-500" />
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/10">
+                    <section.icon className="h-4 w-4 text-brand-500" />
                   </div>
 
                   <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap">
@@ -596,43 +670,53 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
                 <div className="space-y-1">
                   {section.items.map((item) => {
-                    let isActive = false;
+                    const isActive = isItemActive(item.href);
 
-                    if (item.href === "/kaizens/pending") {
-                      isActive =
-                        pathname.startsWith("/kaizens/pending") ||
-                        from === "pending";
-                    } else if (item.href === "/kaizens/waiting-verification") {
-                      isActive =
-                        pathname.startsWith("/kaizens/waiting-verification") ||
-                        from === "verification";
-                    } else if (item.href === "/kaizens/approved") {
-                      isActive =
-                        pathname.startsWith("/kaizens/approved") ||
-                        from === "approved";
-                    } else if (item.href === "/kaizens/rewarded") {
-                      isActive =
-                        pathname.startsWith("/kaizens/rewarded") ||
-                        from === "reward";
-                    } else if (item.href === "/employees") {
-                      isActive =
-                        pathname.startsWith("/employees") &&
-                        !pathname.includes("/kaizen/");
-                    } else if (item.href === "/performance") {
-                      isActive = pathname === "/performance";
-                    } else if (item.href === "/reviews") {
-                      isActive = pathname === "/reviews";
-                    } else if (item.href === "/crm") {
-                      isActive =
-                        pathname === "/crm" ||
-                        pathname.startsWith("/crm/leads");
-                    } else if (item.href === "/crm/quotes") {
-                      isActive = pathname.startsWith("/crm/quotes");
-                    } else if (item.href === "/crm/support") {
-                      isActive = pathname.startsWith("/crm/support");
-                    } else {
-                      isActive = pathname.startsWith(item.href);
-                    }
+                    // if (item.href === "/kaizens?tab=pending") {
+                    //   isActive =
+                    //     (pathname === "/kaizens" &&
+                    //       (currentTab === "pending" || !currentTab)) ||
+                    //     from === "pending";
+                    // } else if (item.href === "/kaizens?tab=verification") {
+                    //   isActive =
+                    //     (pathname === "/kaizens" &&
+                    //       currentTab === "verification") ||
+                    //     from === "verification";
+                    // } else if (item.href === "/kaizens?tab=approved") {
+                    //   isActive =
+                    //     (pathname === "/kaizens" &&
+                    //       currentTab === "approved") ||
+                    //     from === "approved";
+                    // } else if (item.href === "/kaizens?tab=rewarded") {
+                    //   isActive =
+                    //     (pathname === "/kaizens" &&
+                    //       currentTab === "rewarded") ||
+                    //     from === "reward";
+                    // } else if (item.href === "/quality?tab=manager") {
+                    //   isActive =
+                    //     pathname === "/quality" && currentTab === "manager";
+                    // } else if (item.href === "/behavior?tab=manager") {
+                    //   isActive =
+                    //     pathname === "/behavior" && currentTab === "manager";
+                    // } else if (item.href === "/employees") {
+                    //   isActive =
+                    //     pathname.startsWith("/employees") &&
+                    //     !pathname.includes("/kaizen/");
+                    // } else if (item.href === "/performance") {
+                    //   isActive = pathname === "/performance";
+                    // } else if (item.href === "/reviews") {
+                    //   isActive = pathname === "/reviews";
+                    // } else if (item.href === "/crm") {
+                    //   isActive =
+                    //     pathname === "/crm" ||
+                    //     pathname.startsWith("/crm/leads");
+                    // } else if (item.href === "/crm/quotes") {
+                    //   isActive = pathname.startsWith("/crm/quotes");
+                    // } else if (item.href === "/crm/support") {
+                    //   isActive = pathname.startsWith("/crm/support");
+                    // } else {
+                    //   isActive = pathname.startsWith(item.href.split("?")[0]);
+                    // }
 
                     const itemUnread =
                       item.href === "/crm/support" ? unreadSupport : 0;
@@ -643,7 +727,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                           className={cn(
                             "flex items-center justify-between rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200",
                             isActive
-                              ? "bg-emerald-600 shadow-xl shadow-emerald-600/30 text-white"
+                              ? "bg-brand-600 shadow-xl shadow-brand-600/30 text-white"
                               : "text-slate-300 hover:bg-slate-900 hover:shadow-lg hover:text-white",
                           )}
                         >
@@ -672,7 +756,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         {" "}
         <button
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium",
+            "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium cursor-pointer",
             "text-slate-400 hover:bg-slate-900 hover:shadow-lg hover:text-red-400",
           )}
           onClick={handleLogout}

@@ -62,7 +62,7 @@ export function InvitePortalCard({
 
   if (sent) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+      <div className="flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-700">
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
         Portal invite sent to {clientEmail}.
       </div>

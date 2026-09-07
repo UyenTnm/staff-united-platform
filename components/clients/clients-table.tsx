@@ -50,7 +50,7 @@ const clients = [
 function getStatusColor(status: string) {
   switch (status) {
     case "Active":
-      return "bg-emerald-100 text-emerald-700";
+      return "bg-brand-100 text-brand-700";
 
     case "Paused":
       return "bg-yellow-100 text-yellow-700";

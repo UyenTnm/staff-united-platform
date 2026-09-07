@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { getOrCreateCurrentReview } from "@/lib/performance/review";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function NewReviewPage() {
+function NewReviewPageContent() {
   const params = useParams();
   const router = useRouter();
 
@@ -29,5 +30,13 @@ export default function NewReviewPage() {
     <div className="flex h-screen items-center justify-center text-slate-500">
       Creating current review...
     </div>
+  );
+}
+
+export default function NewReviewPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <NewReviewPageContent />
+    </RoleGuard>
   );
 }

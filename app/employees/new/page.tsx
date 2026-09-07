@@ -15,8 +15,9 @@ import {
 import { EmployeeForm } from "@/components/employees/employee-form";
 import type { UserRole } from "@/lib/auth";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function NewEmployeePage() {
+function NewEmployeePageContent() {
   const router = useRouter();
 
   const [saving, setSaving] = useState(false);
@@ -126,7 +127,7 @@ export default function NewEmployeePage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6">
         <div className="flex justify-between">
           <div>
             <h1 className="text-3xl font-bold">Add New Employee</h1>
@@ -164,5 +165,13 @@ export default function NewEmployeePage() {
         />
       </div>
     </AppLayout>
+  );
+}
+
+export default function NewEmployeePage() {
+  return (
+    <RoleGuard allow={["Admin", "HR"]}>
+      <NewEmployeePageContent />
+    </RoleGuard>
   );
 }

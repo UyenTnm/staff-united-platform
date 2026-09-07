@@ -6,6 +6,8 @@ import Link from "next/link";
 import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScoreBar } from "@/components/performance/score-bar";
 
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -106,23 +108,58 @@ export default function MyPerformancePage() {
               })}
             </p>
 
-            <p className="mt-3 text-sm text-slate-500">
-              Status: {review.status}
-            </p>
+            <div className="mt-3">
+              <Badge className="capitalize">{review.status}</Badge>
+            </div>
           </Card>
 
           {performance && (
-            <Card className="p-6">
-              <h2 className="text-5xl font-bold">{performance.total} / 15</h2>
+            <>
+              <Card className="p-6">
+                <ScoreBar
+                  label="Total Monthly Bonus"
+                  score={performance.total}
+                  max={15}
+                  size="lg"
+                  helper={`${((performance.total / 15) * 100).toFixed(1)}% of the maximum 15% monthly bonus`}
+                />
+              </Card>
 
-              <div className="mt-6 space-y-2">
-                <p>Quality : {performance.quality}/5</p>
+              <Card className="p-6 grid gap-6 md:grid-cols-3">
+                <ScoreBar
+                  label="Quality"
+                  score={performance.quality}
+                  max={5}
+                  helper={
+                    performance.qualityIssues === 0
+                      ? "No issues this month"
+                      : `${performance.qualityIssues} issue${performance.qualityIssues !== 1 ? "s" : ""} this month`
+                  }
+                />
 
-                <p>Behavior : {performance.behavior}/5</p>
+                <ScoreBar
+                  label="Behavior"
+                  score={performance.behavior}
+                  max={5}
+                  helper={
+                    performance.behaviorIssues === 0
+                      ? "No issues this month"
+                      : `${performance.behaviorIssues} issue${performance.behaviorIssues !== 1 ? "s" : ""} this month`
+                  }
+                />
 
-                <p>Kaizen : {performance.kaizen}/5</p>
-              </div>
-            </Card>
+                <ScoreBar
+                  label="Kaizen"
+                  score={performance.kaizen}
+                  max={5}
+                  helper={
+                    performance.rewardedKaizens === 0
+                      ? "No rewarded kaizens yet"
+                      : `${performance.rewardedKaizens} rewarded this month`
+                  }
+                />
+              </Card>
+            </>
           )}
           {/* Quality */}
           <Card className="p-6">
@@ -180,11 +217,14 @@ export default function MyPerformancePage() {
               <Button
                 onClick={handleAcceptReview}
                 disabled={review.status !== "WaitingEmployee"}
+                className="cursor-pointer"
               >
                 Accept Review
               </Button>
 
-              <Button variant="outline">Appeal</Button>
+              <Button className="cursor-pointer" variant="outline">
+                Appeal
+              </Button>
             </div>
           </Card>
         </div>

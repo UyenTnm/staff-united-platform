@@ -59,8 +59,8 @@ export default function SupportInboxPage() {
                 className="flex items-center justify-between gap-3 p-4 transition hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100">
-                    <MessageCircle className="h-4 w-4 text-emerald-700" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand-100">
+                    <MessageCircle className="h-4 w-4 text-brand-700" />
                   </div>
                   <div>
                     <p className="font-medium text-slate-900 dark:text-white">

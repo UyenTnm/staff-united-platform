@@ -43,9 +43,8 @@ export interface ReviewScores {
   kaizenSummary: {
     draft: number;
     submitted: number;
-    underReview: number;
     approved: number;
-    implemented: number;
+    inProgress: number;
     rewarded: number;
   };
 }
@@ -143,11 +142,9 @@ export async function calculateReviewScores(
 
     submitted: kaizens.filter((k) => k.status === "Submitted").length,
 
-    underReview: kaizens.filter((k) => k.status === "Under Review").length,
-
     approved: kaizens.filter((k) => k.status === "Approved").length,
 
-    implemented: kaizens.filter((k) => k.status === "Implemented").length,
+    inProgress: kaizens.filter((k) => k.status === "In Progress").length,
 
     rewarded: rewardedKaizens.length,
   };

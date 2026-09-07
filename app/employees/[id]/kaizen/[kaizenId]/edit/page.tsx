@@ -15,11 +15,9 @@ import {
   getKaizen,
   updateKaizen,
   approveKaizen,
-  markKaizenRewarded,
-  markKaizenUnderReview,
-  sendKaizenToManager,
   startExecution,
   requestVerification,
+  updateKaizenProgress,
   verifyKaizen,
   KaizenImpact,
   KaizenStatus,
@@ -61,16 +59,21 @@ export default function EditKaizenPage() {
   const [status, setStatus] = useState<KaizenStatus>("Submitted");
   const [reviewNote, setReviewNote] = useState("");
 
-  const { employee } = useAuth();
+  const [progressNotes, setProgressNotes] = useState("");
+  const [startingExecution, setStartingExecution] = useState(false);
+  const [savingProgress, setSavingProgress] = useState(false);
 
-  const isAdministrativeReview =
-    employee?.user_role === "HR" || employee?.user_role === "Admin";
+  const { employee } = useAuth();
 
   const isManagerReview = employee?.user_role === "Manager";
   const isOwner = employee?.id === kaizen?.employee_id;
-  const canEditReviewNote =
-    !isOwner &&
-    (employee?.user_role === "HR" || employee?.user_role === "Manager");
+
+  // Once Manager has acted on it (status is no longer "Submitted"), the
+  // Kaizen is locked for the owner — view only from here on, per business
+  // rule: "đã duyệt rồi thì không cho nhân viên chỉnh sửa, chỉ được xem".
+  const canOwnerEdit = isOwner && status === "Submitted";
+
+  const canEditReviewNote = isManagerReview && status === "Submitted";
 
   const POINT_MAP: Record<KaizenImpact, number> = {
     Small: 1,
@@ -79,18 +82,11 @@ export default function EditKaizenPage() {
     Innovation: 4,
     "Outstanding Innovation": 5,
   };
-  const canEditCategory =
-    (isAdministrativeReview && status === "Under Review") ||
-    (isManagerReview && status === "Waiting Manager Review");
+  const canEditCategory = isManagerReview && status === "Submitted";
 
   useEffect(() => {
     async function loadKaizen() {
       const kaizen = await getKaizen(params.kaizenId as string);
-
-      console.log("Current Employee:", employee);
-      console.log("Kaizen Employee:", kaizen?.employee_id);
-      console.log("Status:", status);
-      console.log("Is Owner:", employee?.id === kaizen?.employee_id);
 
       if (!kaizen) return;
       setKaizen(kaizen);
@@ -101,10 +97,9 @@ export default function EditKaizenPage() {
       setImpact(kaizen.impact);
       setStatus(kaizen.status);
       setReviewNote(kaizen.review_note ?? "");
+      setProgressNotes(kaizen.progress_notes ?? "");
 
       setLoading(false);
-
-      console.log("Kaizen:", kaizen);
     }
 
     loadKaizen();
@@ -159,7 +154,7 @@ export default function EditKaizenPage() {
 
       setStatus("Approved");
 
-      router.replace("/kaizens/approved");
+      router.replace("/kaizens?tab=approved");
     } catch (error) {
       console.error(error);
       toast.error("Unable to approve Kaizen.");
@@ -171,8 +166,10 @@ export default function EditKaizenPage() {
       toast.error("Kaizen not found.");
       return;
     }
+    if (startingExecution) return;
 
     try {
+      setStartingExecution(true);
       await startExecution(params.kaizenId as string);
 
       // Notify all HR
@@ -211,100 +208,44 @@ export default function EditKaizenPage() {
         }
       }
 
-      toast.success("Execution started.");
+      toast.success("Execution started. You can now track progress below.");
 
       setStatus("In Progress");
-
-      router.replace("/performance/kaizen");
+      setKaizen({ ...kaizen, status: "In Progress" });
     } catch (error) {
       console.error(error);
       toast.error("Unable to start execution.");
+    } finally {
+      setStartingExecution(false);
     }
   }
 
-  async function handleStartReview() {
-    if (!employee) {
-      toast.error("Current user not found.");
+  async function handleSaveProgress() {
+    if (!kaizen) {
+      toast.error("Kaizen not found.");
+      return;
+    }
+
+    if (!progressNotes.trim()) {
+      toast.warning("Please write a progress update first.");
       return;
     }
 
     try {
-      await markKaizenUnderReview(params.kaizenId as string, employee.id);
+      setSavingProgress(true);
 
-      const reviewer = employee.user_role === "Manager" ? "Manager" : "HR";
+      await updateKaizenProgress(params.kaizenId as string, progressNotes);
 
-      await createNotification(
-        kaizen!.employee_id,
-        "Kaizen Under Review",
-        `Your Kaizen is now being reviewed by ${reviewer}.`,
-        "kaizen",
-        `/employees/${kaizen!.employee_id}/kaizen/${params.kaizenId}/edit`,
-      );
-
-      toast.success("Kaizen is now under review.");
+      toast.success("Progress updated.");
 
       router.refresh();
-      setStatus("Under Review");
     } catch (error) {
-      toast.error("Unable to start review.");
+      console.error(error);
+      toast.error("Unable to save progress.");
+    } finally {
+      setSavingProgress(false);
     }
   }
-
-  // async function handleRequestVerification() {
-  //   if (!kaizen) {
-  //     toast.error("Kaizen not found.");
-  //     return;
-  //   }
-
-  //   try {
-  //     await requestVerification(params.kaizenId as string);
-
-  //     // Notify all HR
-  //     const { data: hrUsers } = await supabase
-  //       .from("employees")
-  //       .select("id")
-  //       .eq("user_role", "HR");
-
-  //     if (hrUsers) {
-  //       for (const hr of hrUsers) {
-  //         await createNotification(
-  //           hr.id,
-  //           "Verification Requested",
-  //           `${employee?.full_name} has requested verification for "${kaizen.title}".`,
-  //           "kaizen",
-  //           `/employees/${kaizen.employee_id}/kaizen/${kaizen.id}/edit`,
-  //         );
-  //       }
-  //     }
-
-  //     // Notify all Managers
-  //     const { data: managers } = await supabase
-  //       .from("employees")
-  //       .select("id")
-  //       .eq("user_role", "Manager");
-
-  //     if (managers) {
-  //       for (const manager of managers) {
-  //         await createNotification(
-  //           manager.id,
-  //           "Verification Requested",
-  //           `${employee?.full_name} has requested verification for "${kaizen.title}".`,
-  //           "kaizen",
-  //           `/employees/${kaizen.employee_id}/kaizen/${kaizen.id}/edit`,
-  //         );
-  //       }
-  //     }
-
-  //     toast.success("Verification requested.");
-
-  //     setStatus("Waiting Verification");
-
-  //     router.replace("/performance/kaizen");
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error("Unable to request verification.");
-  //   }
-  // }
 
   async function handleRequestVerification() {
     if (!kaizen) {
@@ -313,24 +254,15 @@ export default function EditKaizenPage() {
     }
 
     try {
-      console.log("STEP 1 - Update status");
-
       await requestVerification(params.kaizenId as string);
 
-      console.log("STEP 2 - Load HR");
-
-      const { data: hrUsers, error: hrError } = await supabase
+      const { data: hrUsers } = await supabase
         .from("employees")
         .select("id")
         .eq("user_role", "HR");
 
-      console.log("HR:", hrUsers);
-      console.log("HR Error:", hrError);
-
       if (hrUsers) {
         for (const hr of hrUsers) {
-          console.log("Notify HR:", hr.id);
-
           await createNotification(
             hr.id,
             "Verification Requested",
@@ -341,20 +273,13 @@ export default function EditKaizenPage() {
         }
       }
 
-      console.log("STEP 3 - Load Managers");
-
-      const { data: managers, error: managerError } = await supabase
+      const { data: managers } = await supabase
         .from("employees")
         .select("id")
         .eq("user_role", "Manager");
 
-      console.log("Managers:", managers);
-      console.log("Manager Error:", managerError);
-
       if (managers) {
         for (const manager of managers) {
-          console.log("Notify Manager:", manager.id);
-
           await createNotification(
             manager.id,
             "Verification Requested",
@@ -364,8 +289,6 @@ export default function EditKaizenPage() {
           );
         }
       }
-
-      console.log("DONE");
 
       toast.success("Verification requested.");
 
@@ -413,8 +336,6 @@ export default function EditKaizenPage() {
 
       setStatus("Verified");
 
-      // router.refresh();
-      // router.replace("/kaizens/rewarded");
       router.replace(
         `/employees/${kaizen!.employee_id}/kaizen/${kaizen!.id}/edit?from=reward`,
       );
@@ -434,10 +355,7 @@ export default function EditKaizenPage() {
     try {
       setSaving(true);
 
-      // await rewardKaizen(params.kaizenId as string, employee.id);
-      const result = await rewardKaizen(params.kaizenId as string, employee.id);
-
-      console.log("Reward result:", result);
+      await rewardKaizen(params.kaizenId as string, employee.id);
 
       await createNotification(
         kaizen!.employee_id,
@@ -470,7 +388,7 @@ export default function EditKaizenPage() {
 
       router.refresh();
 
-      router.replace("/kaizens/rewarded");
+      router.replace("/kaizens?tab=rewarded");
     } catch (error) {
       console.error(error);
 
@@ -498,31 +416,12 @@ export default function EditKaizenPage() {
 
     try {
       setSaving(true);
-      console.log({
-        review_id: null,
-        employee_id: params.id,
-        title,
-        description,
-        category,
-        business_benefit: businessBenefit,
-        impact,
-        // performance_points: parseInt(points, 10),
-        status,
-        approved_by: null,
-        review_note: reviewNote,
-        review_month: getReviewMonth(new Date()),
-      });
 
       let payload = {};
 
       if (isManagerReview) {
         payload = {
           impact,
-          category,
-          review_note: reviewNote,
-        };
-      } else if (isAdministrativeReview) {
-        payload = {
           category,
           review_note: reviewNote,
         };
@@ -535,8 +434,6 @@ export default function EditKaizenPage() {
         };
       }
 
-      console.log("Update payload:", payload);
-
       await updateKaizen(params.kaizenId as string, payload);
 
       toast.success("Changes saved.");
@@ -544,54 +441,9 @@ export default function EditKaizenPage() {
       router.refresh();
     } catch (err: unknown) {
       console.error(err);
-
-      if (err instanceof Error) {
-        console.log("message:", err.message);
-      } else {
-        console.log("Unknown error:", err);
-      }
-
       toast.error("Unable to save improvement.");
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleSendToManager() {
-    if (!employee) {
-      toast.error("Current user not found.");
-      return;
-    }
-
-    try {
-      await sendKaizenToManager(
-        params.kaizenId as string,
-        employee.id,
-        reviewNote,
-      );
-
-      const { data: manager } = await supabase
-        .from("employees")
-        .select("id")
-        .eq("user_role", "Manager")
-        .maybeSingle();
-
-      if (manager) {
-        await createNotification(
-          manager.id,
-          "Kaizen Waiting Approval",
-          `${kaizen?.title} is waiting for your approval.`,
-          "kaizen",
-          `/employees/${kaizen!.employee_id}/kaizen/${params.kaizenId}/edit`,
-        );
-      }
-
-      toast.success("Sent to Manager successfully.");
-
-      router.replace("/kaizens/pending");
-    } catch (error) {
-      console.error(error);
-      toast.error("Unable to send to manager.");
     }
   }
 
@@ -625,14 +477,20 @@ export default function EditKaizenPage() {
 
           <p className="text-sm text-slate-500">
             Information submitted by the employee.
+            {!canOwnerEdit && (
+              <span className="block mt-1 text-amber-600">
+                This Kaizen has already been processed and can no longer be
+                edited — view only.
+              </span>
+            )}
           </p>
           <div>
             <label className="text-sm font-medium">Improvement Title</label>
 
             <input
-              readOnly={isAdministrativeReview || isManagerReview}
+              readOnly={!canOwnerEdit}
               className={`w-full border rounded-lg p-3 mt-2 ${
-                isAdministrativeReview || isManagerReview
+                !canOwnerEdit
                   ? "bg-slate-50 text-slate-600 cursor-not-allowed"
                   : ""
               }`}
@@ -646,10 +504,10 @@ export default function EditKaizenPage() {
             <label className="text-sm font-medium">Description</label>
 
             <textarea
-              readOnly={isAdministrativeReview || isManagerReview}
+              readOnly={!canOwnerEdit}
               rows={5}
               className={`w-full border rounded-lg p-3 mt-2 ${
-                isAdministrativeReview || isManagerReview
+                !canOwnerEdit
                   ? "bg-slate-50 text-slate-600 cursor-not-allowed"
                   : ""
               }`}
@@ -663,13 +521,6 @@ export default function EditKaizenPage() {
             <label className="text-sm font-medium">Category</label>
 
             <div className="mt-2">
-              {/* <IssueTypeSelect
-                items={KAIZEN_CATEGORIES}
-                value={category}
-                onChange={setCategory}
-                placeholder="Select Category"
-                disabled={isAdministrativeReview || isManagerReview}
-              /> */}
               <IssueTypeSelect
                 items={KAIZEN_CATEGORIES}
                 value={category}
@@ -684,10 +535,10 @@ export default function EditKaizenPage() {
             <label className="text-sm font-medium">Business Benefit</label>
 
             <textarea
-              readOnly={isAdministrativeReview || isManagerReview}
+              readOnly={!canOwnerEdit}
               rows={4}
               className={`w-full border rounded-lg p-3 mt-2 ${
-                isAdministrativeReview || isManagerReview
+                !canOwnerEdit
                   ? "bg-slate-50 text-slate-600 cursor-not-allowed"
                   : ""
               }`}
@@ -704,12 +555,53 @@ export default function EditKaizenPage() {
             <KaizenTimeline status={status} />
           </Card>
 
+          {(status === "In Progress" ||
+            status === "Waiting Verification" ||
+            status === "Verified" ||
+            status === "Rewarded") && (
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Execution Progress</h2>
+
+                {kaizen?.progress_updated_at && (
+                  <p className="text-xs text-slate-400">
+                    Last updated{" "}
+                    {new Date(kaizen.progress_updated_at).toLocaleString()}
+                  </p>
+                )}
+              </div>
+
+              {isOwner && status === "In Progress" ? (
+                <>
+                  <textarea
+                    rows={4}
+                    className="w-full border rounded-lg p-3"
+                    placeholder="What have you done so far? Any blockers? (this lets HR/Manager see progress before you request verification)"
+                    value={progressNotes}
+                    onChange={(e) => setProgressNotes(e.target.value)}
+                  />
+
+                  <Button
+                    onClick={handleSaveProgress}
+                    disabled={savingProgress}
+                    variant="outline"
+                    className="mt-3"
+                  >
+                    {savingProgress ? "Saving..." : "Save Progress Update"}
+                  </Button>
+                </>
+              ) : (
+                <p className="text-sm text-slate-600 whitespace-pre-wrap">
+                  {kaizen?.progress_notes || "No progress update posted yet."}
+                </p>
+              )}
+            </Card>
+          )}
+
           <div className="pt-2">
-            <h2 className="text-lg font-semibold">
-              {isManagerReview ? "Manager Review" : "Administrative Review"}
-            </h2>
+            <h2 className="text-lg font-semibold">Manager Review</h2>
             <p className="text-sm text-slate-500 mt-1">
-              Administrative review before manager evaluation.
+              Manager evaluates and approves the Kaizen directly.
             </p>
           </div>
 
@@ -759,26 +651,6 @@ export default function EditKaizenPage() {
             <h3 className="text-lg font-semibold mb-6">Audit Trail</h3>
 
             <div className="grid md:grid-cols-2 gap-6 text-sm">
-              {/* Administrative Review */}
-
-              <div>
-                <p className="text-slate-500">Reviewed By</p>
-
-                <p className="font-medium">
-                  {kaizen?.reviewer?.full_name ?? "-"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-slate-500">Reviewed At</p>
-
-                <p className="font-medium">
-                  {kaizen?.reviewed_at
-                    ? new Date(kaizen.reviewed_at).toLocaleString()
-                    : "-"}
-                </p>
-              </div>
-
               {/* Manager Approval */}
 
               <div>
@@ -841,43 +713,24 @@ export default function EditKaizenPage() {
             </div>
           </Card>
 
-          {status === "Implemented" && (
-            <div>
-              <label className="text-sm font-medium">Implemented Date</label>
-
-              <input
-                // readOnly={isAdministrativeReview}
-                type="date"
-                className="w-full border rounded-lg p-3 mt-2"
-                // value={implementedDate}
-                // onChange={(e) => setImplementedDate(e.target.value)}
-              />
-            </div>
-          )}
-
           <div className="flex gap-3 flex-wrap">
-            {status === "Submitted" && (
-              <Button onClick={handleStartReview}>Start Review</Button>
-            )}
-
-            {status === "Under Review" && (
+            {status === "Submitted" && employee?.user_role === "Manager" && (
               <>
                 <Button onClick={handleSave} disabled={saving}>
-                  {saving ? "Saving..." : "Save Changes"}
+                  {saving ? "Saving..." : "Save Review"}
                 </Button>
 
-                {employee?.user_role === "HR" && (
-                  <Button onClick={handleSendToManager}>Send to Manager</Button>
-                )}
-
-                {employee?.user_role === "Manager" && (
-                  <Button onClick={handleApprove}>Approve Kaizen</Button>
-                )}
+                <Button onClick={handleApprove}>Approve Kaizen</Button>
               </>
             )}
 
             {status === "Approved" && employee?.id === kaizen?.employee_id && (
-              <Button onClick={handleStartExecution}>Start Execution</Button>
+              <Button
+                onClick={handleStartExecution}
+                disabled={startingExecution}
+              >
+                {startingExecution ? "Starting..." : "Start Execution"}
+              </Button>
             )}
 
             {status === "In Progress" &&
@@ -885,17 +738,6 @@ export default function EditKaizenPage() {
                 <Button onClick={handleRequestVerification}>
                   Request Verification
                 </Button>
-              )}
-
-            {status === "Waiting Manager Review" &&
-              employee?.user_role === "Manager" && (
-                <>
-                  <Button onClick={handleSave} disabled={saving}>
-                    {saving ? "Saving..." : "Save Review"}
-                  </Button>
-
-                  <Button onClick={handleApprove}>Approve Kaizen</Button>
-                </>
               )}
 
             {status === "Waiting Verification" &&
@@ -911,13 +753,11 @@ export default function EditKaizenPage() {
             {status === "Verified" && employee?.user_role === "Manager" && (
               <Button
                 onClick={handleRewarded}
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-brand-600 hover:bg-brand-700"
               >
                 Reward Employee
               </Button>
             )}
-
-            {/* {status === "Rewarded" && <Button disabled>Completed</Button>} */}
           </div>
         </Card>
       </div>

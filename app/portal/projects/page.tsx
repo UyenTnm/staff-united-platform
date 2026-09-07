@@ -114,14 +114,14 @@ export default function PortalProjectsPage() {
                     <p className="font-semibold text-slate-900">
                       {p.title || p.quote_number}
                     </p>
-                    <span className="text-sm font-bold text-emerald-600">
+                    <span className="text-sm font-bold text-brand-600">
                       {progress}%
                     </span>
                   </div>
 
                   <div className="mt-2 mb-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="h-full bg-emerald-500 transition-all duration-500"
+                      className="h-full bg-brand-500 transition-all duration-500"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -164,7 +164,7 @@ export default function PortalProjectsPage() {
                                           className="flex items-center gap-2 text-sm"
                                         >
                                           {m.is_completed ? (
-                                            <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-600" />
+                                            <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-brand-600" />
                                           ) : (
                                             <Circle className="h-4 w-4 flex-shrink-0 text-slate-300" />
                                           )}
@@ -204,7 +204,7 @@ export default function PortalProjectsPage() {
                                             className="flex items-center gap-2 text-sm"
                                           >
                                             {m.is_completed ? (
-                                              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-600" />
+                                              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-brand-600" />
                                             ) : (
                                               <Circle className="h-4 w-4 flex-shrink-0 text-slate-300" />
                                             )}

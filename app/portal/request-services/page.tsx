@@ -29,7 +29,7 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
     label: "Proposal sent — check your email",
     color: "bg-purple-100 text-purple-700",
   },
-  Won: { label: "Completed", color: "bg-emerald-100 text-emerald-700" },
+  Won: { label: "Completed", color: "bg-brand-100 text-brand-700" },
   Lost: { label: "Closed", color: "bg-slate-100 text-slate-500" },
 };
 
@@ -137,12 +137,12 @@ export default function RequestServicesPage() {
     return (
       <PortalLayout userEmail={userEmail}>
         <div className="mx-auto max-w-lg space-y-6">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-            <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
-            <h1 className="mt-4 text-lg font-bold text-emerald-800">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-8 text-center">
+            <CheckCircle2 className="mx-auto h-10 w-10 text-brand-600" />
+            <h1 className="mt-4 text-lg font-bold text-brand-800">
               Request submitted!
             </h1>
-            <p className="mt-2 text-sm text-emerald-700">
+            <p className="mt-2 text-sm text-brand-700">
               Your account manager will reach out to you shortly with a proposal
               for the services you selected.
             </p>
@@ -185,7 +185,7 @@ export default function RequestServicesPage() {
                 onClick={() => toggleDept(dept.name)}
                 className={`flex w-full cursor-pointer items-start justify-between gap-3 rounded-xl border p-4 text-left transition ${
                   isSelected
-                    ? "border-emerald-400 bg-emerald-50"
+                    ? "border-brand-400 bg-brand-50"
                     : "border-slate-200 bg-white hover:border-slate-300"
                 }`}
               >
@@ -198,7 +198,7 @@ export default function RequestServicesPage() {
                 <div
                   className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
                     isSelected
-                      ? "border-emerald-600 bg-emerald-600"
+                      ? "border-brand-600 bg-brand-600"
                       : "border-slate-300"
                   }`}
                 >
@@ -229,7 +229,7 @@ export default function RequestServicesPage() {
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="mt-4 w-full cursor-pointer rounded-xl bg-emerald-600 p-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+          className="mt-4 w-full cursor-pointer rounded-xl bg-brand-600 p-3.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-60"
         >
           {submitting ? "Submitting..." : "Submit Request"}
         </button>

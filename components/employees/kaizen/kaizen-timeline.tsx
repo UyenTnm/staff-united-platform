@@ -10,8 +10,6 @@ type Props = {
 const STEPS = [
   "Draft",
   "Submitted",
-  "Under Review",
-  "Waiting Manager Review",
   "Approved",
   "In Progress",
   "Waiting Verification",
@@ -21,24 +19,16 @@ const STEPS = [
 
 const STEP_LABELS: Record<KaizenStatus, string> = {
   Draft: "Draft",
-  Submitted: "Submitted",
-  "Under Review": "Administrative Review",
-  "Waiting Manager Review": "Waiting Manager Review",
+  Submitted: "Waiting Manager Approval",
   Approved: "Approved",
   "In Progress": "Execution",
   "Waiting Verification": "Waiting Verification",
   Verified: "Verified",
-  Implemented: "Implemented",
   Rewarded: "Rewarded",
 };
 
 function getStepState(current: Props["status"], step: (typeof STEPS)[number]) {
-  const normalizedStatus = current === "Implemented" ? "Verified" : current;
-
-  const currentIndex = STEPS.indexOf(
-    normalizedStatus as (typeof STEPS)[number],
-  );
-
+  const currentIndex = STEPS.indexOf(current as (typeof STEPS)[number]);
   const stepIndex = STEPS.indexOf(step);
 
   // Rewarded là trạng thái hoàn tất cuối cùng
@@ -47,9 +37,7 @@ function getStepState(current: Props["status"], step: (typeof STEPS)[number]) {
   }
 
   if (stepIndex < currentIndex) return "completed";
-
   if (stepIndex === currentIndex) return "current";
-
   return "upcoming";
 }
 
@@ -66,7 +54,6 @@ export function KaizenTimeline({
 
         return (
           <div key={step} className="flex items-start gap-4">
-            {/* Left */}
             <div className="flex flex-col items-center">
               <div
                 className={
@@ -80,9 +67,6 @@ export function KaizenTimeline({
                 {state === "completed" && "✓"}
               </div>
 
-              {/* {index < STEPS.length - 1 && (
-                <div className="w-px h-8 bg-slate-300 mt-1" />
-              )} */}
               {index < STEPS.length - 1 && (
                 <div
                   className={
@@ -94,7 +78,6 @@ export function KaizenTimeline({
               )}
             </div>
 
-            {/* Right */}
             <div className="pb-6">
               <p
                 className={

@@ -13,8 +13,9 @@ import {
   getBehaviorReview,
 } from "@/lib/employees/behavior";
 import { toast } from "sonner";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-export default function ManagerBehaviorReviewPage() {
+function ManagerBehaviorReviewPageContent() {
   const params = useParams();
   const router = useRouter();
 
@@ -58,7 +59,7 @@ export default function ManagerBehaviorReviewPage() {
 
       toast.success("Behavior approved.");
 
-      router.push("/behavior/manager");
+      router.push("/behavior?tab=manager");
 
       router.refresh();
     } catch (error) {
@@ -151,5 +152,13 @@ export default function ManagerBehaviorReviewPage() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+export default function ManagerBehaviorReviewPage() {
+  return (
+    <RoleGuard allow={["Admin", "HR", "Manager"]}>
+      <ManagerBehaviorReviewPageContent />
+    </RoleGuard>
   );
 }

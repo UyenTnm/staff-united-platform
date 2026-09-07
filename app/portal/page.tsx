@@ -24,9 +24,9 @@ const STATUS_COLOR: Record<string, string> = {
   Draft: "bg-slate-100 text-slate-700",
   Sent: "bg-blue-100 text-blue-700",
   Viewed: "bg-amber-100 text-amber-700",
-  Accepted: "bg-emerald-100 text-emerald-700",
+  Accepted: "bg-brand-100 text-brand-700",
   "Deposit Paid": "bg-purple-100 text-purple-700",
-  Paid: "bg-emerald-100 text-emerald-800",
+  Paid: "bg-brand-100 text-brand-800",
   Rejected: "bg-red-100 text-red-700",
 };
 

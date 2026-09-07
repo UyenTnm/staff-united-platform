@@ -48,7 +48,7 @@ export function SelectionHistory({
               <span className="text-xs text-slate-400">
                 {new Date(entry.changed_at).toLocaleString()}
               </span>
-              <span className="font-semibold text-emerald-700">
+              <span className="font-semibold text-brand-700">
                 {currencySymbol}
                 {Number(entry.total_amount).toLocaleString()}
               </span>

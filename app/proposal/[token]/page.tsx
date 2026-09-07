@@ -313,7 +313,7 @@ export default function PublicProposalPage() {
                   key={item.id}
                   className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${
                     selectedIds.has(item.id)
-                      ? "border-emerald-500 bg-emerald-50"
+                      ? "border-brand-500 bg-brand-50"
                       : "border-slate-200"
                   } ${isSelectionLocked ? "pointer-events-none opacity-70" : ""}`}
                 >
@@ -322,14 +322,14 @@ export default function PublicProposalPage() {
                     checked={selectedIds.has(item.id)}
                     onChange={() => toggleItem(item.id)}
                     disabled={isSelectionLocked}
-                    className="mt-1 h-4 w-4 rounded accent-emerald-600"
+                    className="mt-1 h-4 w-4 rounded accent-brand-600"
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <p className="font-medium text-slate-900">
                         {item.service_name}
                       </p>
-                      <p className="font-semibold text-emerald-700">
+                      <p className="font-semibold text-brand-700">
                         {formatCurrency(getItemTotal(item), isVietnamMarket)}
                       </p>
                     </div>
@@ -354,8 +354,8 @@ export default function PublicProposalPage() {
         )}
 
         {isAccepted && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
-            <p className="text-center font-medium text-emerald-800">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+            <p className="text-center font-medium text-brand-800">
               {isPaid
                 ? "✓ Fully Paid — thank you!"
                 : isDepositPaid
@@ -368,11 +368,11 @@ export default function PublicProposalPage() {
                 chọn, để khách không phải đoán. */}
 
             {items.length > 0 && (isDepositPaid || isPaid) && (
-              <div className="mt-4 border-t border-emerald-200 pt-4">
-                <p className="mb-2 text-xs font-medium uppercase text-emerald-700">
+              <div className="mt-4 border-t border-brand-200 pt-4">
+                <p className="mb-2 text-xs font-medium uppercase text-brand-700">
                   Services Included
                 </p>
-                <ul className="space-y-1 text-sm text-emerald-900">
+                <ul className="space-y-1 text-sm text-brand-900">
                   {items
                     .filter((i) => selectedIds.has(i.id))
                     .map((i) => (
@@ -388,20 +388,20 @@ export default function PublicProposalPage() {
             )}
 
             {isDeposit && (isDepositPaid || isPaid) && (
-              <div className="mt-4 space-y-1 border-t border-emerald-200 pt-4 text-sm">
-                <div className="flex justify-between text-emerald-900">
+              <div className="mt-4 space-y-1 border-t border-brand-200 pt-4 text-sm">
+                <div className="flex justify-between text-brand-900">
                   <span>Total Amount</span>
                   <span className="font-semibold">
                     {formatCurrency(finalAmount, isVietnamMarket)}
                   </span>
                 </div>
-                <div className="flex justify-between text-emerald-700">
+                <div className="flex justify-between text-brand-700">
                   <span>Deposit (50%)</span>
                   <span className="font-medium">
                     ✓ Paid — {formatCurrency(depositAmount, isVietnamMarket)}
                   </span>
                 </div>
-                <div className="flex justify-between text-emerald-700">
+                <div className="flex justify-between text-brand-700">
                   <span>Final Payment (50%)</span>
                   <span className="font-medium">
                     {isPaid
@@ -413,7 +413,7 @@ export default function PublicProposalPage() {
             )}
 
             {!isPaid && !isDepositPaid && !quote.selection_unlocked && (
-              <p className="mt-2 text-center text-sm text-emerald-700">
+              <p className="mt-2 text-center text-sm text-brand-700">
                 Need to change your selection? Please contact us and we&apos;ll
                 re-open it for you.
               </p>
@@ -468,7 +468,7 @@ export default function PublicProposalPage() {
                           : "Service Discounts"}
                       </span>
 
-                      <span className="font-medium text-emerald-600">
+                      <span className="font-medium text-brand-600">
                         -{formatCurrency(serviceDiscountTotal, isVietnamMarket)}
                       </span>
                     </div>
@@ -480,7 +480,7 @@ export default function PublicProposalPage() {
                         Package Discount {Math.round(packageDiscountPercent)}%
                       </span>
 
-                      <span className="font-medium text-emerald-600">
+                      <span className="font-medium text-brand-600">
                         -{formatCurrency(packageDiscountTotal, isVietnamMarket)}
                       </span>
                     </div>
@@ -503,7 +503,7 @@ export default function PublicProposalPage() {
                 </div>
 
                 {totalDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-600">
+                  <div className="flex justify-between text-brand-600">
                     <span>Total Discount</span>
                     <span>
                       -{formatCurrency(totalDiscount, isVietnamMarket)}

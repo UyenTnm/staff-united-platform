@@ -69,7 +69,7 @@ export default function ChangePasswordPage() {
           break;
 
         case "Manager":
-          router.replace("/reviews/pending");
+          router.replace("/reviews?tab=pending");
           break;
 
         case "Admin":

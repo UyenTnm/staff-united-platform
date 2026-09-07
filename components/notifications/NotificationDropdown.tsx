@@ -10,7 +10,7 @@ import {
 } from "@/lib/notifications";
 
 import { NotificationItem } from "./NotificationItem";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface NotificationDropdownProps {
   employeeId: string;
@@ -26,6 +26,7 @@ export function NotificationDropdown({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   async function loadNotifications() {
     try {
@@ -80,7 +81,17 @@ export function NotificationDropdown({
 
                 if (notification.action_url) {
                   onClose();
-                  router.push(notification.action_url);
+
+                  // Nếu đang đứng đúng trang đó rồi, router.push sẽ không
+                  // làm gì cả (URL không đổi) nên trang không tự cập nhật
+                  // lại trạng thái mới — reload cứng để chắc chắn lấy data mới.
+                  const targetPath = notification.action_url.split("?")[0];
+
+                  if (targetPath === pathname) {
+                    window.location.reload();
+                  } else {
+                    router.push(notification.action_url);
+                  }
                 }
               }}
             />
