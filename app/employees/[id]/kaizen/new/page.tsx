@@ -147,7 +147,7 @@ export default function NewKaizenPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6">
         <div className="flex justify-between">
           <div>
             <h1 className="text-3xl font-bold">Submit Improvement</h1>

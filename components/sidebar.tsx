@@ -278,7 +278,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           href: "/performance",
         },
         {
-          label: "My Kaizens",
+          label: "My Kaizen",
           href: "/performance/kaizen",
         },
       ],
@@ -411,7 +411,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           href: "/performance",
         },
         {
-          label: "My Kaizens",
+          label: "My Kaizen",
           href: "/performance/kaizen",
         },
       ],
