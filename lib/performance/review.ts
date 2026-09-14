@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { createNotification } from "@/lib/notifications";
+import { canTransition } from "./workflow";
 
 export type ReviewStatus =
   | "Draft"
@@ -149,6 +150,14 @@ export async function updateReviewStatus(
   reviewId: string,
   status: ReviewStatus,
 ) {
+  const current = await getReview(reviewId);
+
+  if (current && !canTransition(current.status, status)) {
+    throw new Error(
+      `Invalid review status transition: ${current.status} → ${status}`,
+    );
+  }
+
   const { error } = await supabase
     .from("performance_reviews")
     .update({
