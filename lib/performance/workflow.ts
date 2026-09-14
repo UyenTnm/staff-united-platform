@@ -7,7 +7,7 @@ export const REVIEW_WORKFLOW: Record<ReviewStatus, ReviewStatus[]> = {
 
   EmployeeAppealed: ["WaitingEmployee"],
 
-  WaitingManager: ["Approved"],
+  WaitingManager: ["Approved", "Draft"],
 
   Approved: ["Locked"],
 
