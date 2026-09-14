@@ -10,6 +10,15 @@ interface Props {
   data: ScopePageData;
 }
 
+function getTitleSizeClass(title?: string) {
+  const length = title?.length ?? 0;
+
+  if (length > 28) return "scope-title--sm";
+  if (length > 18) return "scope-title--md";
+
+  return "";
+}
+
 export default function ScopePage({ data }: Props) {
   return (
     <PageShell className="scope-page">
@@ -103,7 +112,9 @@ export default function ScopePage({ data }: Props) {
 
         {/* Title */}
         <div className="title-area">
-          <h1 className="scope-title">{data.projectTitle}</h1>
+          <h1 className={`scope-title ${getTitleSizeClass(data.projectTitle)}`}>
+            {data.projectTitle}
+          </h1>
 
           <div className="scope-divider">
             <span className="dot" />

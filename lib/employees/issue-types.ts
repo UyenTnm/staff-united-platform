@@ -15,6 +15,6 @@ export const BEHAVIOR_ISSUES = [
   { label: "Speaking Vietnamese", value: "Speaking Vietnamese" },
   { label: "Clock In / Clock Out", value: "Clock In / Clock Out" },
   { label: "Leave Without Notice", value: "Leave Without Notice" },
-  { label: "Unprofessional Behaviour", value: "Unprofessional Behaviour" },
+  { label: "Unprofessional Behavior", value: "Unprofessional Behavior" },
   { label: "Other", value: "Other" },
 ];

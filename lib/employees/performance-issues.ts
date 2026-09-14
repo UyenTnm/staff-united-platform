@@ -15,6 +15,6 @@ export const BEHAVIOR_ISSUES = [
   "Speaking Vietnamese",
   "Clock In / Clock Out",
   "Leave Without Notice",
-  "Unprofessional Behaviour",
+  "Unprofessional Behavior",
   "Other",
 ];
